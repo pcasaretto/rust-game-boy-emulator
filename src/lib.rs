@@ -81,17 +81,39 @@ impl std::convert::From<u8> for FlagsRegister {
 
 struct CPU {
     registers: Registers,
+    pc: u16,
+    bus: MemoryBus,
+}
+
+struct MemoryBus {
+    memory: [u8; 0xFFFF],
+}
+
+impl MemoryBus {
+    fn read_byte(&self, address: u16) -> u8 {
+        self.memory[address as usize]
+    }
 }
 
 impl Default for CPU {
     fn default() -> Self {
         CPU {
             registers: Registers::default(),
+            pc: 0,
+            bus: MemoryBus {
+                memory: [0; 0xFFFF],
+            },
         }
     }
 }
 
 impl CPU {
+    fn step(&mut self) {
+        let instruction_byte = self.bus.read_byte(self.pc);
+        let instruction = Instruction::from_byte(instruction_byte);
+        self.execute(instruction) // each instruction is responsible for updating the program counter
+    }
+
     fn execute(&mut self, instruction: Instruction) {
         match instruction {
             Instruction::ADD(target) => self.add(target),
@@ -102,7 +124,7 @@ impl CPU {
         }
     }
 
-    fn value_from_register(&self, target: ArithmeticTarget) -> u8 {
+    fn read_single_register(&self, target: ArithmeticTarget) -> u8 {
         match target {
             ArithmeticTarget::C => self.registers.c,
             other => panic!("Unsupported target: {:?}", other),
@@ -115,4 +137,23 @@ mod instructions;
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_add() {
+        let mut cpu = CPU {
+            registers: Registers {
+                a: 3,
+                c: 4,
+                f: FlagsRegister::from(0),
+            },
+            bus: MemoryBus {
+                memory: [0x81; 0xFFFF],
+            },
+            pc: 1245,
+            ..Default::default()
+        };
+        cpu.step();
+        assert_eq!(cpu.registers.a, 7);
+        assert_eq!(cpu.pc, 1246);
+    }
 }

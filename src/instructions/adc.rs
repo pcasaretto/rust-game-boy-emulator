@@ -2,17 +2,20 @@ use super::super::*;
 
 impl CPU {
     pub fn adc(&mut self, target: ArithmeticTarget) {
-        let mut target_value = self.value_from_register(target);
+        let mut target_value = self.read_single_register(target);
         let current_value = self.registers.a;
         if self.registers.f.carry {
             target_value += 1;
         }
         let (new_value, did_overflow) = current_value.overflowing_add(target_value);
         self.registers.a = new_value;
+
         self.registers.f.carry = did_overflow;
         self.registers.f.subtract = false;
         self.registers.f.zero = new_value == 0;
         self.registers.f.half_carry = (current_value & 0xF) + (target_value & 0xF) > 0xF;
+
+        self.pc = self.pc.wrapping_add(1);
     }
 }
 
@@ -129,5 +132,25 @@ mod tests {
         };
         cpu.execute(Instruction::ADC(ArithmeticTarget::C));
         assert!(cpu.registers.f.half_carry);
+    }
+
+    #[test]
+    fn test_adc_advance_pc() {
+        let mut cpu = CPU {
+            pc: 123,
+            ..Default::default()
+        };
+        cpu.execute(Instruction::ADC(ArithmeticTarget::C));
+        assert_eq!(cpu.pc, 124);
+    }
+
+    #[test]
+    fn test_adc_advance_pc_wrap() {
+        let mut cpu = CPU {
+            pc: 0xFFFF,
+            ..Default::default()
+        };
+        cpu.execute(Instruction::ADC(ArithmeticTarget::C));
+        assert_eq!(cpu.pc, 0);
     }
 }
