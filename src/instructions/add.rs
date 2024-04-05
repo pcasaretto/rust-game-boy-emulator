@@ -2,7 +2,7 @@ use super::super::*;
 
 impl CPU {
     pub fn add(&mut self, target: ArithmeticTarget) {
-        let mut target_value = self.read_single_register(target);
+        let target_value = self.read_single_register(target);
         let current_value = self.registers.a;
         let (new_value, did_overflow) = current_value.overflowing_add(target_value);
         self.registers.a = new_value;

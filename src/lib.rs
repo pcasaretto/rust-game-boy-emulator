@@ -31,6 +31,7 @@ impl Default for Registers {
     }
 }
 
+#[derive(Default)]
 struct FlagsRegister {
     zero: bool,
     subtract: bool,
@@ -38,16 +39,7 @@ struct FlagsRegister {
     carry: bool,
 }
 
-impl Default for FlagsRegister {
-    fn default() -> Self {
-        FlagsRegister {
-            zero: false,
-            subtract: false,
-            half_carry: false,
-            carry: false,
-        }
-    }
-}
+
 
 const ZERO_FLAG_BYTE_POSITION: u8 = 7;
 const SUBTRACT_FLAG_BYTE_POSITION: u8 = 6;
