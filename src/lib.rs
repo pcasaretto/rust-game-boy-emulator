@@ -101,6 +101,13 @@ impl CPU {
             }
         }
     }
+
+    fn value_from_register(&self, target: ArithmeticTarget) -> u8 {
+        match target {
+            ArithmeticTarget::C => self.registers.c,
+            other => panic!("Unsupported target: {:?}", other),
+        }
+    }
 }
 
 mod instructions;

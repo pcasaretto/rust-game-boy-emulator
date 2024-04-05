@@ -2,16 +2,8 @@ use super::super::*;
 
 impl CPU {
     pub fn adc(&mut self, target: ArithmeticTarget) {
-        let mut target_value = 0;
+        let mut target_value = self.value_from_register(target);
         let current_value = self.registers.a;
-        match target {
-            ArithmeticTarget::C => {
-                target_value = self.registers.c;
-            }
-            other => {
-                panic!("Unsupported target: {:?}", other)
-            }
-        }
         if self.registers.f.carry {
             target_value += 1;
         }
