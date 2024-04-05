@@ -1,6 +1,7 @@
 #[derive(Debug)]
 enum Instruction {
     ADD(ArithmeticTarget),
+    ADC(ArithmeticTarget),
 }
 
 #[derive(Debug)]
@@ -36,6 +37,18 @@ struct FlagsRegister {
     half_carry: bool,
     carry: bool,
 }
+
+impl Default for FlagsRegister {
+    fn default() -> Self {
+        FlagsRegister {
+            zero: false,
+            subtract: false,
+            half_carry: false,
+            carry: false,
+        }
+    }
+}
+
 const ZERO_FLAG_BYTE_POSITION: u8 = 7;
 const SUBTRACT_FLAG_BYTE_POSITION: u8 = 6;
 const HALF_CARRY_FLAG_BYTE_POSITION: u8 = 5;
@@ -82,6 +95,7 @@ impl CPU {
     fn execute(&mut self, instruction: Instruction) {
         match instruction {
             Instruction::ADD(target) => self.add(target),
+            Instruction::ADC(target) => self.adc(target),
             _ => {
                 panic!("Unsupported instruction {:?}", instruction)
             }
