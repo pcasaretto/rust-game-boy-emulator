@@ -1,11 +1,13 @@
 mod adc;
 mod add;
+mod nop;
 
 use super::*;
 
 impl Instruction {
     pub fn from_byte(byte: u8) -> Instruction {
         match byte {
+            0x00 => Instruction::NOP,
             0x87 => Instruction::ADD(ArithmeticTarget::A),
             0x80 => Instruction::ADD(ArithmeticTarget::B),
             0x81 => Instruction::ADD(ArithmeticTarget::C),

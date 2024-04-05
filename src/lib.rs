@@ -2,6 +2,7 @@
 enum Instruction {
     ADD(ArithmeticTarget),
     ADC(ArithmeticTarget),
+    NOP,
 }
 
 #[derive(Debug)]
@@ -108,8 +109,9 @@ impl CPU {
         match instruction {
             Instruction::ADD(target) => self.add(target),
             Instruction::ADC(target) => self.adc(target),
-            _ => {
-                panic!("Unsupported instruction {:?}", instruction)
+            Instruction::NOP => self.nop(),
+            other => {
+                panic!("Unsupported instruction {:?}", other)
             }
         }
     }
