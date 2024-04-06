@@ -1,8 +1,9 @@
 #[derive(Debug)]
 enum Instruction {
-    ADD(ArithmeticTarget),
     ADC(ArithmeticTarget),
+    ADD(ArithmeticTarget),
     NOP,
+    SUB(ArithmeticTarget),
 }
 
 #[derive(Debug)]
@@ -16,28 +17,24 @@ enum ArithmeticTarget {
     L,
 }
 
-struct Registers {
-    a: u8,
-    c: u8,
-    f: FlagsRegister,
-}
-
-impl Default for Registers {
-    fn default() -> Self {
-        Registers {
-            a: 0,
-            c: 0,
-            f: FlagsRegister::from(0),
-        }
-    }
+#[derive(Default)]
+pub struct Registers {
+    pub a: u8,
+    pub b: u8,
+    pub c: u8,
+    pub d: u8,
+    pub e: u8,
+    pub h: u8,
+    pub l: u8,
+    pub f: FlagsRegister,
 }
 
 #[derive(Default)]
-struct FlagsRegister {
-    zero: bool,
-    subtract: bool,
-    half_carry: bool,
-    carry: bool,
+pub struct FlagsRegister {
+    pub zero: bool,
+    pub subtract: bool,
+    pub half_carry: bool,
+    pub carry: bool,
 }
 
 const ZERO_FLAG_BYTE_POSITION: u8 = 7;
@@ -70,14 +67,15 @@ impl std::convert::From<u8> for FlagsRegister {
     }
 }
 
-struct CPU {
-    registers: Registers,
-    pc: u16,
-    bus: MemoryBus,
+/// CPU
+pub struct CPU {
+    pub registers: Registers,
+    pub pc: u16,
+    pub bus: MemoryBus,
 }
 
-struct MemoryBus {
-    memory: [u8; 0xFFFF],
+pub struct MemoryBus {
+    pub memory: [u8; 0xFFFF],
 }
 
 impl MemoryBus {
@@ -99,7 +97,7 @@ impl Default for CPU {
 }
 
 impl CPU {
-    fn step(&mut self) {
+    pub fn step(&mut self) {
         let instruction_byte = self.bus.read_byte(self.pc);
         let instruction = Instruction::from_byte(instruction_byte);
         self.execute(instruction) // each instruction is responsible for updating the program counter
@@ -110,6 +108,7 @@ impl CPU {
             Instruction::ADD(target) => self.add(target),
             Instruction::ADC(target) => self.adc(target),
             Instruction::NOP => self.nop(),
+            Instruction::SUB(target) => self.sub(target),
             other => {
                 panic!("Unsupported instruction {:?}", other)
             }
@@ -118,7 +117,13 @@ impl CPU {
 
     fn read_single_register(&self, target: ArithmeticTarget) -> u8 {
         match target {
+            ArithmeticTarget::A => self.registers.a,
+            ArithmeticTarget::B => self.registers.a,
             ArithmeticTarget::C => self.registers.c,
+            ArithmeticTarget::D => self.registers.d,
+            ArithmeticTarget::E => self.registers.e,
+            ArithmeticTarget::H => self.registers.h,
+            ArithmeticTarget::L => self.registers.l,
             other => panic!("Unsupported target: {:?}", other),
         }
     }
@@ -137,6 +142,7 @@ mod tests {
                 a: 3,
                 c: 4,
                 f: FlagsRegister::from(0),
+                ..Default::default()
             },
             bus: MemoryBus {
                 memory: [0x81; 0xFFFF],
