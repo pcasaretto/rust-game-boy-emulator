@@ -130,6 +130,8 @@ pub fn from_byte(byte: u8) -> Box<dyn Fn(&mut CPU)> {
         0x94 => Box::new(sub::sub(RegisterTarget::H)),
         0x95 => Box::new(sub::sub(RegisterTarget::L)),
 
+        0xEA => Box::new(ld::ld_u_16_r(RegisterTarget::A)),
+
         0xF3 => Box::new(int::di()),
 
         other => {
