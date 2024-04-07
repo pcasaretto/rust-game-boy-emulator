@@ -1,8 +1,8 @@
 use super::super::*;
 
-impl CPU {
-    pub fn nop(&mut self) {
-        self.pc += 1;
+pub fn nop() -> impl Fn(&mut CPU) {
+    move |cpu: &mut CPU| {
+        cpu.pc += 1;
     }
 }
 
@@ -13,7 +13,7 @@ mod tests {
     #[test]
     fn test_nop() {
         let mut cpu = CPU::default();
-        cpu.execute(Instruction::NOP);
+        nop()(&mut cpu);
         assert_eq!(cpu.pc, 1);
     }
 }

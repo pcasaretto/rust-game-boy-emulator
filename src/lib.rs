@@ -1,12 +1,6 @@
-#[derive(Debug)]
-pub enum Instruction {
-    ADC(ArithmeticTarget),
-    ADD(ArithmeticTarget),
-    NOP,
-    SUB(ArithmeticTarget),
-}
+mod instructions;
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub enum ArithmeticTarget {
     A,
     B,
@@ -99,20 +93,8 @@ impl Default for CPU {
 impl CPU {
     pub fn step(&mut self) {
         let instruction_byte = self.bus.read_byte(self.pc);
-        let instruction = Instruction::from_byte(instruction_byte);
-        self.execute(instruction) // each instruction is responsible for updating the program counter
-    }
-
-    fn execute(&mut self, instruction: Instruction) {
-        match instruction {
-            Instruction::ADD(target) => self.add(target),
-            Instruction::ADC(target) => self.adc(target),
-            Instruction::NOP => self.nop(),
-            Instruction::SUB(target) => self.sub(target),
-            other => {
-                panic!("Unsupported instruction {:?}", other)
-            }
-        }
+        let instruction = instructions::from_byte(instruction_byte);
+        instruction(self)
     }
 
     fn read_single_register(&self, target: ArithmeticTarget) -> u8 {
@@ -128,8 +110,6 @@ impl CPU {
         }
     }
 }
-
-mod instructions;
 
 #[cfg(test)]
 mod tests {

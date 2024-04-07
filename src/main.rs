@@ -1,5 +1,5 @@
 use rust_game_boy_emulator::CPU;
-use std::fs::{OpenOptions};
+use std::fs::OpenOptions;
 use std::io::prelude::*;
 
 fn main() {

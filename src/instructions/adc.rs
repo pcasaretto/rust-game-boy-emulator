@@ -1,21 +1,21 @@
 use super::super::*;
 
-impl CPU {
-    pub fn adc(&mut self, target: ArithmeticTarget) {
-        let mut target_value = self.read_single_register(target);
-        let current_value = self.registers.a;
-        if self.registers.f.carry {
+pub fn adc(target: ArithmeticTarget) -> impl Fn(&mut CPU) {
+    move |cpu: &mut CPU| {
+        let mut target_value = cpu.read_single_register(target);
+        let current_value = cpu.registers.a;
+        if cpu.registers.f.carry {
             target_value += 1;
         }
         let (new_value, did_overflow) = current_value.overflowing_add(target_value);
-        self.registers.a = new_value;
+        cpu.registers.a = new_value;
 
-        self.registers.f.carry = did_overflow;
-        self.registers.f.subtract = false;
-        self.registers.f.zero = new_value == 0;
-        self.registers.f.half_carry = (current_value & 0xF) + (target_value & 0xF) > 0xF;
+        cpu.registers.f.carry = did_overflow;
+        cpu.registers.f.subtract = false;
+        cpu.registers.f.zero = new_value == 0;
+        cpu.registers.f.half_carry = (current_value & 0xF) + (target_value & 0xF) > 0xF;
 
-        self.pc = self.pc.wrapping_add(1);
+        cpu.pc = cpu.pc.wrapping_add(1);
     }
 }
 
@@ -34,7 +34,7 @@ mod tests {
             },
             ..Default::default()
         };
-        cpu.execute(Instruction::ADC(ArithmeticTarget::C));
+        adc(ArithmeticTarget::C)(&mut cpu);
         assert_eq!(cpu.registers.a, 1);
     }
 
@@ -52,7 +52,7 @@ mod tests {
             },
             ..Default::default()
         };
-        cpu.execute(Instruction::ADC(ArithmeticTarget::C));
+        adc(ArithmeticTarget::C)(&mut cpu);
         assert_eq!(cpu.registers.a, 2);
     }
 
@@ -67,7 +67,7 @@ mod tests {
             },
             ..Default::default()
         };
-        cpu.execute(Instruction::ADC(ArithmeticTarget::C));
+        adc(ArithmeticTarget::C)(&mut cpu);
         assert_eq!(cpu.registers.a, 0);
     }
 
@@ -82,7 +82,7 @@ mod tests {
             },
             ..Default::default()
         };
-        cpu.execute(Instruction::ADC(ArithmeticTarget::C));
+        adc(ArithmeticTarget::C)(&mut cpu);
         assert!(cpu.registers.f.carry);
     }
 
@@ -97,7 +97,7 @@ mod tests {
             },
             ..Default::default()
         };
-        cpu.execute(Instruction::ADC(ArithmeticTarget::C));
+        adc(ArithmeticTarget::C)(&mut cpu);
         assert!(cpu.registers.f.zero);
     }
 
@@ -115,7 +115,7 @@ mod tests {
             },
             ..Default::default()
         };
-        cpu.execute(Instruction::ADC(ArithmeticTarget::C));
+        adc(ArithmeticTarget::C)(&mut cpu);
         assert!(!cpu.registers.f.subtract);
     }
 
@@ -130,7 +130,7 @@ mod tests {
             },
             ..Default::default()
         };
-        cpu.execute(Instruction::ADC(ArithmeticTarget::C));
+        adc(ArithmeticTarget::C)(&mut cpu);
         assert!(cpu.registers.f.half_carry);
     }
 
@@ -140,7 +140,7 @@ mod tests {
             pc: 123,
             ..Default::default()
         };
-        cpu.execute(Instruction::ADC(ArithmeticTarget::C));
+        adc(ArithmeticTarget::C)(&mut cpu);
         assert_eq!(cpu.pc, 124);
     }
 
@@ -150,7 +150,7 @@ mod tests {
             pc: 0xFFFF,
             ..Default::default()
         };
-        cpu.execute(Instruction::ADC(ArithmeticTarget::C));
+        adc(ArithmeticTarget::C)(&mut cpu);
         assert_eq!(cpu.pc, 0);
     }
 }

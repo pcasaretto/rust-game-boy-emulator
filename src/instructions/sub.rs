@@ -1,18 +1,18 @@
 use super::super::*;
 
-impl CPU {
-    pub fn sub(&mut self, target: ArithmeticTarget) {
-        let target_value = self.read_single_register(target);
-        let current_value = self.read_single_register(ArithmeticTarget::A);
+pub fn sub(target: ArithmeticTarget) -> impl Fn(&mut CPU) {
+    move |cpu: &mut CPU| {
+        let target_value = cpu.read_single_register(target);
+        let current_value = cpu.read_single_register(ArithmeticTarget::A);
         let (new_value, did_overflow) = current_value.overflowing_sub(target_value);
-        self.registers.a = new_value;
+        cpu.registers.a = new_value;
 
-        self.registers.f.carry = did_overflow;
-        self.registers.f.zero = new_value == 0;
-        self.registers.f.subtract = true;
-        self.registers.f.half_carry = (current_value & 0xF) < (target_value & 0xF);
+        cpu.registers.f.carry = did_overflow;
+        cpu.registers.f.zero = new_value == 0;
+        cpu.registers.f.subtract = true;
+        cpu.registers.f.half_carry = (current_value & 0xF) < (target_value & 0xF);
 
-        self.pc = self.pc.wrapping_add(1);
+        cpu.pc = cpu.pc.wrapping_add(1);
     }
 }
 
@@ -31,7 +31,7 @@ mod tests {
             },
             ..Default::default()
         };
-        cpu.execute(Instruction::SUB(ArithmeticTarget::C));
+        sub(ArithmeticTarget::C)(&mut cpu);
         assert_eq!(cpu.registers.a, 3);
     }
 
@@ -46,7 +46,7 @@ mod tests {
             },
             ..Default::default()
         };
-        cpu.execute(Instruction::SUB(ArithmeticTarget::C));
+        sub(ArithmeticTarget::C)(&mut cpu);
         assert_eq!(cpu.registers.a, 255);
     }
 
@@ -61,7 +61,7 @@ mod tests {
             },
             ..Default::default()
         };
-        cpu.execute(Instruction::SUB(ArithmeticTarget::C));
+        sub(ArithmeticTarget::C)(&mut cpu);
         assert!(cpu.registers.f.carry);
     }
 
@@ -76,7 +76,7 @@ mod tests {
             },
             ..Default::default()
         };
-        cpu.execute(Instruction::SUB(ArithmeticTarget::C));
+        sub(ArithmeticTarget::C)(&mut cpu);
         assert!(cpu.registers.f.zero);
     }
 
@@ -94,7 +94,7 @@ mod tests {
             },
             ..Default::default()
         };
-        cpu.execute(Instruction::SUB(ArithmeticTarget::C));
+        sub(ArithmeticTarget::C)(&mut cpu);
         assert!(cpu.registers.f.subtract);
     }
 
@@ -109,7 +109,7 @@ mod tests {
             },
             ..Default::default()
         };
-        cpu.execute(Instruction::SUB(ArithmeticTarget::C));
+        sub(ArithmeticTarget::C)(&mut cpu);
         assert!(cpu.registers.f.half_carry);
     }
 
@@ -119,7 +119,7 @@ mod tests {
             pc: 123,
             ..Default::default()
         };
-        cpu.execute(Instruction::SUB(ArithmeticTarget::C));
+        sub(ArithmeticTarget::C)(&mut cpu);
         assert_eq!(cpu.pc, 124);
     }
 
@@ -129,7 +129,7 @@ mod tests {
             pc: 0xFFFF,
             ..Default::default()
         };
-        cpu.execute(Instruction::SUB(ArithmeticTarget::C));
+        sub(ArithmeticTarget::C)(&mut cpu);
         assert_eq!(cpu.pc, 0);
     }
 }
