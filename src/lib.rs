@@ -152,6 +152,7 @@ impl Default for CPU {
 impl CPU {
     pub fn step(&mut self) {
         let instruction_byte = self.bus.read_byte(self.pc);
+        self.pc = self.pc.wrapping_add(1);
         let instruction = instructions::from_byte(instruction_byte);
         instruction(self)
     }

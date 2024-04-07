@@ -5,7 +5,7 @@ pub fn ld_d16_u16(reg: Register16bTarget) -> impl Fn(&mut CPU) {
         let low = cpu.bus.memory[(cpu.pc + 1) as usize];
         let high = cpu.bus.memory[(cpu.pc + 2) as usize];
         cpu.registers.set_u16(reg, u16::from_le_bytes([low, high]));
-        cpu.pc += 3;
+        cpu.pc = cpu.pc.wrapping_add(2);
     }
 }
 
@@ -13,7 +13,7 @@ pub fn ld_d8_u8(reg: RegisterTarget) -> impl Fn(&mut CPU) {
     move |cpu: &mut CPU| {
         let value = cpu.bus.memory[(cpu.pc + 1) as usize];
         cpu.registers.set_u8(reg, value);
-        cpu.pc += 2;
+        cpu.pc = cpu.pc.wrapping_add(1);
     }
 }
 
@@ -21,7 +21,16 @@ pub fn ld_r_r(src: RegisterTarget, dest: RegisterTarget) -> impl Fn(&mut CPU) {
     move |cpu: &mut CPU| {
         let value = cpu.registers.get_u8(src);
         cpu.registers.set_u8(dest, value);
-        cpu.pc += 1;
+    }
+}
+
+pub fn ld_hl_inc() -> impl Fn(&mut CPU) {
+    move |cpu: &mut CPU| {
+        let hl = cpu.registers.get_u16(Register16bTarget::HL);
+        let value = cpu.bus.memory[hl as usize];
+        cpu.registers.set_u8(RegisterTarget::A, value);
+        cpu.registers
+            .set_u16(Register16bTarget::HL, hl.wrapping_add(1));
     }
 }
 
@@ -37,7 +46,7 @@ mod tests {
         cpu.bus.memory[2] = 0x02;
         ld_d16_u16(Register16bTarget::BC)(&mut cpu);
         assert_eq!(cpu.registers.get_u16(Register16bTarget::BC), 0x0201);
-        assert_eq!(cpu.pc, 3);
+        assert_eq!(cpu.pc, 2);
     }
 
     #[test]
@@ -52,7 +61,6 @@ mod tests {
         };
         ld_r_r(RegisterTarget::B, RegisterTarget::A)(&mut cpu);
         assert_eq!(cpu.registers.get_u8(RegisterTarget::A), 0x01);
-        assert_eq!(cpu.pc, 1);
     }
 
     #[test]
@@ -61,6 +69,16 @@ mod tests {
         cpu.bus.memory[1] = 0x01;
         ld_d8_u8(RegisterTarget::B)(&mut cpu);
         assert_eq!(cpu.registers.get_u8(RegisterTarget::B), 0x01);
-        assert_eq!(cpu.pc, 2);
+        assert_eq!(cpu.pc, 1);
+    }
+
+    #[test]
+    fn test_ld_hl_inc() {
+        let mut cpu = CPU::default();
+        cpu.registers.set_u16(Register16bTarget::HL, 0x1000);
+        cpu.bus.memory[0x1000] = 0x01;
+        ld_hl_inc()(&mut cpu);
+        assert_eq!(cpu.registers.get_u8(RegisterTarget::A), 0x01);
+        assert_eq!(cpu.registers.get_u16(Register16bTarget::HL), 0x1001);
     }
 }

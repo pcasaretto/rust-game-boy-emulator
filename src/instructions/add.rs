@@ -11,8 +11,6 @@ pub fn add(target: RegisterTarget) -> impl Fn(&mut CPU) {
         cpu.registers.f.zero = new_value == 0;
         cpu.registers.f.subtract = false;
         cpu.registers.f.half_carry = (current_value & 0xF) + (target_value & 0xF) > 0xF;
-
-        cpu.pc = cpu.pc.wrapping_add(1);
     }
 }
 
@@ -111,25 +109,5 @@ mod tests {
         };
         add(RegisterTarget::C)(&mut cpu);
         assert!(cpu.registers.f.half_carry);
-    }
-
-    #[test]
-    fn test_add_advance_pc() {
-        let mut cpu = CPU {
-            pc: 123,
-            ..Default::default()
-        };
-        add(RegisterTarget::C)(&mut cpu);
-        assert_eq!(cpu.pc, 124);
-    }
-
-    #[test]
-    fn test_add_advance_pc_wrap() {
-        let mut cpu = CPU {
-            pc: 0xFFFF,
-            ..Default::default()
-        };
-        add(RegisterTarget::C)(&mut cpu);
-        assert_eq!(cpu.pc, 0);
     }
 }
