@@ -11,6 +11,8 @@ use super::*;
 pub fn from_byte(byte: u8) -> Box<dyn Fn(&mut CPU)> {
     match byte {
         0x00 => Box::new(nop::nop()),
+        0x01 => Box::new(ld::ld_d16_u16(Register16bTarget::BC)),
+        0x11 => Box::new(ld::ld_d16_u16(Register16bTarget::DE)),
         0x21 => Box::new(ld::ld_d16_u16(Register16bTarget::HL)),
         0x33 => Box::new(inc::inc_sp()),
         0x40 => Box::new(ld::ld_r_r(RegisterTarget::B, RegisterTarget::B)),
