@@ -17,6 +17,7 @@ pub enum Register16bTarget {
     BC,
     DE,
     HL,
+    SP,
 }
 
 #[derive(Default)]
@@ -29,6 +30,7 @@ pub struct Registers {
     pub h: u8,
     pub l: u8,
     pub f: FlagsRegister,
+    sp: u16,
 }
 
 impl Registers {
@@ -61,6 +63,7 @@ impl Registers {
             Register16bTarget::BC => u16::from_be_bytes([self.b, self.c]),
             Register16bTarget::DE => u16::from_be_bytes([self.d, self.e]),
             Register16bTarget::HL => u16::from_be_bytes([self.h, self.l]),
+            Register16bTarget::SP => self.sp,
         }
     }
 
@@ -79,6 +82,7 @@ impl Registers {
                 self.h = high;
                 self.l = low;
             }
+            Register16bTarget::SP => self.sp = value,
         }
     }
 }

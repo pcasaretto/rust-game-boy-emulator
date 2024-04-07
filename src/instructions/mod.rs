@@ -1,6 +1,7 @@
 mod adc;
 mod add;
 mod inc;
+mod int;
 mod jmp;
 mod ld;
 mod nop;
@@ -32,6 +33,7 @@ pub fn from_byte(byte: u8) -> Box<dyn Fn(&mut CPU)> {
 
         0x20 => Box::new(jmp::jr_nz()),
 
+        0x31 => Box::new(ld::ld_d16_u16(Register16bTarget::SP)),
         0x21 => Box::new(ld::ld_d16_u16(Register16bTarget::HL)),
         0x06 => Box::new(ld::ld_d8_u8(RegisterTarget::B)),
         0x16 => Box::new(ld::ld_d8_u8(RegisterTarget::B)),
@@ -127,6 +129,8 @@ pub fn from_byte(byte: u8) -> Box<dyn Fn(&mut CPU)> {
         0x93 => Box::new(sub::sub(RegisterTarget::E)),
         0x94 => Box::new(sub::sub(RegisterTarget::H)),
         0x95 => Box::new(sub::sub(RegisterTarget::L)),
+
+        0xF3 => Box::new(int::di()),
 
         other => {
             panic!("Unsupported instruction {:X}", other)
