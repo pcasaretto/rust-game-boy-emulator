@@ -1,5 +1,6 @@
 mod adc;
 mod add;
+mod jmp;
 mod nop;
 mod sub;
 
@@ -29,6 +30,7 @@ pub fn from_byte(byte: u8) -> Box<dyn Fn(&mut CPU)> {
         0x93 => Box::new(sub::sub(ArithmeticTarget::E)),
         0x94 => Box::new(sub::sub(ArithmeticTarget::H)),
         0x95 => Box::new(sub::sub(ArithmeticTarget::L)),
+        0xC3 => Box::new(jmp::jmp_a16()),
 
         other => {
             panic!("Unsupported instruction {:?}", other)
