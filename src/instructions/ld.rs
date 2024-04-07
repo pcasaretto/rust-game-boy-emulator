@@ -1,4 +1,4 @@
-use crate::{Register16bTarget, CPU};
+use crate::{Register16bTarget, RegisterTarget, CPU};
 
 pub fn ld_d16_u16(reg: Register16bTarget) -> impl Fn(&mut CPU) {
     move |cpu: &mut CPU| {
@@ -9,9 +9,18 @@ pub fn ld_d16_u16(reg: Register16bTarget) -> impl Fn(&mut CPU) {
     }
 }
 
+pub fn ld_r_r(src: RegisterTarget, dest: RegisterTarget) -> impl Fn(&mut CPU) {
+    move |cpu: &mut CPU| {
+        let value = cpu.registers.get_u8(src);
+        cpu.registers.set_u8(dest, value);
+        cpu.pc += 1;
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::Registers;
 
     #[test]
     fn test_ld_d16_u16() {
@@ -21,5 +30,20 @@ mod tests {
         ld_d16_u16(Register16bTarget::BC)(&mut cpu);
         assert_eq!(cpu.registers.get_u16(Register16bTarget::BC), 0x0201);
         assert_eq!(cpu.pc, 3);
+    }
+
+    #[test]
+    fn test_ld_r_r() {
+        let mut cpu = CPU {
+            registers: Registers {
+                a: 0,
+                b: 1,
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        ld_r_r(RegisterTarget::B, RegisterTarget::A)(&mut cpu);
+        assert_eq!(cpu.registers.get_u8(RegisterTarget::A), 0x01);
+        assert_eq!(cpu.pc, 1);
     }
 }

@@ -31,6 +31,30 @@ pub struct Registers {
 }
 
 impl Registers {
+    pub fn get_u8(&self, target: RegisterTarget) -> u8 {
+        match target {
+            RegisterTarget::A => self.a,
+            RegisterTarget::B => self.b,
+            RegisterTarget::C => self.c,
+            RegisterTarget::D => self.d,
+            RegisterTarget::E => self.e,
+            RegisterTarget::H => self.h,
+            RegisterTarget::L => self.l,
+        }
+    }
+
+    pub fn set_u8(&mut self, target: RegisterTarget, value: u8) {
+        match target {
+            RegisterTarget::A => self.a = value,
+            RegisterTarget::B => self.b = value,
+            RegisterTarget::C => self.c = value,
+            RegisterTarget::D => self.d = value,
+            RegisterTarget::E => self.e = value,
+            RegisterTarget::H => self.h = value,
+            RegisterTarget::L => self.l = value,
+        }
+    }
+
     pub fn get_u16(&self, target: Register16bTarget) -> u16 {
         match target {
             Register16bTarget::BC => u16::from_be_bytes([self.b, self.c]),
