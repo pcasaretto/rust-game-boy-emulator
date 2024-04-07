@@ -1,9 +1,9 @@
 use super::super::*;
 
-pub fn sub(target: ArithmeticTarget) -> impl Fn(&mut CPU) {
+pub fn sub(target: RegisterTarget) -> impl Fn(&mut CPU) {
     move |cpu: &mut CPU| {
         let target_value = cpu.read_single_register(target);
-        let current_value = cpu.read_single_register(ArithmeticTarget::A);
+        let current_value = cpu.read_single_register(RegisterTarget::A);
         let (new_value, did_overflow) = current_value.overflowing_sub(target_value);
         cpu.registers.a = new_value;
 
@@ -31,7 +31,7 @@ mod tests {
             },
             ..Default::default()
         };
-        sub(ArithmeticTarget::C)(&mut cpu);
+        sub(RegisterTarget::C)(&mut cpu);
         assert_eq!(cpu.registers.a, 3);
     }
 
@@ -46,7 +46,7 @@ mod tests {
             },
             ..Default::default()
         };
-        sub(ArithmeticTarget::C)(&mut cpu);
+        sub(RegisterTarget::C)(&mut cpu);
         assert_eq!(cpu.registers.a, 255);
     }
 
@@ -61,7 +61,7 @@ mod tests {
             },
             ..Default::default()
         };
-        sub(ArithmeticTarget::C)(&mut cpu);
+        sub(RegisterTarget::C)(&mut cpu);
         assert!(cpu.registers.f.carry);
     }
 
@@ -76,7 +76,7 @@ mod tests {
             },
             ..Default::default()
         };
-        sub(ArithmeticTarget::C)(&mut cpu);
+        sub(RegisterTarget::C)(&mut cpu);
         assert!(cpu.registers.f.zero);
     }
 
@@ -94,7 +94,7 @@ mod tests {
             },
             ..Default::default()
         };
-        sub(ArithmeticTarget::C)(&mut cpu);
+        sub(RegisterTarget::C)(&mut cpu);
         assert!(cpu.registers.f.subtract);
     }
 
@@ -109,7 +109,7 @@ mod tests {
             },
             ..Default::default()
         };
-        sub(ArithmeticTarget::C)(&mut cpu);
+        sub(RegisterTarget::C)(&mut cpu);
         assert!(cpu.registers.f.half_carry);
     }
 
@@ -119,7 +119,7 @@ mod tests {
             pc: 123,
             ..Default::default()
         };
-        sub(ArithmeticTarget::C)(&mut cpu);
+        sub(RegisterTarget::C)(&mut cpu);
         assert_eq!(cpu.pc, 124);
     }
 
@@ -129,7 +129,7 @@ mod tests {
             pc: 0xFFFF,
             ..Default::default()
         };
-        sub(ArithmeticTarget::C)(&mut cpu);
+        sub(RegisterTarget::C)(&mut cpu);
         assert_eq!(cpu.pc, 0);
     }
 }

@@ -1,7 +1,7 @@
 mod instructions;
 
 #[derive(Debug, Copy, Clone)]
-pub enum ArithmeticTarget {
+pub enum RegisterTarget {
     A,
     B,
     C,
@@ -9,6 +9,13 @@ pub enum ArithmeticTarget {
     E,
     H,
     L,
+}
+
+#[derive(Debug, Copy, Clone)]
+pub enum Register16bTarget {
+    BC,
+    DE,
+    HL,
 }
 
 #[derive(Default)]
@@ -21,6 +28,34 @@ pub struct Registers {
     pub h: u8,
     pub l: u8,
     pub f: FlagsRegister,
+}
+
+impl Registers {
+    pub fn get_u16(&self, target: Register16bTarget) -> u16 {
+        match target {
+            Register16bTarget::BC => u16::from_be_bytes([self.b, self.c]),
+            Register16bTarget::DE => u16::from_be_bytes([self.d, self.e]),
+            Register16bTarget::HL => u16::from_be_bytes([self.h, self.l]),
+        }
+    }
+
+    pub fn set_u16(&mut self, target: Register16bTarget, value: u16) {
+        let [high, low] = value.to_be_bytes();
+        match target {
+            Register16bTarget::BC => {
+                self.b = high;
+                self.c = low;
+            }
+            Register16bTarget::DE => {
+                self.d = high;
+                self.e = low;
+            }
+            Register16bTarget::HL => {
+                self.h = high;
+                self.l = low;
+            }
+        }
+    }
 }
 
 #[derive(Default)]
@@ -97,15 +132,15 @@ impl CPU {
         instruction(self)
     }
 
-    fn read_single_register(&self, target: ArithmeticTarget) -> u8 {
+    fn read_single_register(&self, target: RegisterTarget) -> u8 {
         match target {
-            ArithmeticTarget::A => self.registers.a,
-            ArithmeticTarget::B => self.registers.a,
-            ArithmeticTarget::C => self.registers.c,
-            ArithmeticTarget::D => self.registers.d,
-            ArithmeticTarget::E => self.registers.e,
-            ArithmeticTarget::H => self.registers.h,
-            ArithmeticTarget::L => self.registers.l,
+            RegisterTarget::A => self.registers.a,
+            RegisterTarget::B => self.registers.a,
+            RegisterTarget::C => self.registers.c,
+            RegisterTarget::D => self.registers.d,
+            RegisterTarget::E => self.registers.e,
+            RegisterTarget::H => self.registers.h,
+            RegisterTarget::L => self.registers.l,
             other => panic!("Unsupported target: {:?}", other),
         }
     }

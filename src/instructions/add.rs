@@ -1,6 +1,6 @@
 use super::super::*;
 
-pub fn add(target: ArithmeticTarget) -> impl Fn(&mut CPU) {
+pub fn add(target: RegisterTarget) -> impl Fn(&mut CPU) {
     move |cpu: &mut CPU| {
         let target_value = cpu.read_single_register(target);
         let current_value = cpu.registers.a;
@@ -31,7 +31,7 @@ mod tests {
             },
             ..Default::default()
         };
-        add(ArithmeticTarget::C)(&mut cpu);
+        add(RegisterTarget::C)(&mut cpu);
         assert_eq!(cpu.registers.a, 1);
     }
 
@@ -46,7 +46,7 @@ mod tests {
             },
             ..Default::default()
         };
-        add(ArithmeticTarget::C)(&mut cpu);
+        add(RegisterTarget::C)(&mut cpu);
         assert_eq!(cpu.registers.a, 0);
     }
 
@@ -61,7 +61,7 @@ mod tests {
             },
             ..Default::default()
         };
-        add(ArithmeticTarget::C)(&mut cpu);
+        add(RegisterTarget::C)(&mut cpu);
         assert!(cpu.registers.f.carry);
     }
 
@@ -76,7 +76,7 @@ mod tests {
             },
             ..Default::default()
         };
-        add(ArithmeticTarget::C)(&mut cpu);
+        add(RegisterTarget::C)(&mut cpu);
         assert!(cpu.registers.f.zero);
     }
 
@@ -94,7 +94,7 @@ mod tests {
             },
             ..Default::default()
         };
-        add(ArithmeticTarget::C)(&mut cpu);
+        add(RegisterTarget::C)(&mut cpu);
         assert!(!cpu.registers.f.subtract);
     }
 
@@ -109,7 +109,7 @@ mod tests {
             },
             ..Default::default()
         };
-        add(ArithmeticTarget::C)(&mut cpu);
+        add(RegisterTarget::C)(&mut cpu);
         assert!(cpu.registers.f.half_carry);
     }
 
@@ -119,7 +119,7 @@ mod tests {
             pc: 123,
             ..Default::default()
         };
-        add(ArithmeticTarget::C)(&mut cpu);
+        add(RegisterTarget::C)(&mut cpu);
         assert_eq!(cpu.pc, 124);
     }
 
@@ -129,7 +129,7 @@ mod tests {
             pc: 0xFFFF,
             ..Default::default()
         };
-        add(ArithmeticTarget::C)(&mut cpu);
+        add(RegisterTarget::C)(&mut cpu);
         assert_eq!(cpu.pc, 0);
     }
 }

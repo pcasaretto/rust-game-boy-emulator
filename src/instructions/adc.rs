@@ -1,6 +1,6 @@
 use super::super::*;
 
-pub fn adc(target: ArithmeticTarget) -> impl Fn(&mut CPU) {
+pub fn adc(target: RegisterTarget) -> impl Fn(&mut CPU) {
     move |cpu: &mut CPU| {
         let mut target_value = cpu.read_single_register(target);
         let current_value = cpu.registers.a;
@@ -34,7 +34,7 @@ mod tests {
             },
             ..Default::default()
         };
-        adc(ArithmeticTarget::C)(&mut cpu);
+        adc(RegisterTarget::C)(&mut cpu);
         assert_eq!(cpu.registers.a, 1);
     }
 
@@ -52,7 +52,7 @@ mod tests {
             },
             ..Default::default()
         };
-        adc(ArithmeticTarget::C)(&mut cpu);
+        adc(RegisterTarget::C)(&mut cpu);
         assert_eq!(cpu.registers.a, 2);
     }
 
@@ -67,7 +67,7 @@ mod tests {
             },
             ..Default::default()
         };
-        adc(ArithmeticTarget::C)(&mut cpu);
+        adc(RegisterTarget::C)(&mut cpu);
         assert_eq!(cpu.registers.a, 0);
     }
 
@@ -82,7 +82,7 @@ mod tests {
             },
             ..Default::default()
         };
-        adc(ArithmeticTarget::C)(&mut cpu);
+        adc(RegisterTarget::C)(&mut cpu);
         assert!(cpu.registers.f.carry);
     }
 
@@ -97,7 +97,7 @@ mod tests {
             },
             ..Default::default()
         };
-        adc(ArithmeticTarget::C)(&mut cpu);
+        adc(RegisterTarget::C)(&mut cpu);
         assert!(cpu.registers.f.zero);
     }
 
@@ -115,7 +115,7 @@ mod tests {
             },
             ..Default::default()
         };
-        adc(ArithmeticTarget::C)(&mut cpu);
+        adc(RegisterTarget::C)(&mut cpu);
         assert!(!cpu.registers.f.subtract);
     }
 
@@ -130,7 +130,7 @@ mod tests {
             },
             ..Default::default()
         };
-        adc(ArithmeticTarget::C)(&mut cpu);
+        adc(RegisterTarget::C)(&mut cpu);
         assert!(cpu.registers.f.half_carry);
     }
 
@@ -140,7 +140,7 @@ mod tests {
             pc: 123,
             ..Default::default()
         };
-        adc(ArithmeticTarget::C)(&mut cpu);
+        adc(RegisterTarget::C)(&mut cpu);
         assert_eq!(cpu.pc, 124);
     }
 
@@ -150,7 +150,7 @@ mod tests {
             pc: 0xFFFF,
             ..Default::default()
         };
-        adc(ArithmeticTarget::C)(&mut cpu);
+        adc(RegisterTarget::C)(&mut cpu);
         assert_eq!(cpu.pc, 0);
     }
 }
