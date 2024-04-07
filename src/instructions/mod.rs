@@ -1,5 +1,6 @@
 mod adc;
 mod add;
+mod inc;
 mod jmp;
 mod nop;
 mod sub;
@@ -9,6 +10,7 @@ use super::*;
 pub fn from_byte(byte: u8) -> Box<dyn Fn(&mut CPU)> {
     match byte {
         0x00 => Box::new(nop::nop()),
+        0x33 => Box::new(inc::inc_sp()),
         0x87 => Box::new(add::add(ArithmeticTarget::A)),
         0x80 => Box::new(add::add(ArithmeticTarget::B)),
         0x81 => Box::new(add::add(ArithmeticTarget::C)),
@@ -33,7 +35,7 @@ pub fn from_byte(byte: u8) -> Box<dyn Fn(&mut CPU)> {
         0xC3 => Box::new(jmp::jmp_a16()),
 
         other => {
-            panic!("Unsupported instruction {:?}", other)
+            panic!("Unsupported instruction {:X}", other)
         }
     }
 }
