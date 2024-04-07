@@ -34,6 +34,14 @@ pub fn ld_hl_inc() -> impl Fn(&mut CPU) {
     }
 }
 
+pub fn ld_mem_at_u16_r(reg: Register16bTarget, target: RegisterTarget) -> impl Fn(&mut CPU) {
+    move |cpu: &mut CPU| {
+        let addr = cpu.registers.get_u16(reg);
+        let value = cpu.registers.get_u8(target);
+        cpu.bus.memory[addr as usize] = value;
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -80,5 +88,14 @@ mod tests {
         ld_hl_inc()(&mut cpu);
         assert_eq!(cpu.registers.get_u8(RegisterTarget::A), 0x01);
         assert_eq!(cpu.registers.get_u16(Register16bTarget::HL), 0x1001);
+    }
+
+    #[test]
+    fn test_ld_mem_at_u16_r() {
+        let mut cpu = CPU::default();
+        cpu.registers.set_u16(Register16bTarget::BC, 0x1000);
+        cpu.registers.set_u8(RegisterTarget::A, 0x34);
+        ld_mem_at_u16_r(Register16bTarget::BC, RegisterTarget::A)(&mut cpu);
+        assert_eq!(cpu.bus.memory[0x1000], 0x34);
     }
 }
