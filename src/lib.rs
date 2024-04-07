@@ -1,5 +1,5 @@
 #[derive(Debug)]
-enum Instruction {
+pub enum Instruction {
     ADC(ArithmeticTarget),
     ADD(ArithmeticTarget),
     NOP,
@@ -7,7 +7,7 @@ enum Instruction {
 }
 
 #[derive(Debug)]
-enum ArithmeticTarget {
+pub enum ArithmeticTarget {
     A,
     B,
     C,
