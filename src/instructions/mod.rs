@@ -21,6 +21,15 @@ pub fn from_byte(byte: u8) -> Box<dyn Fn(&mut CPU)> {
             RegisterTarget::A,
         )),
         0x11 => Box::new(ld::ld_d16_u16(Register16bTarget::DE)),
+
+        0x04 => Box::new(inc::inc_r(RegisterTarget::B)),
+        0x14 => Box::new(inc::inc_r(RegisterTarget::D)),
+        0x24 => Box::new(inc::inc_r(RegisterTarget::H)),
+        0x0C => Box::new(inc::inc_r(RegisterTarget::C)),
+        0x1C => Box::new(inc::inc_r(RegisterTarget::E)),
+        0x2C => Box::new(inc::inc_r(RegisterTarget::L)),
+        0x3C => Box::new(inc::inc_r(RegisterTarget::A)),
+
         0x21 => Box::new(ld::ld_d16_u16(Register16bTarget::HL)),
         0x06 => Box::new(ld::ld_d8_u8(RegisterTarget::B)),
         0x16 => Box::new(ld::ld_d8_u8(RegisterTarget::B)),

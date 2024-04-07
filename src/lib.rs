@@ -1,4 +1,5 @@
 mod instructions;
+use log;
 
 #[derive(Debug, Copy, Clone)]
 pub enum RegisterTarget {
@@ -154,13 +155,18 @@ impl CPU {
         let instruction_byte = self.bus.read_byte(self.pc);
         self.pc = self.pc.wrapping_add(1);
         let instruction = instructions::from_byte(instruction_byte);
-        instruction(self)
+        instruction(self);
+        log::debug!(
+            "Executed instruction {:2X}, new PC is {:4X}",
+            instruction_byte,
+            self.pc
+        );
     }
 
     fn read_single_register(&self, target: RegisterTarget) -> u8 {
         match target {
             RegisterTarget::A => self.registers.a,
-            RegisterTarget::B => self.registers.a,
+            RegisterTarget::B => self.registers.b,
             RegisterTarget::C => self.registers.c,
             RegisterTarget::D => self.registers.d,
             RegisterTarget::E => self.registers.e,

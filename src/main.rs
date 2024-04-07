@@ -1,8 +1,11 @@
+use env_logger;
 use rust_game_boy_emulator::CPU;
 use std::fs::OpenOptions;
 use std::io::prelude::*;
 
 fn main() {
+    env_logger::init();
+
     let mut cartridge = vec![0; 0x200000];
 
     // load cartdrige file from command line argument
