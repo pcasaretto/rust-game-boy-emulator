@@ -1,9 +1,5 @@
 use crate::{RegisterTarget, CPU};
 
-pub fn inc_sp() -> impl Fn(&mut CPU) {
-    move |_: &mut CPU| {}
-}
-
 pub fn inc_r(target: RegisterTarget) -> impl Fn(&mut CPU) {
     move |cpu: &mut CPU| {
         let current_value = cpu.read_single_register(target);

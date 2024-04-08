@@ -1,6 +1,6 @@
 use super::super::*;
 
-pub fn sub(target: RegisterTarget) -> impl Fn(&mut CPU) {
+pub fn sub_r_r_a(target: RegisterTarget) -> impl Fn(&mut CPU) {
     move |cpu: &mut CPU| {
         let target_value = cpu.read_single_register(target);
         let current_value = cpu.read_single_register(RegisterTarget::A);
@@ -11,8 +11,20 @@ pub fn sub(target: RegisterTarget) -> impl Fn(&mut CPU) {
         cpu.registers.f.zero = new_value == 0;
         cpu.registers.f.subtract = true;
         cpu.registers.f.half_carry = (current_value & 0xF) < (target_value & 0xF);
+    }
+}
 
-        cpu.pc = cpu.pc.wrapping_add(1);
+pub fn sub_d8() -> impl Fn(&mut CPU) {
+    move |cpu: &mut CPU| {
+        let d8 = cpu.bus.memory[cpu.pc as usize + 1];
+        let current_value = cpu.read_single_register(RegisterTarget::A);
+        let (new_value, did_overflow) = current_value.overflowing_sub(d8);
+        cpu.registers.a = new_value;
+
+        cpu.registers.f.carry = did_overflow;
+        cpu.registers.f.zero = new_value == 0;
+        cpu.registers.f.subtract = true;
+        cpu.registers.f.half_carry = (current_value & 0xF) < (d8 & 0xF);
     }
 }
 
@@ -31,7 +43,7 @@ mod tests {
             },
             ..Default::default()
         };
-        sub(RegisterTarget::C)(&mut cpu);
+        sub_r_r_a(RegisterTarget::C)(&mut cpu);
         assert_eq!(cpu.registers.a, 3);
     }
 
@@ -46,7 +58,7 @@ mod tests {
             },
             ..Default::default()
         };
-        sub(RegisterTarget::C)(&mut cpu);
+        sub_r_r_a(RegisterTarget::C)(&mut cpu);
         assert_eq!(cpu.registers.a, 255);
     }
 
@@ -61,7 +73,7 @@ mod tests {
             },
             ..Default::default()
         };
-        sub(RegisterTarget::C)(&mut cpu);
+        sub_r_r_a(RegisterTarget::C)(&mut cpu);
         assert!(cpu.registers.f.carry);
     }
 
@@ -76,7 +88,7 @@ mod tests {
             },
             ..Default::default()
         };
-        sub(RegisterTarget::C)(&mut cpu);
+        sub_r_r_a(RegisterTarget::C)(&mut cpu);
         assert!(cpu.registers.f.zero);
     }
 
@@ -94,7 +106,7 @@ mod tests {
             },
             ..Default::default()
         };
-        sub(RegisterTarget::C)(&mut cpu);
+        sub_r_r_a(RegisterTarget::C)(&mut cpu);
         assert!(cpu.registers.f.subtract);
     }
 
@@ -109,27 +121,103 @@ mod tests {
             },
             ..Default::default()
         };
-        sub(RegisterTarget::C)(&mut cpu);
+        sub_r_r_a(RegisterTarget::C)(&mut cpu);
         assert!(cpu.registers.f.half_carry);
     }
 
     #[test]
-    fn test_sub_advance_pc() {
+    fn test_sub_d8() {
         let mut cpu = CPU {
-            pc: 123,
+            pc: 0x0012,
+            registers: Registers {
+                a: 4,
+                f: FlagsRegister::from(0),
+                ..Default::default()
+            },
             ..Default::default()
         };
-        sub(RegisterTarget::C)(&mut cpu);
-        assert_eq!(cpu.pc, 124);
+        cpu.bus.memory[0x0013] = 1;
+        sub_d8()(&mut cpu);
+        assert_eq!(cpu.registers.a, 3);
     }
 
     #[test]
-    fn test_sub_advance_pc_wrap() {
+    fn test_sub_d8_overflow() {
         let mut cpu = CPU {
-            pc: 0xFFFF,
+            pc: 0x0012,
+            registers: Registers {
+                a: 4,
+                f: FlagsRegister::from(0),
+                ..Default::default()
+            },
             ..Default::default()
         };
-        sub(RegisterTarget::C)(&mut cpu);
-        assert_eq!(cpu.pc, 0);
+        cpu.bus.memory[0x0013] = 5;
+        sub_d8()(&mut cpu);
+        assert_eq!(cpu.registers.a, 255);
+    }
+
+    #[test]
+    fn test_sub_d8_carry_flag() {
+        let mut cpu = CPU {
+            pc: 0x0012,
+            registers: Registers {
+                a: 4,
+                f: FlagsRegister::from(0),
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        cpu.bus.memory[0x0013] = 5;
+        sub_d8()(&mut cpu);
+        assert!(cpu.registers.f.carry);
+    }
+
+    #[test]
+    fn test_sub_d8_zero_flag() {
+        let mut cpu = CPU {
+            pc: 0x0012,
+            registers: Registers {
+                a: 5,
+                f: FlagsRegister::from(0),
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        cpu.bus.memory[0x0013] = 5;
+        sub_d8()(&mut cpu);
+        assert!(cpu.registers.f.zero);
+    }
+
+    #[test]
+    fn test_sub_d8_substract_flag() {
+        let mut cpu = CPU {
+            pc: 0x0012,
+            registers: Registers {
+                a: 5,
+                f: FlagsRegister::from(0),
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        cpu.bus.memory[0x0013] = 5;
+        sub_d8()(&mut cpu);
+        assert!(cpu.registers.f.subtract);
+    }
+
+    #[test]
+    fn test_sub_d8_half_carry_flag() {
+        let mut cpu = CPU {
+            pc: 0x0012,
+            registers: Registers {
+                a: 0b00010000,
+                f: FlagsRegister::from(0),
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        cpu.bus.memory[0x0013] = 1;
+        sub_d8()(&mut cpu);
+        assert!(cpu.registers.f.half_carry);
     }
 }

@@ -176,7 +176,6 @@ impl CPU {
             RegisterTarget::E => self.registers.e,
             RegisterTarget::H => self.registers.h,
             RegisterTarget::L => self.registers.l,
-            other => panic!("Unsupported target: {:?}", other),
         }
     }
 }

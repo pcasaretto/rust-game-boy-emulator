@@ -5,6 +5,4 @@ pub fn nop() -> impl Fn(&mut CPU) {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-}
+mod tests {}

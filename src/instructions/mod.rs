@@ -122,13 +122,15 @@ pub fn from_byte(byte: u8) -> Box<dyn Fn(&mut CPU)> {
         0x8B => Box::new(adc::adc(RegisterTarget::E)),
         0x8C => Box::new(adc::adc(RegisterTarget::H)),
         0x8D => Box::new(adc::adc(RegisterTarget::L)),
-        0x97 => Box::new(sub::sub(RegisterTarget::A)),
-        0x90 => Box::new(sub::sub(RegisterTarget::B)),
-        0x91 => Box::new(sub::sub(RegisterTarget::C)),
-        0x92 => Box::new(sub::sub(RegisterTarget::D)),
-        0x93 => Box::new(sub::sub(RegisterTarget::E)),
-        0x94 => Box::new(sub::sub(RegisterTarget::H)),
-        0x95 => Box::new(sub::sub(RegisterTarget::L)),
+        0x97 => Box::new(sub::sub_r_r_a(RegisterTarget::A)),
+        0x90 => Box::new(sub::sub_r_r_a(RegisterTarget::B)),
+        0x91 => Box::new(sub::sub_r_r_a(RegisterTarget::C)),
+        0x92 => Box::new(sub::sub_r_r_a(RegisterTarget::D)),
+        0x93 => Box::new(sub::sub_r_r_a(RegisterTarget::E)),
+        0x94 => Box::new(sub::sub_r_r_a(RegisterTarget::H)),
+        0x95 => Box::new(sub::sub_r_r_a(RegisterTarget::L)),
+
+        0xD6 => Box::new(sub::sub_d8()),
 
         0xEA => Box::new(ld::ld_u_16_r(RegisterTarget::A)),
 
