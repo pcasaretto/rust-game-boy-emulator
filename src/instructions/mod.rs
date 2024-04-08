@@ -135,6 +135,7 @@ pub fn from_byte(byte: u8) -> Box<dyn Fn(&mut CPU)> {
         0xEA => Box::new(ld::ld_u_16_r(RegisterTarget::A)),
 
         0xF3 => Box::new(int::di()),
+        0xFB => Box::new(int::ei()),
 
         other => {
             panic!("Unsupported instruction {:X}", other)
