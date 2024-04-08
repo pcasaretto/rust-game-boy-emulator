@@ -1,5 +1,6 @@
 mod adc;
 mod add;
+mod dec;
 mod inc;
 mod int;
 mod jmp;
@@ -30,6 +31,14 @@ pub fn from_byte(byte: u8) -> Box<dyn Fn(&mut CPU)> {
         0x1C => Box::new(inc::inc_r(RegisterTarget::E)),
         0x2C => Box::new(inc::inc_r(RegisterTarget::L)),
         0x3C => Box::new(inc::inc_r(RegisterTarget::A)),
+
+        0x05 => Box::new(inc::inc_r(RegisterTarget::B)),
+        0x15 => Box::new(inc::inc_r(RegisterTarget::D)),
+        0x25 => Box::new(inc::inc_r(RegisterTarget::H)),
+        0x0D => Box::new(dec::dec_r(RegisterTarget::C)),
+        0x1D => Box::new(dec::dec_r(RegisterTarget::E)),
+        0x2D => Box::new(dec::dec_r(RegisterTarget::L)),
+        0x3D => Box::new(dec::dec_r(RegisterTarget::A)),
 
         0x20 => Box::new(jmp::jr_nz()),
 
