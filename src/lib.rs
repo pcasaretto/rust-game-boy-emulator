@@ -133,7 +133,7 @@ pub struct CPU {
 }
 
 pub struct MemoryBus {
-    pub memory: [u8; 0xFFFF],
+    pub memory: [u8; 0x10000],
 }
 
 impl MemoryBus {
@@ -152,7 +152,7 @@ impl Default for CPU {
             registers: Registers::default(),
             pc: 0,
             bus: MemoryBus {
-                memory: [0; 0xFFFF],
+                memory: [0; 0x10000],
             },
         }
     }
@@ -162,12 +162,12 @@ impl CPU {
     pub fn step(&mut self) {
         let instruction_byte = self.read_next_byte();
         let instruction = instructions::from_byte(instruction_byte);
-        instruction(self);
         log::debug!(
-            "Executed instruction {:2X}, new PC is {:4X}",
+            "Executing instruction {:2X}, new PC is {:4X}",
             instruction_byte,
             self.pc
         );
+        instruction(self);
     }
 
     fn read_single_register(&self, target: RegisterTarget) -> u8 {
