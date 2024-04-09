@@ -2,7 +2,7 @@ use super::super::*;
 
 pub fn add(target: RegisterTarget) -> impl Fn(&mut CPU) {
     move |cpu: &mut CPU| {
-        let target_value = cpu.read_single_register(target);
+        let target_value = cpu.registers.get_u8(target);
         let current_value = cpu.registers.a;
         let (new_value, did_overflow) = current_value.overflowing_add(target_value);
         cpu.registers.a = new_value;

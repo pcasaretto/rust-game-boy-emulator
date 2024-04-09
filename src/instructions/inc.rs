@@ -1,8 +1,8 @@
-use crate::{RegisterTarget, CPU};
+use crate::{Register16bTarget, RegisterTarget, CPU};
 
 pub fn inc_r(target: RegisterTarget) -> impl Fn(&mut CPU) {
     move |cpu: &mut CPU| {
-        let current_value = cpu.read_single_register(target);
+        let current_value = cpu.registers.get_u8(target);
         let (new_value, did_overflow) = current_value.overflowing_add(1);
         cpu.registers.set_u8(target, new_value);
 
@@ -10,6 +10,14 @@ pub fn inc_r(target: RegisterTarget) -> impl Fn(&mut CPU) {
         cpu.registers.f.subtract = false;
         cpu.registers.f.half_carry = current_value & 0xF == 0xF;
         cpu.registers.f.carry = did_overflow;
+    }
+}
+
+pub fn inc_r16(target: Register16bTarget) -> impl Fn(&mut CPU) {
+    move |cpu: &mut CPU| {
+        let current_value = cpu.registers.get_u16(target);
+        let new_value = current_value.wrapping_add(1);
+        cpu.registers.set_u16(target, new_value);
     }
 }
 

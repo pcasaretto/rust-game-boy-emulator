@@ -2,7 +2,7 @@ use super::super::*;
 
 pub fn adc(target: RegisterTarget) -> impl Fn(&mut CPU) {
     move |cpu: &mut CPU| {
-        let mut target_value = cpu.read_single_register(target);
+        let mut target_value = cpu.registers.get_u8(target);
         let current_value = cpu.registers.a;
         if cpu.registers.f.carry {
             target_value += 1;

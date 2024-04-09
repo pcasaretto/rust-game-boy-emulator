@@ -2,7 +2,7 @@ use crate::{RegisterTarget, CPU};
 
 pub fn dec_r(target: RegisterTarget) -> impl Fn(&mut CPU) {
     move |cpu: &mut CPU| {
-        let current_value = cpu.read_single_register(target);
+        let current_value = cpu.registers.get_u8(target);
         let (new_value, did_overflow) = current_value.overflowing_sub(1);
         cpu.registers.set_u8(target, new_value);
 

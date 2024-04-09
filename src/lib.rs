@@ -86,7 +86,8 @@ impl Registers {
             }
             Register16bTarget::SP => self.sp = value,
             Register16bTarget::AF => {
-                panic!("Cannot set AF register")
+                self.a = high;
+                self.f = FlagsRegister::from(low);
             }
         }
     }
@@ -173,18 +174,6 @@ impl CPU {
             self.pc
         );
         instruction(self);
-    }
-
-    fn read_single_register(&self, target: RegisterTarget) -> u8 {
-        match target {
-            RegisterTarget::A => self.registers.a,
-            RegisterTarget::B => self.registers.b,
-            RegisterTarget::C => self.registers.c,
-            RegisterTarget::D => self.registers.d,
-            RegisterTarget::E => self.registers.e,
-            RegisterTarget::H => self.registers.h,
-            RegisterTarget::L => self.registers.l,
-        }
     }
 
     fn read_next_byte(&mut self) -> u8 {

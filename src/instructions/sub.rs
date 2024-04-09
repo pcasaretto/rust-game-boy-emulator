@@ -2,8 +2,8 @@ use super::super::*;
 
 pub fn sub_r_r_a(target: RegisterTarget) -> impl Fn(&mut CPU) {
     move |cpu: &mut CPU| {
-        let target_value = cpu.read_single_register(target);
-        let current_value = cpu.read_single_register(RegisterTarget::A);
+        let target_value = cpu.registers.get_u8(target);
+        let current_value = cpu.registers.get_u8(RegisterTarget::A);
         let (new_value, did_overflow) = current_value.overflowing_sub(target_value);
         cpu.registers.a = new_value;
 
@@ -17,7 +17,7 @@ pub fn sub_r_r_a(target: RegisterTarget) -> impl Fn(&mut CPU) {
 pub fn sub_d8() -> impl Fn(&mut CPU) {
     move |cpu: &mut CPU| {
         let d8 = cpu.bus.memory[cpu.pc as usize + 1];
-        let current_value = cpu.read_single_register(RegisterTarget::A);
+        let current_value = cpu.registers.get_u8(RegisterTarget::A);
         let (new_value, did_overflow) = current_value.overflowing_sub(d8);
         cpu.registers.a = new_value;
 
