@@ -15,6 +15,17 @@ pub fn call_a16() -> impl Fn(&mut CPU) {
     }
 }
 
+pub fn ret() -> impl Fn(&mut CPU) {
+    move |cpu: &mut CPU| {
+        let low = cpu.bus.read_byte(cpu.registers.sp);
+        cpu.registers.sp = cpu.registers.sp.wrapping_add(1);
+        let high = cpu.bus.read_byte(cpu.registers.sp);
+        cpu.registers.sp = cpu.registers.sp.wrapping_add(1);
+
+        cpu.pc = u16::from_le_bytes([low, high]);
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -31,5 +42,16 @@ mod tests {
         assert_eq!(cpu.registers.sp, 0xFFFC);
         assert_eq!(cpu.bus.memory[0xFFFD], 0x03);
         assert_eq!(cpu.bus.memory[0xFFFC], 0x01);
+    }
+
+    #[test]
+    fn test_ret() {
+        let mut cpu = CPU::default();
+        cpu.registers.sp = 0xFFFC;
+        cpu.bus.memory[0xFFFC] = 0x01;
+        cpu.bus.memory[0xFFFD] = 0x03;
+        ret()(&mut cpu);
+        assert_eq!(cpu.pc, 0x0301);
+        assert_eq!(cpu.registers.sp, 0xFFFE);
     }
 }
