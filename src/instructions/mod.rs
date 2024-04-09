@@ -13,16 +13,16 @@ use super::*;
 pub fn from_byte(byte: u8) -> Box<dyn Fn(&mut CPU)> {
     match byte {
         0x00 => Box::new(nop::nop()),
-        0x01 => Box::new(ld::ld_d16_u16(Register16bTarget::BC)),
-        0x02 => Box::new(ld::ld_mem_at_u16_r(
+        0x01 => Box::new(ld::ld_d16_r16(Register16bTarget::BC)),
+        0x02 => Box::new(ld::ld_mem_at_r16_r(
             Register16bTarget::BC,
             RegisterTarget::A,
         )),
-        0x12 => Box::new(ld::ld_mem_at_u16_r(
+        0x12 => Box::new(ld::ld_mem_at_r16_r(
             Register16bTarget::DE,
             RegisterTarget::A,
         )),
-        0x11 => Box::new(ld::ld_d16_u16(Register16bTarget::DE)),
+        0x11 => Box::new(ld::ld_d16_r16(Register16bTarget::DE)),
 
         0x04 => Box::new(inc::inc_r(RegisterTarget::B)),
         0x14 => Box::new(inc::inc_r(RegisterTarget::D)),
@@ -42,8 +42,8 @@ pub fn from_byte(byte: u8) -> Box<dyn Fn(&mut CPU)> {
 
         0x20 => Box::new(jmp::jr_nz()),
 
-        0x31 => Box::new(ld::ld_d16_u16(Register16bTarget::SP)),
-        0x21 => Box::new(ld::ld_d16_u16(Register16bTarget::HL)),
+        0x31 => Box::new(ld::ld_d16_r16(Register16bTarget::SP)),
+        0x21 => Box::new(ld::ld_d16_r16(Register16bTarget::HL)),
         0x06 => Box::new(ld::ld_d8_u8(RegisterTarget::B)),
         0x16 => Box::new(ld::ld_d8_u8(RegisterTarget::B)),
         0x26 => Box::new(ld::ld_d8_u8(RegisterTarget::B)),
@@ -52,6 +52,14 @@ pub fn from_byte(byte: u8) -> Box<dyn Fn(&mut CPU)> {
         0x2E => Box::new(ld::ld_d8_u8(RegisterTarget::C)),
         0x2A => Box::new(ld::ld_hl_inc()),
         // 0x33 => Box::new(inc::inc_sp()),
+        0x06 => Box::new(ld::ld_d8_r(RegisterTarget::B)),
+        0x16 => Box::new(ld::ld_d8_r(RegisterTarget::D)),
+        0x26 => Box::new(ld::ld_d8_r(RegisterTarget::H)),
+        0x36 => Box::new(ld::ld_d8_mem_at_r16(Register16bTarget::HL)),
+        0x0A => Box::new(ld::ld_d8_r(RegisterTarget::C)),
+        0x1A => Box::new(ld::ld_d8_r(RegisterTarget::E)),
+        0x2A => Box::new(ld::ld_d8_r(RegisterTarget::L)),
+        0x3A => Box::new(ld::ld_d8_r(RegisterTarget::A)),
         0xC3 => Box::new(jmp::jmp_a16()),
         0x40 => Box::new(ld::ld_r_r(RegisterTarget::B, RegisterTarget::B)),
         0x41 => Box::new(ld::ld_r_r(RegisterTarget::B, RegisterTarget::C)),

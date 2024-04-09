@@ -1,6 +1,6 @@
 use crate::{Register16bTarget, RegisterTarget, CPU};
 
-pub fn ld_d16_u16(reg: Register16bTarget) -> impl Fn(&mut CPU) {
+pub fn ld_d16_r16(reg: Register16bTarget) -> impl Fn(&mut CPU) {
     move |cpu: &mut CPU| {
         let low = cpu.bus.memory[(cpu.pc + 1) as usize];
         let high = cpu.bus.memory[(cpu.pc + 2) as usize];
@@ -46,11 +46,26 @@ pub fn ld_u_16_r(src: RegisterTarget) -> impl Fn(&mut CPU) {
     }
 }
 
-pub fn ld_mem_at_u16_r(reg: Register16bTarget, target: RegisterTarget) -> impl Fn(&mut CPU) {
+pub fn ld_mem_at_r16_r(reg: Register16bTarget, target: RegisterTarget) -> impl Fn(&mut CPU) {
     move |cpu: &mut CPU| {
         let addr = cpu.registers.get_u16(reg);
         let value = cpu.registers.get_u8(target);
         cpu.bus.memory[addr as usize] = value;
+    }
+}
+
+pub fn ld_d8_mem_at_r16(reg: Register16bTarget) -> impl Fn(&mut CPU) {
+    move |cpu: &mut CPU| {
+        let addr = cpu.registers.get_u16(reg);
+        let value = cpu.bus.memory[cpu.pc as usize];
+        cpu.bus.memory[addr as usize] = value;
+    }
+}
+
+pub fn ld_d8_r(target: RegisterTarget) -> impl Fn(&mut CPU) {
+    move |cpu: &mut CPU| {
+        let value = cpu.bus.memory[cpu.pc as usize];
+        cpu.registers.set_u8(target, value);
     }
 }
 
@@ -64,7 +79,7 @@ mod tests {
         let mut cpu = CPU::default();
         cpu.bus.memory[1] = 0x01;
         cpu.bus.memory[2] = 0x02;
-        ld_d16_u16(Register16bTarget::BC)(&mut cpu);
+        ld_d16_r16(Register16bTarget::BC)(&mut cpu);
         assert_eq!(cpu.registers.get_u16(Register16bTarget::BC), 0x0201);
         assert_eq!(cpu.pc, 2);
     }
@@ -107,7 +122,7 @@ mod tests {
         let mut cpu = CPU::default();
         cpu.registers.set_u16(Register16bTarget::BC, 0x1000);
         cpu.registers.set_u8(RegisterTarget::A, 0x34);
-        ld_mem_at_u16_r(Register16bTarget::BC, RegisterTarget::A)(&mut cpu);
+        ld_mem_at_r16_r(Register16bTarget::BC, RegisterTarget::A)(&mut cpu);
         assert_eq!(cpu.bus.memory[0x1000], 0x34);
     }
 
@@ -126,5 +141,22 @@ mod tests {
         let mut cpu = CPU::default();
         ld_u_16_r(RegisterTarget::A)(&mut cpu);
         assert_eq!(cpu.pc, 1);
+    }
+
+    #[test]
+    fn test_ld_d8_r() {
+        let mut cpu = CPU::default();
+        cpu.bus.memory[0] = 0x34;
+        ld_d8_r(RegisterTarget::A)(&mut cpu);
+        assert_eq!(cpu.registers.get_u8(RegisterTarget::A), 0x34);
+    }
+
+    #[test]
+    fn test_ld_d8_mem_at_r16() {
+        let mut cpu = CPU::default();
+        cpu.registers.set_u16(Register16bTarget::HL, 0x1000);
+        cpu.bus.memory[0] = 0x34;
+        ld_d8_mem_at_r16(Register16bTarget::HL)(&mut cpu);
+        assert_eq!(cpu.bus.memory[0x1000], 0x34);
     }
 }
