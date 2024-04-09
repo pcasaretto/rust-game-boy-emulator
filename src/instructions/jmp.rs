@@ -18,6 +18,13 @@ pub fn jr_nz() -> impl Fn(&mut CPU) {
     }
 }
 
+pub fn jr() -> impl Fn(&mut CPU) {
+    move |cpu: &mut CPU| {
+        let offset = cpu.bus.memory[cpu.pc as usize];
+        cpu.pc = cpu.pc.wrapping_add(offset as i8 as u16);
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -59,5 +66,23 @@ mod tests {
         cpu.bus.memory[0x1005] = -5i8 as u8;
         jr_nz()(&mut cpu);
         assert_eq!(cpu.pc, 0x1000);
+    }
+
+    #[test]
+    fn test_jr() {
+        let mut cpu = CPU::default();
+        cpu.pc = 0x1000;
+        cpu.bus.memory[0x1000] = 0x05;
+        jr()(&mut cpu);
+        assert_eq!(cpu.pc, 0x1005);
+    }
+
+    #[test]
+    fn test_jr_signed_negative() {
+        let mut cpu = CPU::default();
+        cpu.pc = 0x1000;
+        cpu.bus.memory[0x1000] = -5i8 as u8;
+        jr()(&mut cpu);
+        assert_eq!(cpu.pc, 0x0FFB);
     }
 }
