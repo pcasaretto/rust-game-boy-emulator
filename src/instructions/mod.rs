@@ -27,10 +27,13 @@ pub fn from_byte(byte: u8) -> Box<dyn Fn(&mut CPU)> {
         )),
         0x11 => Box::new(ld::ld_d16_r16(Register16bTarget::DE)),
 
+        0x03 => Box::new(inc::inc_r16(Register16bTarget::BC)),
         0x04 => Box::new(inc::inc_r(RegisterTarget::B)),
+        0x13 => Box::new(inc::inc_r16(Register16bTarget::DE)),
         0x14 => Box::new(inc::inc_r(RegisterTarget::D)),
         0x23 => Box::new(inc::inc_r16(Register16bTarget::HL)),
         0x24 => Box::new(inc::inc_r(RegisterTarget::H)),
+        0x33 => Box::new(inc::inc_r16(Register16bTarget::SP)),
         0x0C => Box::new(inc::inc_r(RegisterTarget::C)),
         0x1C => Box::new(inc::inc_r(RegisterTarget::E)),
         0x2C => Box::new(inc::inc_r(RegisterTarget::L)),
