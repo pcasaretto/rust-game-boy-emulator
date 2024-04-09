@@ -140,6 +140,10 @@ impl MemoryBus {
     fn read_byte(&self, address: u16) -> u8 {
         self.memory[address as usize]
     }
+
+    fn write_byte(&mut self, address: u16, value: u8) {
+        self.memory[address as usize] = value;
+    }
 }
 
 impl Default for CPU {
@@ -156,8 +160,7 @@ impl Default for CPU {
 
 impl CPU {
     pub fn step(&mut self) {
-        let instruction_byte = self.bus.read_byte(self.pc);
-        self.pc = self.pc.wrapping_add(1);
+        let instruction_byte = self.read_next_byte();
         let instruction = instructions::from_byte(instruction_byte);
         instruction(self);
         log::debug!(
@@ -177,6 +180,12 @@ impl CPU {
             RegisterTarget::H => self.registers.h,
             RegisterTarget::L => self.registers.l,
         }
+    }
+
+    fn read_next_byte(&mut self) -> u8 {
+        let byte = self.bus.read_byte(self.pc);
+        self.pc = self.pc.wrapping_add(1);
+        byte
     }
 }
 
