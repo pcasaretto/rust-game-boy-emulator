@@ -14,6 +14,7 @@ pub enum RegisterTarget {
 
 #[derive(Debug, Copy, Clone)]
 pub enum Register16bTarget {
+    AF,
     BC,
     DE,
     HL,
@@ -60,6 +61,7 @@ impl Registers {
 
     pub fn get_u16(&self, target: Register16bTarget) -> u16 {
         match target {
+            Register16bTarget::AF => u16::from_be_bytes([self.a, u8::from(self.f)]),
             Register16bTarget::BC => u16::from_be_bytes([self.b, self.c]),
             Register16bTarget::DE => u16::from_be_bytes([self.d, self.e]),
             Register16bTarget::HL => u16::from_be_bytes([self.h, self.l]),
@@ -83,11 +85,14 @@ impl Registers {
                 self.l = low;
             }
             Register16bTarget::SP => self.sp = value,
+            Register16bTarget::AF => {
+                panic!("Cannot set AF register")
+            }
         }
     }
 }
 
-#[derive(Default)]
+#[derive(Default, Copy, Clone)]
 pub struct FlagsRegister {
     pub zero: bool,
     pub subtract: bool,
