@@ -203,7 +203,7 @@ mod tests {
                 ..Default::default()
             },
             bus: MemoryBus {
-                memory: [0x81; 0xFFFF],
+                memory: [0x81; 0x10000],
             },
             pc: 1245,
             ..Default::default()
