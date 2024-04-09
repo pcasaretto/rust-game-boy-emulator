@@ -143,6 +143,7 @@ pub fn from_byte(byte: u8) -> Box<dyn Fn(&mut CPU)> {
 
         0xD6 => Box::new(sub::sub_d8()),
 
+        0xE0 => Box::new(ld::ld_a_mem_at_d8()),
         0xEA => Box::new(ld::ld_r_mem_at_d16(RegisterTarget::A)),
 
         0xF3 => Box::new(int::di()),

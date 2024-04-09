@@ -57,6 +57,14 @@ pub fn ld_d8_r(target: RegisterTarget) -> impl Fn(&mut CPU) {
     }
 }
 
+pub fn ld_a_mem_at_d8() -> impl Fn(&mut CPU) {
+    move |cpu: &mut CPU| {
+        let addr = 0xFF00 + cpu.read_next_byte() as u16;
+        let value = cpu.registers.get_u8(RegisterTarget::A);
+        cpu.bus.write_byte(addr, value);
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -137,5 +145,14 @@ mod tests {
         cpu.bus.memory[0] = 0x34;
         ld_d8_mem_at_r16(Register16bTarget::HL)(&mut cpu);
         assert_eq!(cpu.bus.memory[0x1000], 0x34);
+    }
+
+    #[test]
+    fn test_ld_a_mem_at_d8() {
+        let mut cpu = CPU::default();
+        cpu.bus.memory[0] = 0x34;
+        cpu.registers.set_u8(RegisterTarget::A, 0x42);
+        ld_a_mem_at_d8()(&mut cpu);
+        assert_eq!(cpu.bus.read_byte(0xFF34), 0x42);
     }
 }
