@@ -1,5 +1,6 @@
 mod adc;
 mod add;
+mod and;
 mod call;
 mod dec;
 mod inc;
@@ -142,6 +143,15 @@ pub fn from_byte(byte: u8) -> Box<dyn Fn(&mut CPU)> {
         0x93 => Box::new(sub::sub_r_r_a(RegisterTarget::E)),
         0x94 => Box::new(sub::sub_r_r_a(RegisterTarget::H)),
         0x95 => Box::new(sub::sub_r_r_a(RegisterTarget::L)),
+
+        0xA0 => Box::new(and::and(RegisterTarget::B)),
+        0xA1 => Box::new(and::and(RegisterTarget::C)),
+        0xA2 => Box::new(and::and(RegisterTarget::D)),
+        0xA3 => Box::new(and::and(RegisterTarget::E)),
+        0xA4 => Box::new(and::and(RegisterTarget::H)),
+        0xA5 => Box::new(and::and(RegisterTarget::L)),
+        0xA6 => Box::new(and::and_mem_at_r16(Register16bTarget::HL)),
+        0xA7 => Box::new(and::and(RegisterTarget::A)),
 
         0xCD => Box::new(call::call_a16()),
         0xC9 => Box::new(call::ret()),
