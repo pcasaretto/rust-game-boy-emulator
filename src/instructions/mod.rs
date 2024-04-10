@@ -3,6 +3,7 @@ mod add;
 mod and;
 mod binary;
 mod call;
+mod cp;
 mod dec;
 mod inc;
 mod int;
@@ -193,6 +194,8 @@ pub fn from_byte(byte: u8) -> Box<dyn Fn(&mut CPU)> {
 
         0xF3 => Box::new(int::di()),
         0xFB => Box::new(int::ei()),
+
+        0xFE => Box::new(cp::cp_d8()),
 
         other => {
             panic!("Unsupported instruction {:X}", other)
