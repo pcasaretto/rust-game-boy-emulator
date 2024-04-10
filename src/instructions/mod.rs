@@ -1,6 +1,7 @@
 mod adc;
 mod add;
 mod and;
+mod binary;
 mod call;
 mod dec;
 mod inc;

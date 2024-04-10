@@ -1,19 +1,8 @@
+use crate::instructions::binary;
 use crate::{Register16bTarget, RegisterTarget, CPU};
 
 pub fn or(target: RegisterTarget) -> impl Fn(&mut CPU) {
-    move |cpu: &mut CPU| {
-        let r = cpu.registers.get_u8(target);
-        let a = cpu.registers.get_u8(RegisterTarget::A);
-
-        let value = a | r;
-
-        cpu.registers.set_u8(RegisterTarget::A, value);
-
-        cpu.registers.f.zero = value == 0;
-        cpu.registers.f.subtract = false;
-        cpu.registers.f.half_carry = true;
-        cpu.registers.f.carry = false;
-    }
+    binary::operation_on_r_a(target, |left, right| left | right)
 }
 
 pub fn or_mem_at_r16(reg: Register16bTarget) -> impl Fn(&mut CPU) {
