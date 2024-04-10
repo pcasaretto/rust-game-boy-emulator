@@ -134,6 +134,7 @@ pub fn from_byte(byte: u8) -> Box<dyn Fn(&mut CPU)> {
         0x83 => Box::new(add::add(RegisterTarget::E)),
         0x84 => Box::new(add::add(RegisterTarget::H)),
         0x85 => Box::new(add::add(RegisterTarget::L)),
+        0x8E => Box::new(adc::adc_mem_at_hl()),
         0x8F => Box::new(adc::adc(RegisterTarget::A)),
         0x88 => Box::new(adc::adc(RegisterTarget::B)),
         0x89 => Box::new(adc::adc(RegisterTarget::C)),
