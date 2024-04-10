@@ -8,6 +8,7 @@ mod int;
 mod jmp;
 mod ld;
 mod nop;
+mod or;
 mod stack;
 mod sub;
 
@@ -158,6 +159,15 @@ pub fn from_byte(byte: u8) -> Box<dyn Fn(&mut CPU)> {
         0xA5 => Box::new(and::and(RegisterTarget::L)),
         0xA6 => Box::new(and::and_mem_at_r16(Register16bTarget::HL)),
         0xA7 => Box::new(and::and(RegisterTarget::A)),
+
+        0xB0 => Box::new(or::or(RegisterTarget::B)),
+        0xB1 => Box::new(or::or(RegisterTarget::C)),
+        0xB2 => Box::new(or::or(RegisterTarget::D)),
+        0xB3 => Box::new(or::or(RegisterTarget::E)),
+        0xB4 => Box::new(or::or(RegisterTarget::H)),
+        0xB5 => Box::new(or::or(RegisterTarget::L)),
+        0xB6 => Box::new(or::or_mem_at_r16(Register16bTarget::HL)),
+        0xB7 => Box::new(or::or(RegisterTarget::A)),
 
         0xC1 => Box::new(stack::pop(Register16bTarget::BC)),
         0xD1 => Box::new(stack::pop(Register16bTarget::DE)),
