@@ -51,6 +51,9 @@ pub fn from_byte(byte: u8) -> Box<dyn Fn(&mut CPU)> {
 
         0x18 => Box::new(jmp::jr()),
         0x20 => Box::new(jmp::jr_nz()),
+        0x30 => Box::new(jmp::jr_nc()),
+        0x28 => Box::new(jmp::jr_z()),
+        0x38 => Box::new(jmp::jr_c()),
 
         0x31 => Box::new(ld::ld_d16_r16(Register16bTarget::SP)),
         0x21 => Box::new(ld::ld_d16_r16(Register16bTarget::HL)),

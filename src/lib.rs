@@ -169,7 +169,7 @@ impl CPU {
         let instruction_byte = self.read_next_byte();
         let instruction = instructions::from_byte(instruction_byte);
         log::debug!(
-            "Executing instruction {:2X}, new PC is {:4X}",
+            "Executing instruction {:02X}, new PC is {:04X}",
             instruction_byte,
             self.pc
         );
