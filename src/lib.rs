@@ -136,6 +136,7 @@ pub struct CPU {
     pub registers: Registers,
     pub pc: u16,
     pub bus: MemoryBus,
+    pub stepHook: Box<dyn FnMut(u8)>,
 }
 
 pub struct MemoryBus {
@@ -160,6 +161,7 @@ impl Default for CPU {
             bus: MemoryBus {
                 memory: [0; 0x10000],
             },
+            stepHook: Box::new(|_| {}),
         }
     }
 }
@@ -168,11 +170,7 @@ impl CPU {
     pub fn step(&mut self) {
         let instruction_byte = self.read_next_byte();
         let instruction = instructions::from_byte(instruction_byte);
-        log::debug!(
-            "Executing instruction {:02X}, new PC is {:04X}",
-            instruction_byte,
-            self.pc
-        );
+        (self.stepHook)(instruction_byte);
         instruction(self);
     }
 
