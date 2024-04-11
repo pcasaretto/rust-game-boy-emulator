@@ -1,4 +1,4 @@
-use crate::CPU;
+use crate::cpu::CPU;
 
 pub fn di() -> impl Fn(&mut CPU) {
     move |_cpu: &mut CPU| {

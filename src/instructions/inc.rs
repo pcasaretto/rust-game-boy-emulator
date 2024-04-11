@@ -1,4 +1,4 @@
-use crate::{Register16bTarget, RegisterTarget, CPU};
+use crate::cpu::{Register16bTarget, RegisterTarget, CPU};
 
 pub fn inc_r(target: RegisterTarget) -> impl Fn(&mut CPU) {
     move |cpu: &mut CPU| {
@@ -24,7 +24,7 @@ pub fn inc_r16(target: Register16bTarget) -> impl Fn(&mut CPU) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{FlagsRegister, Registers};
+    use crate::cpu::{FlagsRegister, Registers};
 
     #[test]
     fn test_inc_r() {

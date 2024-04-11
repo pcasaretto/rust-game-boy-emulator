@@ -1,5 +1,5 @@
+use crate::cpu::{Register16bTarget, RegisterTarget, CPU};
 use crate::instructions::binary;
-use crate::{Register16bTarget, RegisterTarget, CPU};
 
 pub fn and(target: RegisterTarget) -> impl Fn(&mut CPU) {
     binary::operation_on_r_a(target, |left, right| left & right)
@@ -25,7 +25,7 @@ pub fn and_mem_at_r16(reg: Register16bTarget) -> impl Fn(&mut CPU) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{FlagsRegister, Registers};
+    use crate::cpu::{FlagsRegister, Registers};
 
     #[test]
     fn test_and() {

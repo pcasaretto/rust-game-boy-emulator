@@ -1,4 +1,4 @@
-use crate::{RegisterTarget, CPU};
+use crate::cpu::{RegisterTarget, CPU};
 
 pub fn dec_r(target: RegisterTarget) -> impl Fn(&mut CPU) {
     move |cpu: &mut CPU| {
@@ -16,7 +16,7 @@ pub fn dec_r(target: RegisterTarget) -> impl Fn(&mut CPU) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{FlagsRegister, Registers};
+    use crate::cpu::{FlagsRegister, Registers};
 
     #[test]
     fn test_dec_r() {

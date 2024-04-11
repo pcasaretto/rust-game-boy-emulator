@@ -1,4 +1,4 @@
-use crate::{Register16bTarget, RegisterTarget, CPU};
+use crate::cpu::{Register16bTarget, RegisterTarget, CPU};
 
 pub fn ld_d16_r16(reg: Register16bTarget) -> impl Fn(&mut CPU) {
     move |cpu: &mut CPU| {
@@ -68,7 +68,7 @@ pub fn ld_a_mem_at_d8() -> impl Fn(&mut CPU) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::Registers;
+    use crate::cpu::Registers;
 
     #[test]
     fn test_ld_d16_r16() {

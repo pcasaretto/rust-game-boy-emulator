@@ -1,4 +1,4 @@
-use super::super::*;
+use crate::cpu::{RegisterTarget, CPU};
 
 pub fn sub_r_r_a(target: RegisterTarget) -> impl Fn(&mut CPU) {
     move |cpu: &mut CPU| {
@@ -31,6 +31,8 @@ pub fn sub_d8() -> impl Fn(&mut CPU) {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::cpu::FlagsRegister;
+    use crate::cpu::Registers;
 
     #[test]
     fn test_sub() {

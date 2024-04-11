@@ -1,4 +1,4 @@
-use crate::CPU;
+use crate::cpu::CPU;
 
 pub fn call_a16() -> impl Fn(&mut CPU) {
     move |cpu: &mut CPU| {

@@ -1,5 +1,5 @@
 use env_logger;
-use rust_game_boy_emulator::CPU;
+use rust_game_boy_emulator::cpu::CPU;
 use serde::Deserialize;
 use serde_json::Map;
 use std::collections::HashMap;
@@ -40,9 +40,8 @@ fn main() {
     env_logger::init();
 
     // load opcode info
-    let json = std::fs::read_to_string("Opcodes.json").unwrap();
-
-    let opcode_info: OpcodeInfo = serde_json::from_str(&json).unwrap();
+    let json = include_bytes!("Opcodes.json");
+    let opcode_info: OpcodeInfo = serde_json::from_slice(json).unwrap();
 
     let mut cartridge = vec![0; 0x200000];
 

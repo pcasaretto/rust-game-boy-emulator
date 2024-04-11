@@ -1,6 +1,7 @@
 use crate::cpu::CPU;
 
-pub fn nop() -> impl Fn(&mut CPU) {
+pub fn stop() -> impl Fn(&mut CPU) {
+    //TODO: stop until button pressed
     move |_: &mut CPU| {}
 }
 

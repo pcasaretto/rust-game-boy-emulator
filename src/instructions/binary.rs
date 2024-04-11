@@ -1,5 +1,4 @@
-use crate::RegisterTarget;
-use crate::CPU;
+use crate::cpu::{RegisterTarget, CPU};
 
 pub fn operation_on_r_a(
     target: RegisterTarget,

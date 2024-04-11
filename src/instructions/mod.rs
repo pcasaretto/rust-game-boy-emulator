@@ -9,12 +9,13 @@ mod inc;
 mod int;
 mod jmp;
 mod ld;
+mod misc;
 mod nop;
 mod or;
 mod stack;
 mod sub;
 
-use super::*;
+use super::cpu::*;
 
 pub fn from_byte(byte: u8) -> Box<dyn Fn(&mut CPU)> {
     match byte {
@@ -24,6 +25,7 @@ pub fn from_byte(byte: u8) -> Box<dyn Fn(&mut CPU)> {
             Register16bTarget::BC,
             RegisterTarget::A,
         )),
+        0x10 => Box::new(misc::stop()),
         0x12 => Box::new(ld::ld_r_mem_at_r16(
             Register16bTarget::DE,
             RegisterTarget::A,

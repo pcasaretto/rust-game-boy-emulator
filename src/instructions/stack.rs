@@ -1,4 +1,4 @@
-use crate::{Register16bTarget, CPU};
+use crate::cpu::{Register16bTarget, CPU};
 
 pub fn push(reg: Register16bTarget) -> impl Fn(&mut CPU) {
     move |cpu: &mut CPU| {
@@ -24,7 +24,7 @@ pub fn pop(reg: Register16bTarget) -> impl Fn(&mut CPU) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{FlagsRegister, Registers};
+    use crate::cpu::{FlagsRegister, Registers};
 
     #[test]
     fn test_push() {

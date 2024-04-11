@@ -1,4 +1,4 @@
-use super::super::*;
+use crate::cpu::{Register16bTarget, RegisterTarget, CPU};
 
 pub fn adc(target: RegisterTarget) -> impl Fn(&mut CPU) {
     move |cpu: &mut CPU| {
@@ -38,6 +38,7 @@ pub fn adc_mem_at_hl() -> impl Fn(&mut CPU) {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::cpu::{FlagsRegister, Registers};
 
     #[test]
     fn test_adc() {

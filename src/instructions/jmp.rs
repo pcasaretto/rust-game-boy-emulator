@@ -1,4 +1,4 @@
-use crate::CPU;
+use crate::cpu::CPU;
 
 pub fn jmp_a16() -> impl Fn(&mut CPU) {
     move |cpu: &mut CPU| {
