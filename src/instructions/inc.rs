@@ -66,7 +66,7 @@ mod tests {
             ..Default::default()
         };
         inc_r(RegisterTarget::B)(&mut gameboy);
-        assert_eq!(gameboy.cpu.registers.f.subtract, false);
+        assert!(!gameboy.cpu.registers.f.subtract);
     }
 
     #[test]
@@ -83,7 +83,7 @@ mod tests {
             ..Default::default()
         };
         inc_r(RegisterTarget::B)(&mut gameboy);
-        assert_eq!(gameboy.cpu.registers.f.half_carry, true);
+        assert!(gameboy.cpu.registers.f.half_carry);
     }
 
     #[test]
@@ -100,6 +100,6 @@ mod tests {
             ..Default::default()
         };
         inc_r(RegisterTarget::B)(&mut gameboy);
-        assert_eq!(gameboy.cpu.registers.f.carry, true);
+        assert!(gameboy.cpu.registers.f.carry);
     }
 }

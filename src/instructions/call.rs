@@ -1,4 +1,3 @@
-
 use crate::gameboy::Gameboy;
 
 pub fn call_a16() -> impl Fn(&mut Gameboy) {

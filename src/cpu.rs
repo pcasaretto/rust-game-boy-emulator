@@ -1,6 +1,3 @@
-
-
-
 #[derive(Debug, Copy, Clone)]
 pub enum RegisterTarget {
     A,
@@ -135,14 +132,7 @@ impl std::convert::From<u8> for FlagsRegister {
     }
 }
 
+#[derive(Default)]
 pub struct CPU {
     pub registers: Registers,
-}
-
-impl Default for CPU {
-    fn default() -> Self {
-        CPU {
-            registers: Registers::default(),
-        }
-    }
 }

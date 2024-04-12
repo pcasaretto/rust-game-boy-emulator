@@ -1,5 +1,3 @@
-use env_logger;
-use log;
 use rust_game_boy_emulator::emulator;
 use std::fs::OpenOptions;
 use std::io::prelude::*;

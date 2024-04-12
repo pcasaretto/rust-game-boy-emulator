@@ -1,8 +1,7 @@
-use crate::cpu::{FlagsRegister, Register16bTarget, CPU};
+use crate::cpu::{Register16bTarget, CPU};
 use crate::instructions;
 use crate::memory::MemoryBus;
 use crate::opcode_info::OpcodeInfo;
-use serde_json;
 
 pub struct Gameboy<'a> {
     pub cpu: CPU,
@@ -41,7 +40,7 @@ pub fn initialize(gameboy: &mut Gameboy) {
 }
 
 impl<'a> Gameboy<'a> {
-    pub fn run(self: &'a mut Self, cartridge: &'a [u8; 0x200000]) {
+    pub fn run(&'a mut self, cartridge: &'a [u8; 0x200000]) {
         self.cartridge = cartridge;
 
         // load first 0x8000 bytes of cartridge into memory
@@ -54,7 +53,7 @@ impl<'a> Gameboy<'a> {
 
     pub fn step(&mut self) {
         let instruction_byte = self.read_next_byte();
-        let opcode_info = self
+        let _opcode_info = self
             .opcode_info
             .unprefixed
             .get(&format!("0x{:02X}", instruction_byte))
@@ -81,7 +80,7 @@ impl<'a> Gameboy<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::cpu::{FlagsRegister, Register16bTarget, RegisterTarget, Registers};
+    use crate::cpu::{FlagsRegister, RegisterTarget, Registers};
 
     #[test]
     fn test_add() {

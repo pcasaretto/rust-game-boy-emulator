@@ -159,7 +159,7 @@ mod tests {
             },
             ..Default::default()
         };
-        gameboy.bus.memory[0x0013] = 1;
+        gameboy.bus.memory[0x0012] = 1;
         sub_d8()(&mut gameboy);
         assert_eq!(gameboy.cpu.registers.a, 3);
     }
@@ -178,7 +178,7 @@ mod tests {
             },
             ..Default::default()
         };
-        gameboy.bus.memory[0x0013] = 5;
+        gameboy.bus.memory[0x0012] = 5;
         sub_d8()(&mut gameboy);
         assert_eq!(gameboy.cpu.registers.a, 255);
     }
@@ -197,7 +197,7 @@ mod tests {
             },
             ..Default::default()
         };
-        gameboy.bus.memory[0x0013] = 5;
+        gameboy.bus.memory[0x0012] = 5;
         sub_d8()(&mut gameboy);
         assert!(gameboy.cpu.registers.f.carry);
     }
@@ -216,7 +216,7 @@ mod tests {
             },
             ..Default::default()
         };
-        gameboy.bus.memory[0x0013] = 5;
+        gameboy.bus.memory[0x0012] = 5;
         sub_d8()(&mut gameboy);
         assert!(gameboy.cpu.registers.f.zero);
     }
@@ -235,7 +235,7 @@ mod tests {
             },
             ..Default::default()
         };
-        gameboy.bus.memory[0x0013] = 5;
+        gameboy.bus.memory[0x0012] = 5;
         sub_d8()(&mut gameboy);
         assert!(gameboy.cpu.registers.f.subtract);
     }
@@ -254,7 +254,7 @@ mod tests {
             },
             ..Default::default()
         };
-        gameboy.bus.memory[0x0013] = 1;
+        gameboy.bus.memory[0x0012] = 1;
         sub_d8()(&mut gameboy);
         assert!(gameboy.cpu.registers.f.half_carry);
     }

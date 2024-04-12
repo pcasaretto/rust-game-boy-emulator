@@ -12,7 +12,7 @@ pub fn cp_d8() -> impl Fn(&mut Gameboy) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::cpu::{FlagsRegister, Registers, CPU};
+    use crate::cpu::{Registers, CPU};
 
     #[test]
     fn test_cp() {
