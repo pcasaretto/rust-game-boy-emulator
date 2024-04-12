@@ -1,8 +1,6 @@
-use crate::cpu::CPU;
+use crate::gameboy::Gameboy;
 
-pub fn nop() -> impl Fn(&mut CPU) {
-    move |_: &mut CPU| {}
-}
+pub fn nop(_: &mut Gameboy) {}
 
 #[cfg(test)]
 mod tests {}

@@ -16,10 +16,11 @@ mod stack;
 mod sub;
 
 use super::cpu::*;
+use super::gameboy;
 
-pub fn from_byte(byte: u8) -> Box<dyn Fn(&mut CPU)> {
+pub fn from_byte(byte: u8) -> Box<dyn Fn(&mut gameboy::Gameboy)> {
     match byte {
-        0x00 => Box::new(nop::nop()),
+        0x00 => Box::new(nop::nop),
         0x01 => Box::new(ld::ld_d16_r16(Register16bTarget::BC)),
         0x02 => Box::new(ld::ld_r_mem_at_r16(
             Register16bTarget::BC,

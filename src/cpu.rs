@@ -1,4 +1,5 @@
-use crate::instructions;
+
+
 
 #[derive(Debug, Copy, Clone)]
 pub enum RegisterTarget {
@@ -18,6 +19,7 @@ pub enum Register16bTarget {
     DE,
     HL,
     SP,
+    PC,
 }
 
 #[derive(Default)]
@@ -31,6 +33,7 @@ pub struct Registers {
     pub l: u8,
     pub f: FlagsRegister,
     pub sp: u16,
+    pub pc: u16,
 }
 
 impl Registers {
@@ -65,6 +68,7 @@ impl Registers {
             Register16bTarget::DE => u16::from_be_bytes([self.d, self.e]),
             Register16bTarget::HL => u16::from_be_bytes([self.h, self.l]),
             Register16bTarget::SP => self.sp,
+            Register16bTarget::PC => self.pc,
         }
     }
 
@@ -84,6 +88,7 @@ impl Registers {
                 self.l = low;
             }
             Register16bTarget::SP => self.sp = value,
+            Register16bTarget::PC => self.pc = value,
             Register16bTarget::AF => {
                 self.a = high;
                 self.f = FlagsRegister::from(low);
@@ -130,77 +135,14 @@ impl std::convert::From<u8> for FlagsRegister {
     }
 }
 
-/// CPU
 pub struct CPU {
     pub registers: Registers,
-    pub pc: u16,
-    pub bus: MemoryBus,
-    pub stepHook: Box<dyn FnMut(u8)>,
-}
-
-pub struct MemoryBus {
-    pub memory: [u8; 0x10000],
-}
-
-impl MemoryBus {
-    pub fn read_byte(&self, address: u16) -> u8 {
-        self.memory[address as usize]
-    }
-
-    pub fn write_byte(&mut self, address: u16, value: u8) {
-        self.memory[address as usize] = value;
-    }
 }
 
 impl Default for CPU {
     fn default() -> Self {
         CPU {
             registers: Registers::default(),
-            pc: 0,
-            bus: MemoryBus {
-                memory: [0; 0x10000],
-            },
-            stepHook: Box::new(|_| {}),
         }
-    }
-}
-
-impl CPU {
-    pub fn step(&mut self) {
-        let instruction_byte = self.read_next_byte();
-        let instruction = instructions::from_byte(instruction_byte);
-        (self.stepHook)(instruction_byte);
-        instruction(self);
-    }
-
-    pub fn read_next_byte(&mut self) -> u8 {
-        let byte = self.bus.read_byte(self.pc);
-        self.pc = self.pc.wrapping_add(1);
-        byte
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_add() {
-        let mut cpu = CPU {
-            registers: Registers {
-                a: 3,
-                c: 4,
-                f: FlagsRegister::from(0),
-                ..Default::default()
-            },
-            bus: MemoryBus {
-                memory: [0x81; 0x10000],
-            },
-            pc: 1245,
-            ..Default::default()
-        };
-        cpu.step();
-        assert_eq!(cpu.registers.a, 7);
-        assert_eq!(cpu.pc, 1246);
     }
 }
