@@ -52,18 +52,23 @@ impl<'a> Gameboy<'a> {
     }
 
     pub fn step(&mut self) {
-        let instruction_byte = self.read_next_byte();
-        let _opcode_info = self
+        let address = self.cpu.registers.get_u16(Register16bTarget::PC);
+        let instruction_byte = self.bus.read_byte(address);
+        let opcode_info = self
             .opcode_info
             .unprefixed
             .get(&format!("0x{:02X}", instruction_byte))
             .unwrap();
         log::debug!(
-            "instruction_byte: 0x{:02X}, program counter: 0x{:04X}",
-            instruction_byte,
-            self.cpu.registers.get_u16(Register16bTarget::PC)
+            "program counter: 0x{:04X}\ninstruction: {}\noperands: {:?}",
+            self.cpu.registers.get_u16(Register16bTarget::PC),
+            opcode_info.mnemonic,
+            opcode_info.operands
         );
         let instruction = instructions::from_byte(instruction_byte);
+        self.cpu
+            .registers
+            .set_u16(Register16bTarget::PC, address.wrapping_add(1));
         instruction(self);
     }
 

@@ -2,8 +2,8 @@ use crate::gameboy::Gameboy;
 
 pub fn jmp_a16() -> impl Fn(&mut Gameboy) {
     move |gameboy: &mut Gameboy| {
-        let low = gameboy.bus.memory[(gameboy.cpu.registers.pc) as usize];
-        let high = gameboy.bus.memory[(gameboy.cpu.registers.pc + 1) as usize];
+        let low = gameboy.read_next_byte();
+        let high = gameboy.read_next_byte();
         gameboy.cpu.registers.pc = u16::from_le_bytes([low, high]);
     }
 }

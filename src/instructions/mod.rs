@@ -12,8 +12,10 @@ mod ld;
 mod misc;
 mod nop;
 mod or;
+mod rst;
 mod stack;
 mod sub;
+mod xor;
 
 use super::cpu::*;
 use super::gameboy;
@@ -168,6 +170,15 @@ pub fn from_byte(byte: u8) -> Box<dyn Fn(&mut gameboy::Gameboy)> {
         0xA6 => Box::new(and::and_mem_at_r16(Register16bTarget::HL)),
         0xA7 => Box::new(and::and(RegisterTarget::A)),
 
+        0xA8 => Box::new(or::or(RegisterTarget::B)),
+        0xA9 => Box::new(or::or(RegisterTarget::C)),
+        0xAA => Box::new(or::or(RegisterTarget::D)),
+        0xAB => Box::new(or::or(RegisterTarget::E)),
+        0xAC => Box::new(or::or(RegisterTarget::H)),
+        0xAD => Box::new(or::or(RegisterTarget::L)),
+        0xAE => Box::new(or::or_mem_at_r16(Register16bTarget::HL)),
+        0xAF => Box::new(or::or(RegisterTarget::A)),
+
         0xB0 => Box::new(or::or(RegisterTarget::B)),
         0xB1 => Box::new(or::or(RegisterTarget::C)),
         0xB2 => Box::new(or::or(RegisterTarget::D)),
@@ -196,8 +207,17 @@ pub fn from_byte(byte: u8) -> Box<dyn Fn(&mut gameboy::Gameboy)> {
         0xEA => Box::new(ld::ld_r_mem_at_d16(RegisterTarget::A)),
 
         0xF3 => Box::new(int::di()),
+        0xF9 => Box::new(ld::ld_sp_hl),
         0xFB => Box::new(int::ei()),
 
+        0xC7 => Box::new(rst::rst(0x00)),
+        0xCF => Box::new(rst::rst(0x08)),
+        0xD7 => Box::new(rst::rst(0x10)),
+        0xDF => Box::new(rst::rst(0x18)),
+        0xE7 => Box::new(rst::rst(0x20)),
+        0xEF => Box::new(rst::rst(0x08)),
+        0xF7 => Box::new(rst::rst(0x30)),
+        0xFF => Box::new(rst::rst(0x38)),
         0xFE => Box::new(cp::cp_d8()),
 
         other => {
