@@ -8,6 +8,7 @@ pub struct Gameboy<'a> {
     pub bus: MemoryBus,
     pub cartridge: &'a [u8; 0x200000],
     pub opcode_info: OpcodeInfo,
+    pub interrupts_enabled: bool,
 }
 
 impl Default for Gameboy<'_> {
@@ -23,6 +24,7 @@ impl Default for Gameboy<'_> {
             opcode_info,
             bus: MemoryBus::default(),
             cartridge: &[0; 0x200000],
+            interrupts_enabled: false,
         }
     }
 }
@@ -56,10 +58,56 @@ impl<'a> Gameboy<'a> {
     }
 
     pub fn step(&mut self) {
+        let instruction = self.get_next_instruction();
+        instruction(self);
+
+        self.handle_interrupts();
+        self.serial_comm();
+    }
+
+    fn handle_interrupts(&mut self) {
+        // check if interrupts are enabled
+        if self.interrupts_enabled {
+            // check if any interrupts are enabled
+            let interrupt_enable = self.bus.read_byte(0xFFFF);
+            let interrupt_flags = self.bus.read_byte(0xFF0F);
+            let interrupt = interrupt_enable & interrupt_flags;
+            if interrupt != 0 {
+                // disable interrupts
+                self.interrupts_enabled = false;
+                // push current program counter to stack
+                let pc = self.cpu.registers.get_u16(Register16bTarget::PC);
+                self.cpu.registers.stack_push(pc, &mut self.bus);
+                // jump to interrupt handler
+                let interrupt_handler = match interrupt {
+                    0x01 => 0x40, // V-Blank
+                    0x02 => 0x48, // LCD STAT
+                    0x04 => 0x50, // Timer
+                    0x08 => 0x58, // Serial
+                    0x10 => 0x60, // Joypad
+                    _ => panic!("invalid interrupt"),
+                };
+                self.cpu
+                    .registers
+                    .set_u16(Register16bTarget::PC, interrupt_handler);
+            }
+        }
+    }
+
+    fn serial_comm(&mut self) {
+        // read from serial port if requested
+        if self.bus.memory[0xFF02] == 0x81 {
+            let byte = self.bus.read_byte(0xFF01);
+            print!("{}", byte as char);
+            self.bus.memory[0xFF02] = 0x0;
+        }
+    }
+
+    fn get_next_instruction(&mut self) -> Box<dyn Fn(&mut Gameboy)> {
         let address = self.cpu.registers.get_u16(Register16bTarget::PC);
         let instruction_byte = self.bus.read_byte(address);
-        let mut opcode_info;
-        let mut instruction;
+        let opcode_info;
+        let instruction;
         self.cpu
             .registers
             .set_u16(Register16bTarget::PC, address.wrapping_add(1));
@@ -89,14 +137,7 @@ impl<'a> Gameboy<'a> {
             opcode_info.mnemonic,
             opcode_info.operands
         );
-        instruction(self);
-
-        // read from serial port if requested
-        if self.bus.memory[0xFF02] == 0x81 {
-            let byte = self.bus.read_byte(0xFF01);
-            print!("{}", byte as char);
-            self.bus.memory[0xFF02] = 0x0;
-        }
+        instruction
     }
 
     pub fn read_next_byte(&mut self) -> u8 {

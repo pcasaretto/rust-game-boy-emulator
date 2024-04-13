@@ -4,11 +4,7 @@ use crate::gameboy::Gameboy;
 pub fn push(reg: Register16bTarget) -> impl Fn(&mut Gameboy) {
     move |gameboy: &mut Gameboy| {
         let value = gameboy.cpu.registers.get_u16(reg);
-        let [high, low] = value.to_be_bytes();
-        gameboy.cpu.registers.sp = gameboy.cpu.registers.sp.wrapping_sub(1);
-        gameboy.bus.write_byte(gameboy.cpu.registers.sp, high);
-        gameboy.cpu.registers.sp = gameboy.cpu.registers.sp.wrapping_sub(1);
-        gameboy.bus.write_byte(gameboy.cpu.registers.sp, low);
+        gameboy.cpu.registers.stack_push(value, &mut gameboy.bus);
     }
 }
 
