@@ -1,8 +1,9 @@
 use crate::gameboy::Gameboy;
 
-pub fn stop() -> impl Fn(&mut Gameboy) {
+const TICKS: u8 = 4;
+pub fn stop(gameboy: &mut Gameboy) -> u8 {
     //TODO: stop until button pressed
-    move |_: &mut Gameboy| {}
+    TICKS
 }
 
 #[cfg(test)]

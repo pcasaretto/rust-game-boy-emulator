@@ -1,12 +1,25 @@
 use crate::cpu::{Register16bTarget, RegisterTarget};
 use crate::gameboy::Gameboy;
-use crate::instructions::binary;
 
-pub fn and(target: RegisterTarget) -> impl Fn(&mut Gameboy) {
-    binary::operation_on_r_a(target, |left, right| left & right)
+pub fn and(target: RegisterTarget) -> impl Fn(&mut Gameboy) -> u8 {
+    move |gameboy: &mut Gameboy| {
+        let r = gameboy.cpu.registers.get_u8(target);
+        let a = gameboy.cpu.registers.get_u8(RegisterTarget::A);
+
+        let value = a & r;
+
+        gameboy.cpu.registers.set_u8(RegisterTarget::A, value);
+
+        gameboy.cpu.registers.f.zero = value == 0;
+        gameboy.cpu.registers.f.subtract = false;
+        gameboy.cpu.registers.f.half_carry = true;
+        gameboy.cpu.registers.f.carry = false;
+        const TICKS: u8 = 4;
+        TICKS
+    }
 }
 
-pub fn and_mem_at_r16(reg: Register16bTarget) -> impl Fn(&mut Gameboy) {
+pub fn and_mem_at_r16(reg: Register16bTarget) -> impl Fn(&mut Gameboy) -> u8 {
     move |gameboy: &mut Gameboy| {
         let addr = gameboy.cpu.registers.get_u16(reg);
         let value = gameboy.bus.read_byte(addr);
@@ -20,6 +33,8 @@ pub fn and_mem_at_r16(reg: Register16bTarget) -> impl Fn(&mut Gameboy) {
         gameboy.cpu.registers.f.subtract = false;
         gameboy.cpu.registers.f.half_carry = true;
         gameboy.cpu.registers.f.carry = false;
+        const TICKS: u8 = 8;
+        TICKS
     }
 }
 

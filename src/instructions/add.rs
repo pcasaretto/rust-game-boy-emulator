@@ -1,7 +1,7 @@
 use crate::cpu::RegisterTarget;
 use crate::gameboy::Gameboy;
 
-pub fn add(target: RegisterTarget) -> impl Fn(&mut Gameboy) {
+pub fn add(target: RegisterTarget) -> impl Fn(&mut Gameboy) -> u8 {
     move |gameboy: &mut Gameboy| {
         let target_value = gameboy.cpu.registers.get_u8(target);
         let current_value = gameboy.cpu.registers.a;
@@ -12,6 +12,8 @@ pub fn add(target: RegisterTarget) -> impl Fn(&mut Gameboy) {
         gameboy.cpu.registers.f.zero = new_value == 0;
         gameboy.cpu.registers.f.subtract = false;
         gameboy.cpu.registers.f.half_carry = (current_value & 0xF) + (target_value & 0xF) > 0xF;
+        const TICKS: u8 = 4;
+        TICKS
     }
 }
 

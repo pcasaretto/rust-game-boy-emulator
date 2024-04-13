@@ -1,6 +1,6 @@
 use crate::gameboy::Gameboy;
 
-pub fn call_a16() -> impl Fn(&mut Gameboy) {
+pub fn call_a16() -> impl Fn(&mut Gameboy) -> u8 {
     move |gameboy: &mut Gameboy| {
         let [pc_high, pc_low] = gameboy.cpu.registers.pc.to_be_bytes();
         gameboy.cpu.registers.sp = gameboy.cpu.registers.sp.wrapping_sub(1);
@@ -12,10 +12,12 @@ pub fn call_a16() -> impl Fn(&mut Gameboy) {
         let high = gameboy.read_next_byte();
 
         gameboy.cpu.registers.pc = u16::from_le_bytes([low, high]);
+        const TICKS: u8 = 24;
+        TICKS
     }
 }
 
-pub fn ret() -> impl Fn(&mut Gameboy) {
+pub fn ret() -> impl Fn(&mut Gameboy) -> u8 {
     move |gameboy: &mut Gameboy| {
         let low = gameboy.bus.read_byte(gameboy.cpu.registers.sp);
         gameboy.cpu.registers.sp = gameboy.cpu.registers.sp.wrapping_add(1);
@@ -23,6 +25,8 @@ pub fn ret() -> impl Fn(&mut Gameboy) {
         gameboy.cpu.registers.sp = gameboy.cpu.registers.sp.wrapping_add(1);
 
         gameboy.cpu.registers.pc = u16::from_le_bytes([low, high]);
+        const TICKS: u8 = 16;
+        TICKS
     }
 }
 

@@ -1,7 +1,6 @@
 mod adc;
 mod add;
 mod and;
-mod binary;
 mod bit;
 mod call;
 mod cp;
@@ -23,26 +22,31 @@ mod xor;
 use super::cpu::*;
 use super::gameboy;
 
-pub fn from_byte(byte: u8) -> Box<dyn Fn(&mut gameboy::Gameboy)> {
+/// Represents an instruction that can be executed by the Gameboy.
+/// The instruction is a function that takes a mutable reference to a Gameboy and returns
+/// the number of t-states (system clock ticks) that the instruction took to execute.
+pub type Instruction = dyn Fn(&mut gameboy::Gameboy) -> u8;
+
+pub fn from_byte(byte: u8) -> Box<Instruction> {
     match byte {
         0x00 => Box::new(nop::nop),
-        0x01 => Box::new(ld::ld_d16_r16(Register16bTarget::BC)),
-        0x02 => Box::new(ld::ld_r_mem_at_r16(
+        0x01 => Box::new(ld::ld_r16_n16(Register16bTarget::BC)),
+        0x02 => Box::new(ld::ld_mem_at_r16_r(
             Register16bTarget::BC,
             RegisterTarget::A,
         )),
-        0x10 => Box::new(misc::stop()),
-        0x12 => Box::new(ld::ld_r_mem_at_r16(
+        0x10 => Box::new(misc::stop),
+        0x12 => Box::new(ld::ld_mem_at_r16_r(
             Register16bTarget::DE,
             RegisterTarget::A,
         )),
-        0x11 => Box::new(ld::ld_d16_r16(Register16bTarget::DE)),
+        0x11 => Box::new(ld::ld_r16_n16(Register16bTarget::DE)),
 
-        0x0A => Box::new(ld::ld_r_mem_at_r16(
+        0x0A => Box::new(ld::ld_mem_at_r16_r(
             Register16bTarget::BC,
             RegisterTarget::A,
         )),
-        0x1A => Box::new(ld::ld_r_mem_at_r16(
+        0x1A => Box::new(ld::ld_mem_at_r16_r(
             Register16bTarget::DE,
             RegisterTarget::A,
         )),
@@ -67,14 +71,14 @@ pub fn from_byte(byte: u8) -> Box<dyn Fn(&mut gameboy::Gameboy)> {
         0x2D => Box::new(dec::dec_r(RegisterTarget::L)),
         0x3D => Box::new(dec::dec_r(RegisterTarget::A)),
 
-        0x18 => Box::new(jmp::jr()),
-        0x20 => Box::new(jmp::jr_nz()),
-        0x30 => Box::new(jmp::jr_nc()),
-        0x28 => Box::new(jmp::jr_z()),
-        0x38 => Box::new(jmp::jr_c()),
+        0x18 => Box::new(jmp::jr),
+        0x20 => Box::new(jmp::jr_nz),
+        0x30 => Box::new(jmp::jr_nc),
+        0x28 => Box::new(jmp::jr_z),
+        0x38 => Box::new(jmp::jr_c),
 
-        0x31 => Box::new(ld::ld_d16_r16(Register16bTarget::SP)),
-        0x21 => Box::new(ld::ld_d16_r16(Register16bTarget::HL)),
+        0x31 => Box::new(ld::ld_r16_n16(Register16bTarget::SP)),
+        0x21 => Box::new(ld::ld_r16_n16(Register16bTarget::HL)),
         0x22 => Box::new(ld::ld_mem_at_hl_a_inc),
         0x32 => Box::new(ld::ld_mem_at_hl_a_dec),
         0x2A => Box::new(ld::ld_a_mem_at_hl_inc),
@@ -199,14 +203,14 @@ pub fn from_byte(byte: u8) -> Box<dyn Fn(&mut gameboy::Gameboy)> {
         0xA6 => Box::new(and::and_mem_at_r16(Register16bTarget::HL)),
         0xA7 => Box::new(and::and(RegisterTarget::A)),
 
-        0xA8 => Box::new(or::or(RegisterTarget::B)),
-        0xA9 => Box::new(or::or(RegisterTarget::C)),
-        0xAA => Box::new(or::or(RegisterTarget::D)),
-        0xAB => Box::new(or::or(RegisterTarget::E)),
-        0xAC => Box::new(or::or(RegisterTarget::H)),
-        0xAD => Box::new(or::or(RegisterTarget::L)),
-        0xAE => Box::new(or::or_mem_at_r16(Register16bTarget::HL)),
-        0xAF => Box::new(or::or(RegisterTarget::A)),
+        0xA8 => Box::new(xor::xor(RegisterTarget::B)),
+        0xA9 => Box::new(xor::xor(RegisterTarget::C)),
+        0xAA => Box::new(xor::xor(RegisterTarget::D)),
+        0xAB => Box::new(xor::xor(RegisterTarget::E)),
+        0xAC => Box::new(xor::xor(RegisterTarget::H)),
+        0xAD => Box::new(xor::xor(RegisterTarget::L)),
+        0xAE => Box::new(xor::xor_mem_at_r16(Register16bTarget::HL)),
+        0xAF => Box::new(xor::xor(RegisterTarget::A)),
 
         0xB0 => Box::new(or::or(RegisterTarget::B)),
         0xB1 => Box::new(or::or(RegisterTarget::C)),
@@ -236,9 +240,9 @@ pub fn from_byte(byte: u8) -> Box<dyn Fn(&mut gameboy::Gameboy)> {
         0xE2 => Box::new(ld::ld_mem_at_c_a),
         0xEA => Box::new(ld::ld_r_mem_at_d16(RegisterTarget::A)),
 
-        0xF3 => Box::new(int::di()),
+        0xF3 => Box::new(int::di),
         0xF9 => Box::new(ld::ld_sp_hl),
-        0xFB => Box::new(int::ei()),
+        0xFB => Box::new(int::ei),
 
         0xC7 => Box::new(rst::rst(0x00)),
         0xCF => Box::new(rst::rst(0x08)),
@@ -248,7 +252,7 @@ pub fn from_byte(byte: u8) -> Box<dyn Fn(&mut gameboy::Gameboy)> {
         0xEF => Box::new(rst::rst(0x08)),
         0xF7 => Box::new(rst::rst(0x30)),
         0xFF => Box::new(rst::rst(0x38)),
-        0xFE => Box::new(cp::cp_d8()),
+        0xFE => Box::new(cp::cp_d8),
 
         other => {
             panic!("Unsupported instruction {:X}", other)
@@ -256,7 +260,7 @@ pub fn from_byte(byte: u8) -> Box<dyn Fn(&mut gameboy::Gameboy)> {
     }
 }
 
-pub fn from_prefixed_byte(byte: u8) -> Box<dyn Fn(&mut gameboy::Gameboy)> {
+pub fn from_prefixed_byte(byte: u8) -> Box<Instruction> {
     match byte {
         0x30 => Box::new(swap::swap(RegisterTarget::B)),
         0x31 => Box::new(swap::swap(RegisterTarget::C)),

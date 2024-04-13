@@ -52,17 +52,22 @@ impl<'a> Gameboy<'a> {
         // load first 0x8000 bytes of cartridge into memory
         // self.bus.memory[..0x8000].copy_from_slice(&self.cartridge[..0x8000]);
 
+        let mut total_cycles: u64 = 0;
         loop {
-            self.step();
+            total_cycles += self.step();
+            if self.cpu.registers.get_u16(Register16bTarget::PC) >= 0x100 {
+                break;
+            }
         }
     }
 
-    pub fn step(&mut self) {
+    pub fn step(&mut self) -> u64 {
         let instruction = self.get_next_instruction();
-        instruction(self);
+        let cycles = instruction(self);
 
         self.handle_interrupts();
         self.serial_comm();
+        cycles as u64
     }
 
     fn handle_interrupts(&mut self) {
@@ -103,7 +108,7 @@ impl<'a> Gameboy<'a> {
         }
     }
 
-    fn get_next_instruction(&mut self) -> Box<dyn Fn(&mut Gameboy)> {
+    fn get_next_instruction(&mut self) -> Box<instructions::Instruction> {
         let address = self.cpu.registers.get_u16(Register16bTarget::PC);
         let instruction_byte = self.bus.read_byte(address);
         let opcode_info;

@@ -1,14 +1,16 @@
 use crate::cpu::Register16bTarget;
 use crate::gameboy::Gameboy;
 
-pub fn push(reg: Register16bTarget) -> impl Fn(&mut Gameboy) {
+pub fn push(reg: Register16bTarget) -> impl Fn(&mut Gameboy) -> u8 {
     move |gameboy: &mut Gameboy| {
         let value = gameboy.cpu.registers.get_u16(reg);
         gameboy.cpu.registers.stack_push(value, &mut gameboy.bus);
+        const TICKS: u8 = 16;
+        TICKS
     }
 }
 
-pub fn pop(reg: Register16bTarget) -> impl Fn(&mut Gameboy) {
+pub fn pop(reg: Register16bTarget) -> impl Fn(&mut Gameboy) -> u8 {
     move |gameboy: &mut Gameboy| {
         let low = gameboy.bus.read_byte(gameboy.cpu.registers.sp);
         gameboy.cpu.registers.sp = gameboy.cpu.registers.sp.wrapping_add(1);
@@ -18,6 +20,8 @@ pub fn pop(reg: Register16bTarget) -> impl Fn(&mut Gameboy) {
             .cpu
             .registers
             .set_u16(reg, u16::from_be_bytes([high, low]));
+        const TICKS: u8 = 12;
+        TICKS
     }
 }
 

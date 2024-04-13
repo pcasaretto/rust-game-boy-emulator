@@ -1,15 +1,15 @@
 use crate::gameboy::Gameboy;
 
-pub fn di() -> impl Fn(&mut Gameboy) {
-    move |gameboy: &mut Gameboy| {
-        gameboy.interrupts_enabled = false;
-    }
+pub fn di(gameboy: &mut Gameboy) -> u8 {
+    gameboy.interrupts_enabled = false;
+    const TICKS: u8 = 4;
+    TICKS
 }
 
-pub fn ei() -> impl Fn(&mut Gameboy) {
-    move |gameboy: &mut Gameboy| {
-        gameboy.interrupts_enabled = true;
-    }
+pub fn ei(gameboy: &mut Gameboy) -> u8 {
+    gameboy.interrupts_enabled = true;
+    const TICKS: u8 = 4;
+    TICKS
 }
 #[cfg(test)]
 mod tests {
@@ -19,8 +19,7 @@ mod tests {
         let mut gameboy = Gameboy::default();
         gameboy.interrupts_enabled = true;
 
-        let di_func = di();
-        di_func(&mut gameboy);
+        di(&mut gameboy);
 
         assert_eq!(gameboy.interrupts_enabled, false);
     }
@@ -30,8 +29,7 @@ mod tests {
         let mut gameboy = Gameboy::default();
         gameboy.interrupts_enabled = false;
 
-        let ei_func = ei();
-        ei_func(&mut gameboy);
+        ei(&mut gameboy);
 
         assert_eq!(gameboy.interrupts_enabled, true);
     }

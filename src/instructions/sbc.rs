@@ -1,7 +1,7 @@
 use crate::cpu::{self, Register16bTarget, RegisterTarget};
 use crate::gameboy::Gameboy;
 
-pub fn sbc_r_r_a(target: RegisterTarget) -> impl Fn(&mut Gameboy) {
+pub fn sbc_r_r_a(target: RegisterTarget) -> impl Fn(&mut Gameboy) -> u8 {
     move |gameboy: &mut Gameboy| {
         let mut target_value = gameboy.cpu.registers.get_u8(target);
         if gameboy.cpu.registers.f.carry {
@@ -15,25 +15,26 @@ pub fn sbc_r_r_a(target: RegisterTarget) -> impl Fn(&mut Gameboy) {
         gameboy.cpu.registers.f.zero = new_value == 0;
         gameboy.cpu.registers.f.subtract = true;
         gameboy.cpu.registers.f.half_carry = (current_value & 0xF) < (target_value & 0xF);
+        const TICKS: u8 = 4;
+        TICKS
     }
 }
 
-pub fn sbc_d8() -> impl Fn(&mut Gameboy) {
-    move |gameboy: &mut Gameboy| {
-        let mut d8 =
-            gameboy.bus.memory[gameboy.cpu.registers.get_u16(Register16bTarget::PC) as usize];
-        if gameboy.cpu.registers.f.carry {
-            d8 += 1;
-        }
-        let current_value = gameboy.cpu.registers.get_u8(RegisterTarget::A);
-        let (new_value, did_overflow) = current_value.overflowing_sub(d8);
-        gameboy.cpu.registers.a = new_value;
-
-        gameboy.cpu.registers.f.carry = did_overflow;
-        gameboy.cpu.registers.f.zero = new_value == 0;
-        gameboy.cpu.registers.f.subtract = true;
-        gameboy.cpu.registers.f.half_carry = (current_value & 0xF) < (d8 & 0xF);
+pub fn sbc_d8(gameboy: &mut Gameboy) -> u8 {
+    let mut d8 = gameboy.bus.memory[gameboy.cpu.registers.get_u16(Register16bTarget::PC) as usize];
+    if gameboy.cpu.registers.f.carry {
+        d8 += 1;
     }
+    let current_value = gameboy.cpu.registers.get_u8(RegisterTarget::A);
+    let (new_value, did_overflow) = current_value.overflowing_sub(d8);
+    gameboy.cpu.registers.a = new_value;
+
+    gameboy.cpu.registers.f.carry = did_overflow;
+    gameboy.cpu.registers.f.zero = new_value == 0;
+    gameboy.cpu.registers.f.subtract = true;
+    gameboy.cpu.registers.f.half_carry = (current_value & 0xF) < (d8 & 0xF);
+    const TICKS: u8 = 8;
+    TICKS
 }
 
 #[cfg(test)]
@@ -185,7 +186,7 @@ mod tests {
             ..Default::default()
         };
         gameboy.bus.memory[0x0012] = 1;
-        sbc_d8()(&mut gameboy);
+        sbc_d8(&mut gameboy);
         assert_eq!(gameboy.cpu.registers.a, 3);
     }
 
@@ -204,7 +205,7 @@ mod tests {
             ..Default::default()
         };
         gameboy.bus.memory[0x0012] = 5;
-        sbc_d8()(&mut gameboy);
+        sbc_d8(&mut gameboy);
         assert_eq!(gameboy.cpu.registers.a, 255);
     }
 
@@ -223,7 +224,7 @@ mod tests {
             ..Default::default()
         };
         gameboy.bus.memory[0x0012] = 5;
-        sbc_d8()(&mut gameboy);
+        sbc_d8(&mut gameboy);
         assert!(gameboy.cpu.registers.f.carry);
     }
 
@@ -242,7 +243,7 @@ mod tests {
             ..Default::default()
         };
         gameboy.bus.memory[0x0012] = 5;
-        sbc_d8()(&mut gameboy);
+        sbc_d8(&mut gameboy);
         assert!(gameboy.cpu.registers.f.zero);
     }
 
@@ -261,7 +262,7 @@ mod tests {
             ..Default::default()
         };
         gameboy.bus.memory[0x0012] = 5;
-        sbc_d8()(&mut gameboy);
+        sbc_d8(&mut gameboy);
         assert!(gameboy.cpu.registers.f.subtract);
     }
 
@@ -280,7 +281,7 @@ mod tests {
             ..Default::default()
         };
         gameboy.bus.memory[0x0012] = 1;
-        sbc_d8()(&mut gameboy);
+        sbc_d8(&mut gameboy);
         assert!(gameboy.cpu.registers.f.half_carry);
     }
 }

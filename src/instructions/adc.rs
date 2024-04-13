@@ -1,7 +1,7 @@
 use crate::cpu::{Register16bTarget, RegisterTarget};
 use crate::gameboy::Gameboy;
 
-pub fn adc(target: RegisterTarget) -> impl Fn(&mut Gameboy) {
+pub fn adc(target: RegisterTarget) -> impl Fn(&mut Gameboy) -> u8 {
     move |gameboy: &mut Gameboy| {
         let mut addend = gameboy.cpu.registers.get_u8(target);
         let current_value = gameboy.cpu.registers.a;
@@ -15,10 +15,12 @@ pub fn adc(target: RegisterTarget) -> impl Fn(&mut Gameboy) {
         gameboy.cpu.registers.f.subtract = false;
         gameboy.cpu.registers.f.zero = new_value == 0;
         gameboy.cpu.registers.f.half_carry = (current_value & 0xF) + (addend & 0xF) > 0xF;
+        const TICKS: u8 = 4;
+        TICKS
     }
 }
 
-pub fn adc_mem_at_hl() -> impl Fn(&mut Gameboy) {
+pub fn adc_mem_at_hl() -> impl Fn(&mut Gameboy) -> u8 {
     move |gameboy: &mut Gameboy| {
         let addr = gameboy.cpu.registers.get_u16(Register16bTarget::HL);
         let mut addend = gameboy.bus.read_byte(addr);
@@ -33,6 +35,8 @@ pub fn adc_mem_at_hl() -> impl Fn(&mut Gameboy) {
         gameboy.cpu.registers.f.subtract = false;
         gameboy.cpu.registers.f.zero = new_value == 0;
         gameboy.cpu.registers.f.half_carry = (current_value & 0xF) + (addend & 0xF) > 0xF;
+        const TICKS: u8 = 8;
+        TICKS
     }
 }
 

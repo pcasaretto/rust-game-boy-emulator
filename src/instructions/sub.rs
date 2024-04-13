@@ -1,7 +1,7 @@
 use crate::cpu::{Register16bTarget, RegisterTarget};
 use crate::gameboy::Gameboy;
 
-pub fn sub_r_r_a(target: RegisterTarget) -> impl Fn(&mut Gameboy) {
+pub fn sub_r_r_a(target: RegisterTarget) -> impl Fn(&mut Gameboy) -> u8 {
     move |gameboy: &mut Gameboy| {
         let target_value = gameboy.cpu.registers.get_u8(target);
         let current_value = gameboy.cpu.registers.get_u8(RegisterTarget::A);
@@ -12,10 +12,12 @@ pub fn sub_r_r_a(target: RegisterTarget) -> impl Fn(&mut Gameboy) {
         gameboy.cpu.registers.f.zero = new_value == 0;
         gameboy.cpu.registers.f.subtract = true;
         gameboy.cpu.registers.f.half_carry = (current_value & 0xF) < (target_value & 0xF);
+        const TICKS: u8 = 8;
+        TICKS
     }
 }
 
-pub fn sub_d8() -> impl Fn(&mut Gameboy) {
+pub fn sub_d8() -> impl Fn(&mut Gameboy) -> u8 {
     move |gameboy: &mut Gameboy| {
         let d8 = gameboy.bus.memory[gameboy.cpu.registers.get_u16(Register16bTarget::PC) as usize];
         let current_value = gameboy.cpu.registers.get_u8(RegisterTarget::A);
@@ -26,6 +28,8 @@ pub fn sub_d8() -> impl Fn(&mut Gameboy) {
         gameboy.cpu.registers.f.zero = new_value == 0;
         gameboy.cpu.registers.f.subtract = true;
         gameboy.cpu.registers.f.half_carry = (current_value & 0xF) < (d8 & 0xF);
+        const TICKS: u8 = 8;
+        TICKS
     }
 }
 

@@ -3,22 +3,26 @@ use crate::gameboy::Gameboy;
 
 use super::RegisterTarget;
 
-pub fn set_mem_at_hl(bit_position: u8) -> impl Fn(&mut Gameboy) {
+pub fn set_mem_at_hl(bit_position: u8) -> impl Fn(&mut Gameboy) -> u8 {
     move |gameboy: &mut Gameboy| {
         let hl = gameboy.cpu.registers.get_u16(Register16bTarget::HL);
         let value = gameboy.bus.read_byte(hl);
         let result = value | (1 << bit_position);
 
         gameboy.bus.write_byte(hl, result);
+        const CYCLES: u8 = 4;
+        CYCLES
     }
 }
 
-pub fn set_r(target: RegisterTarget, bit_position: u8) -> impl Fn(&mut Gameboy) {
+pub fn set_r(target: RegisterTarget, bit_position: u8) -> impl Fn(&mut Gameboy) -> u8 {
     move |gameboy: &mut Gameboy| {
         let value = gameboy.cpu.registers.get_u8(target);
         let result = value | (1 << bit_position);
 
         gameboy.cpu.registers.set_u8(target, result);
+        const CYCLES: u8 = 4;
+        CYCLES
     }
 }
 

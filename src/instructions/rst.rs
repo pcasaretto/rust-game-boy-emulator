@@ -1,7 +1,7 @@
 use crate::cpu::Register16bTarget;
 use crate::gameboy::Gameboy;
 
-pub fn rst(offset: u8) -> impl Fn(&mut Gameboy) {
+pub fn rst(offset: u8) -> impl Fn(&mut Gameboy) -> u8 {
     move |gameboy: &mut Gameboy| {
         let pc = gameboy.cpu.registers.get_u16(Register16bTarget::PC);
         let [high, low] = pc.to_be_bytes();
@@ -10,6 +10,8 @@ pub fn rst(offset: u8) -> impl Fn(&mut Gameboy) {
         gameboy.cpu.registers.sp = gameboy.cpu.registers.sp.wrapping_sub(1);
         gameboy.bus.write_byte(gameboy.cpu.registers.sp, low);
         gameboy.cpu.registers.pc = u16::from(offset);
+        const TICKS: u8 = 16;
+        TICKS
     }
 }
 

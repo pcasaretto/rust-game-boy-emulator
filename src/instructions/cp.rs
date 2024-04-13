@@ -1,12 +1,12 @@
 use crate::cpu::RegisterTarget;
 use crate::gameboy::Gameboy;
 
-pub fn cp_d8() -> impl Fn(&mut Gameboy) {
-    move |gameboy: &mut Gameboy| {
-        let value = gameboy.read_next_byte();
-        let a = gameboy.cpu.registers.get_u8(RegisterTarget::A);
-        gameboy.cpu.registers.f.zero = a == value;
-    }
+pub fn cp_d8(gameboy: &mut Gameboy) -> u8 {
+    let value = gameboy.read_next_byte();
+    let a = gameboy.cpu.registers.get_u8(RegisterTarget::A);
+    gameboy.cpu.registers.f.zero = a == value;
+    const TICKS: u8 = 8;
+    TICKS
 }
 
 #[cfg(test)]
@@ -27,7 +27,7 @@ mod tests {
             ..Default::default()
         };
         gameboy.bus.write_byte(gameboy.cpu.registers.pc, 13);
-        cp_d8()(&mut gameboy);
+        cp_d8(&mut gameboy);
         assert!(gameboy.cpu.registers.f.zero);
     }
 
@@ -44,7 +44,7 @@ mod tests {
             ..Default::default()
         };
         gameboy.bus.write_byte(gameboy.cpu.registers.pc, 14);
-        cp_d8()(&mut gameboy);
+        cp_d8(&mut gameboy);
         assert!(!gameboy.cpu.registers.f.zero);
     }
 }
