@@ -38,6 +38,15 @@ pub fn from_byte(byte: u8) -> Box<dyn Fn(&mut gameboy::Gameboy)> {
         )),
         0x11 => Box::new(ld::ld_d16_r16(Register16bTarget::DE)),
 
+        0x0A => Box::new(ld::ld_r_mem_at_r16(
+            Register16bTarget::BC,
+            RegisterTarget::A,
+        )),
+        0x1A => Box::new(ld::ld_r_mem_at_r16(
+            Register16bTarget::DE,
+            RegisterTarget::A,
+        )),
+
         0x03 => Box::new(inc::inc_r16(Register16bTarget::BC)),
         0x04 => Box::new(inc::inc_r(RegisterTarget::B)),
         0x13 => Box::new(inc::inc_r16(Register16bTarget::DE)),
