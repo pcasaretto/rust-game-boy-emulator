@@ -12,6 +12,7 @@ mod ld;
 mod misc;
 mod nop;
 mod or;
+mod rot;
 mod rst;
 mod sbc;
 mod stack;
@@ -270,6 +271,23 @@ pub fn from_prefixed_byte(byte: u8) -> Box<Instruction> {
         0x35 => Box::new(swap::swap(RegisterTarget::L)),
         // 0x36 => Box::new(swap::swap(RegisterTarget::C)),
         0x37 => Box::new(swap::swap(RegisterTarget::A)),
+
+        0x10 => Box::new(rot::rl_r(RegisterTarget::B)),
+        0x11 => Box::new(rot::rl_r(RegisterTarget::C)),
+        0x12 => Box::new(rot::rl_r(RegisterTarget::D)),
+        0x13 => Box::new(rot::rl_r(RegisterTarget::E)),
+        0x14 => Box::new(rot::rl_r(RegisterTarget::H)),
+        0x15 => Box::new(rot::rl_r(RegisterTarget::L)),
+        0x16 => Box::new(rot::rl_mem_at_hl),
+        0x17 => Box::new(rot::rl_r(RegisterTarget::A)),
+        0x18 => Box::new(rot::rr_r(RegisterTarget::B)),
+        0x19 => Box::new(rot::rr_r(RegisterTarget::C)),
+        0x1A => Box::new(rot::rr_r(RegisterTarget::D)),
+        0x1B => Box::new(rot::rr_r(RegisterTarget::E)),
+        0x1C => Box::new(rot::rr_r(RegisterTarget::H)),
+        0x1D => Box::new(rot::rr_r(RegisterTarget::L)),
+        0x1E => Box::new(rot::rr_mem_at_hl),
+        0x1F => Box::new(rot::rr_r(RegisterTarget::A)),
 
         0x40 => Box::new(bit::bit_r(RegisterTarget::B, 0)),
         0x41 => Box::new(bit::bit_r(RegisterTarget::C, 0)),

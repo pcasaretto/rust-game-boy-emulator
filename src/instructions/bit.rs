@@ -1,7 +1,6 @@
 use crate::cpu::Register16bTarget;
+use crate::cpu::RegisterTarget;
 use crate::gameboy::Gameboy;
-
-use super::RegisterTarget;
 
 pub fn set_mem_at_hl(bit_position: u8) -> impl Fn(&mut Gameboy) -> u8 {
     move |gameboy: &mut Gameboy| {
