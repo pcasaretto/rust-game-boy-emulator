@@ -39,16 +39,16 @@ pub struct Registers {
 impl Debug for Registers {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Registers")
-            .field("a", &self.a)
-            .field("b", &self.b)
-            .field("c", &self.c)
-            .field("d", &self.d)
-            .field("e", &self.e)
-            .field("h", &self.h)
-            .field("l", &self.l)
+            .field("a", &format_args!("{:02X}", self.a))
+            .field("b", &format_args!("{:02X}", self.b))
+            .field("c", &format_args!("{:02X}", self.c))
+            .field("d", &format_args!("{:02X}", self.d))
+            .field("e", &format_args!("{:02X}", self.e))
+            .field("h", &format_args!("{:02X}", self.h))
+            .field("l", &format_args!("{:02X}", self.l))
             .field("f", &self.f)
-            .field("sp", &self.sp)
-            .field("pc", &self.pc)
+            .field("sp", &format_args!("{:04X}", self.sp))
+            .field("pc", &format_args!("{:04X}", self.pc))
             .finish()
     }
 }

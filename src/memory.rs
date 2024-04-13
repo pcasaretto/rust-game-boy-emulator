@@ -19,7 +19,7 @@ impl Default for MemoryBus<'_> {
 impl<'a> MemoryBus<'a> {
     pub fn read_byte(&self, address: u16) -> u8 {
         match address {
-            0x0000..=0x0150 if self.boot_rom_enabled => self.boot_rom[address as usize],
+            0x0000..=0x0FF if self.boot_rom_enabled => self.boot_rom[address as usize],
             0x0000..=0x3FFF if !self.boot_rom_enabled => self.cartridge_rom[address as usize],
             other => self.memory[other as usize],
         }
