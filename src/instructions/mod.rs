@@ -42,11 +42,11 @@ pub fn from_byte(byte: u8) -> Box<Instruction> {
         )),
         0x11 => Box::new(ld::ld_r16_n16(Register16bTarget::DE)),
 
-        0x0A => Box::new(ld::ld_mem_at_r16_r(
+        0x0A => Box::new(ld::ld_r_mem_at_r16(
             Register16bTarget::BC,
             RegisterTarget::A,
         )),
-        0x1A => Box::new(ld::ld_mem_at_r16_r(
+        0x1A => Box::new(ld::ld_r_mem_at_r16(
             Register16bTarget::DE,
             RegisterTarget::A,
         )),
@@ -92,7 +92,7 @@ pub fn from_byte(byte: u8) -> Box<Instruction> {
         0x1E => Box::new(ld::ld_d8_r(RegisterTarget::E)),
         0x2E => Box::new(ld::ld_d8_r(RegisterTarget::L)),
         0x3E => Box::new(ld::ld_d8_r(RegisterTarget::A)),
-        0xC3 => Box::new(jmp::jmp_a16()),
+        0xC3 => Box::new(jmp::jmp_a16),
         0x40 => Box::new(ld::ld_r_r(RegisterTarget::B, RegisterTarget::B)),
         0x41 => Box::new(ld::ld_r_r(RegisterTarget::B, RegisterTarget::C)),
         0x42 => Box::new(ld::ld_r_r(RegisterTarget::B, RegisterTarget::D)),
@@ -238,7 +238,7 @@ pub fn from_byte(byte: u8) -> Box<Instruction> {
 
         0xE0 => Box::new(ld::ld_a_mem_at_d8()),
         0xE2 => Box::new(ld::ld_mem_at_c_a),
-        0xEA => Box::new(ld::ld_r_mem_at_d16(RegisterTarget::A)),
+        0xEA => Box::new(ld::ld_mem_at_d16_r(RegisterTarget::A)),
 
         0xF3 => Box::new(int::di),
         0xF9 => Box::new(ld::ld_sp_hl),

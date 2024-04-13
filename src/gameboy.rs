@@ -1,17 +1,16 @@
 use crate::cpu::{Register16bTarget, CPU};
 use crate::instructions;
 use crate::memory::MemoryBus;
-use crate::opcode_info::OpcodeInfo;
+use crate::opcode_info::{OpcodeInfo, OperandInformation};
 
 pub struct Gameboy<'a> {
     pub cpu: CPU,
-    pub bus: MemoryBus,
-    pub cartridge: &'a [u8; 0x200000],
+    pub bus: MemoryBus<'a>,
     pub opcode_info: OpcodeInfo,
     pub interrupts_enabled: bool,
 }
 
-impl Default for Gameboy<'_> {
+impl<'a> Default for Gameboy<'a> {
     fn default() -> Self {
         // load opcode info
         let json = include_bytes!("Opcodes.json");
@@ -23,7 +22,6 @@ impl Default for Gameboy<'_> {
             cpu,
             opcode_info,
             bus: MemoryBus::default(),
-            cartridge: &[0; 0x200000],
             interrupts_enabled: false,
         }
     }
@@ -40,25 +38,22 @@ pub fn initialize(gameboy: &mut Gameboy) {
     gameboy.cpu.registers.l = 0x4D;
 }
 
-pub fn load_dmg_rom(gameboy: &mut Gameboy) {
-    let rom = include_bytes!("dmg.bin");
-    gameboy.bus.memory[..rom.len()].copy_from_slice(rom);
-}
-
 impl<'a> Gameboy<'a> {
-    pub fn run(&'a mut self, cartridge: &'a [u8; 0x200000]) {
-        self.cartridge = cartridge;
+    pub fn run(&mut self, cartridge: &'a [u8; 0x200000]) {
+        self.bus.cartridge_rom = cartridge;
 
         // load first 0x8000 bytes of cartridge into memory
         // self.bus.memory[..0x8000].copy_from_slice(&self.cartridge[..0x8000]);
 
         let mut total_cycles: u64 = 0;
         loop {
-            total_cycles += self.step();
+            log::debug!("{:?}", self.cpu.registers);
             if self.cpu.registers.get_u16(Register16bTarget::PC) >= 0x100 {
                 break;
             }
+            total_cycles += self.step();
         }
+        // log::info!("total cycles: {}", total_cycles);
     }
 
     pub fn step(&mut self) -> u64 {
@@ -136,11 +131,14 @@ impl<'a> Gameboy<'a> {
                 .unwrap();
         };
         log::debug!(
-            "instruction byte: 0x{:02X}\nprogram counter: 0x{:04X}\ninstruction: {}\noperands: {:?}",
-            instruction_byte,
+            "PC: 0x{:04X}: 0x{:02X} instruction: {} {:?}",
             address,
+            instruction_byte,
             opcode_info.mnemonic,
-            opcode_info.operands
+            <Vec<OperandInformation> as Clone>::clone(&opcode_info.operands)
+                .into_iter()
+                .map(|operands| operands.name)
+                .collect::<Vec<String>>(),
         );
         instruction
     }
@@ -175,6 +173,7 @@ mod tests {
             },
             bus: MemoryBus {
                 memory: [0x81; 0x10000],
+                ..Default::default()
             },
             ..Default::default()
         };

@@ -10,7 +10,7 @@ pub struct FlagInformation {
     pub c: String,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct OperandInformation {
     pub name: String,
     pub immediate: bool,

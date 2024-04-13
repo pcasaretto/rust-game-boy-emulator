@@ -32,12 +32,13 @@ mod tests {
     #[test]
     fn test_set_mem_at_hl() {
         let mut gameboy = Gameboy::default();
-        gameboy.cpu.registers.set_u16(Register16bTarget::HL, 0x1234);
-        gameboy.bus.write_byte(0x1234, 0b00000000);
+        let addr = 0xC050;
+        gameboy.cpu.registers.set_u16(Register16bTarget::HL, addr);
+        gameboy.bus.write_byte(addr, 0b00000000);
 
         set_mem_at_hl(3)(&mut gameboy);
 
-        assert_eq!(gameboy.bus.read_byte(0x1234), 0b00001000);
+        assert_eq!(gameboy.bus.read_byte(addr), 0b00001000);
     }
 
     #[test]

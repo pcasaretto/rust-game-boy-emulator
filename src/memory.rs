@@ -1,26 +1,40 @@
-pub struct MemoryBus {
+pub struct MemoryBus<'a> {
     pub memory: [u8; 0x10000],
+    pub boot_rom: &'static [u8],
+    pub cartridge_rom: &'a [u8],
+    pub boot_rom_enabled: bool,
 }
 
-impl Default for MemoryBus {
+impl Default for MemoryBus<'_> {
     fn default() -> Self {
         MemoryBus {
-            // memory: core::array::from_fn(|_| random()),
             memory: [0; 0x10000],
+            boot_rom_enabled: true,
+            boot_rom: include_bytes!("dmg.bin"),
+            cartridge_rom: &[],
         }
     }
 }
 
-impl MemoryBus {
+impl<'a> MemoryBus<'a> {
     pub fn read_byte(&self, address: u16) -> u8 {
-        self.memory[address as usize]
+        match address {
+            0x0000..=0x0150 if self.boot_rom_enabled => self.boot_rom[address as usize],
+            0x0000..=0x3FFF if !self.boot_rom_enabled => self.cartridge_rom[address as usize],
+            other => self.memory[other as usize],
+        }
     }
 
     pub fn write_byte(&mut self, address: u16, value: u8) {
         log::debug!("Writing {:02X} to {:04X}", value, address);
         match address {
+            0xFF50 if self.boot_rom_enabled => {
+                log::info!("Disabling boot ROM");
+                self.boot_rom_enabled = false;
+            }
             0x0000..=0x7FFF => {
                 log::warn!("Attempted to write to ROM at address {:04X}", address);
+                return;
             }
             0xA000..=0xBFFF => {
                 log::warn!(

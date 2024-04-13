@@ -1,3 +1,6 @@
+use std::fmt::Debug;
+use std::fmt::Formatter;
+
 #[derive(Debug, Copy, Clone)]
 pub enum RegisterTarget {
     A,
@@ -31,6 +34,23 @@ pub struct Registers {
     pub f: FlagsRegister,
     pub sp: u16,
     pub pc: u16,
+}
+
+impl Debug for Registers {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Registers")
+            .field("a", &self.a)
+            .field("b", &self.b)
+            .field("c", &self.c)
+            .field("d", &self.d)
+            .field("e", &self.e)
+            .field("h", &self.h)
+            .field("l", &self.l)
+            .field("f", &self.f)
+            .field("sp", &self.sp)
+            .field("pc", &self.pc)
+            .finish()
+    }
 }
 
 impl Registers {
@@ -108,6 +128,17 @@ pub struct FlagsRegister {
     pub subtract: bool,
     pub half_carry: bool,
     pub carry: bool,
+}
+
+impl Debug for FlagsRegister {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("FlagsRegister")
+            .field("Z", &self.zero)
+            .field("S", &self.subtract)
+            .field("H", &self.half_carry)
+            .field("C", &self.carry)
+            .finish()
+    }
 }
 
 const ZERO_FLAG_BYTE_POSITION: u8 = 7;

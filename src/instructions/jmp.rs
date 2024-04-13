@@ -1,13 +1,11 @@
 use crate::gameboy::Gameboy;
 
-pub fn jmp_a16() -> impl Fn(&mut Gameboy) -> u8 {
-    move |gameboy: &mut Gameboy| {
-        let low = gameboy.read_next_byte();
-        let high = gameboy.read_next_byte();
-        gameboy.cpu.registers.pc = u16::from_le_bytes([low, high]);
-        const TICKS: u8 = 16;
-        return TICKS;
-    }
+pub fn jmp_a16(gameboy: &mut Gameboy) -> u8 {
+    let low = gameboy.read_next_byte();
+    let high = gameboy.read_next_byte();
+    gameboy.cpu.registers.pc = u16::from_be_bytes([high, low]);
+    const TICKS: u8 = 16;
+    return TICKS;
 }
 
 pub fn jr_z(gameboy: &mut Gameboy) -> u8 {
@@ -68,9 +66,10 @@ mod tests {
     #[test]
     fn test_jmp_a16() {
         let mut gameboy = Gameboy::default();
-        gameboy.bus.memory[0] = 0x01;
-        gameboy.bus.memory[1] = 0x02;
-        jmp_a16()(&mut gameboy);
+        gameboy.cpu.registers.pc = 0xC050;
+        gameboy.bus.memory[0xC050] = 0x01;
+        gameboy.bus.memory[0xC051] = 0x02;
+        jmp_a16(&mut gameboy);
         assert_eq!(gameboy.cpu.registers.pc, 0x0201);
     }
 

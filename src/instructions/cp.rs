@@ -20,6 +20,7 @@ mod tests {
             cpu: CPU {
                 registers: Registers {
                     a: 13,
+                    pc: 0xC050,
                     ..Default::default()
                 },
                 ..Default::default()
