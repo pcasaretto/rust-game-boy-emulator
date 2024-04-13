@@ -109,6 +109,13 @@ pub fn ld_a_mem_at_hl_dec(gameboy: &mut Gameboy) {
         .set_u16(Register16bTarget::HL, hl.wrapping_sub(1));
 }
 
+const LD_HIGH_OFFSET: u16 = 0xFF00;
+pub fn ld_mem_at_c_a(gameboy: &mut Gameboy) {
+    let addr = LD_HIGH_OFFSET + gameboy.cpu.registers.get_u8(RegisterTarget::C) as u16;
+    let value = gameboy.cpu.registers.get_u8(RegisterTarget::A);
+    gameboy.bus.write_byte(addr, value);
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -248,5 +255,14 @@ mod tests {
         gameboy.cpu.registers.set_u8(RegisterTarget::A, 0x34);
         ld_r_mem_at_hl(RegisterTarget::A)(&mut gameboy);
         assert_eq!(gameboy.bus.read_byte(0x1000), 0x34);
+    }
+
+    #[test]
+    fn test_ld_mem_at_c_a() {
+        let mut gameboy = Gameboy::default();
+        gameboy.cpu.registers.set_u8(RegisterTarget::C, 0x34);
+        gameboy.cpu.registers.set_u8(RegisterTarget::A, 0x42);
+        ld_mem_at_c_a(&mut gameboy);
+        assert_eq!(gameboy.bus.read_byte(0xFF34), 0x42);
     }
 }
