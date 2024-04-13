@@ -18,6 +18,7 @@ impl Default for MemoryBus<'_> {
 
 impl<'a> MemoryBus<'a> {
     pub fn read_byte(&self, address: u16) -> u8 {
+        log::debug!("Read from {:04X}", address);
         match address {
             0x0000..=0x0FF if self.boot_rom_enabled => self.boot_rom[address as usize],
             0x0000..=0x3FFF if !self.boot_rom_enabled => self.cartridge_rom[address as usize],

@@ -73,6 +73,7 @@ impl<'a> Gameboy<'a> {
             let interrupt_flags = self.bus.read_byte(0xFF0F);
             let interrupt = interrupt_enable & interrupt_flags;
             if interrupt != 0 {
+                log::debug!("Interrupt: 0x{:02X}", interrupt);
                 // disable interrupts
                 self.interrupts_enabled = false;
                 // push current program counter to stack
@@ -104,19 +105,16 @@ impl<'a> Gameboy<'a> {
     }
 
     fn get_next_instruction(&mut self) -> Box<instructions::Instruction> {
-        let mut address = self.cpu.registers.get_u16(Register16bTarget::PC);
-        let mut instruction_byte = self.bus.read_byte(address);
+        let address = self.cpu.registers.get_u16(Register16bTarget::PC);
+
+        let mut instruction_byte = self.read_next_byte();
+
         let opcode_info;
         let instruction;
-        address = address.wrapping_add(1);
-        self.cpu
-            .registers
-            .set_u16(Register16bTarget::PC, address.wrapping_add(1));
+
         if instruction_byte == 0xCB {
-            instruction_byte = self.bus.read_byte(address);
-            self.cpu
-                .registers
-                .set_u16(Register16bTarget::PC, address.wrapping_add(1));
+            instruction_byte = self.read_next_byte();
+
             instruction = instructions::from_prefixed_byte(instruction_byte);
             opcode_info = self
                 .opcode_info
