@@ -17,7 +17,7 @@ pub struct OperandInformation {
 }
 
 #[derive(Deserialize, Debug)]
-pub struct UnprefixedOpcode {
+pub struct Opcode {
     pub operands: Vec<OperandInformation>,
     pub mnemonic: String,
     pub bytes: u8,
@@ -28,5 +28,6 @@ pub struct UnprefixedOpcode {
 
 #[derive(Deserialize, Debug)]
 pub struct OpcodeInfo {
-    pub unprefixed: HashMap<String, UnprefixedOpcode>,
+    pub unprefixed: HashMap<String, Opcode>,
+    pub cbprefixed: HashMap<String, Opcode>,
 }

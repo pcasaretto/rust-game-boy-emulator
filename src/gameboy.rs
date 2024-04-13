@@ -36,7 +36,11 @@ pub fn initialize(gameboy: &mut Gameboy) {
     gameboy.cpu.registers.e = 0xD8;
     gameboy.cpu.registers.h = 0x01;
     gameboy.cpu.registers.l = 0x4D;
-    gameboy.cpu.registers.pc = 0x100;
+}
+
+pub fn load_dmg_rom(gameboy: &mut Gameboy) {
+    let rom = include_bytes!("dmg.bin");
+    gameboy.bus.memory[..rom.len()].copy_from_slice(rom);
 }
 
 impl<'a> Gameboy<'a> {
@@ -44,7 +48,7 @@ impl<'a> Gameboy<'a> {
         self.cartridge = cartridge;
 
         // load first 0x8000 bytes of cartridge into memory
-        self.bus.memory[..0x8000].copy_from_slice(&self.cartridge[..0x8000]);
+        // self.bus.memory[..0x8000].copy_from_slice(&self.cartridge[..0x8000]);
 
         loop {
             self.step();
@@ -54,22 +58,45 @@ impl<'a> Gameboy<'a> {
     pub fn step(&mut self) {
         let address = self.cpu.registers.get_u16(Register16bTarget::PC);
         let instruction_byte = self.bus.read_byte(address);
-        let opcode_info = self
-            .opcode_info
-            .unprefixed
-            .get(&format!("0x{:02X}", instruction_byte))
-            .unwrap();
-        log::debug!(
-            "program counter: 0x{:04X}\ninstruction: {}\noperands: {:?}",
-            self.cpu.registers.get_u16(Register16bTarget::PC),
-            opcode_info.mnemonic,
-            opcode_info.operands
-        );
-        let instruction = instructions::from_byte(instruction_byte);
+        let mut opcode_info;
+        let mut instruction;
         self.cpu
             .registers
             .set_u16(Register16bTarget::PC, address.wrapping_add(1));
+        if instruction_byte == 0xCB {
+            let instruction_byte = self.bus.read_byte(address);
+            self.cpu
+                .registers
+                .set_u16(Register16bTarget::PC, address.wrapping_add(1));
+            instruction = instructions::from_prefixed_byte(instruction_byte);
+            opcode_info = self
+                .opcode_info
+                .cbprefixed
+                .get(&format!("0x{:02X}", instruction_byte))
+                .unwrap();
+        } else {
+            instruction = instructions::from_byte(instruction_byte);
+            opcode_info = self
+                .opcode_info
+                .unprefixed
+                .get(&format!("0x{:02X}", instruction_byte))
+                .unwrap();
+        };
+        log::debug!(
+            "instruction byte: 0x{:02X}\nprogram counter: 0x{:04X}\ninstruction: {}\noperands: {:?}",
+            instruction_byte,
+            address,
+            opcode_info.mnemonic,
+            opcode_info.operands
+        );
         instruction(self);
+
+        // read from serial port if requested
+        if self.bus.memory[0xFF02] == 0x81 {
+            let byte = self.bus.read_byte(0xFF01);
+            print!("{}", byte as char);
+            self.bus.memory[0xFF02] = 0x0;
+        }
     }
 
     pub fn read_next_byte(&mut self) -> u8 {

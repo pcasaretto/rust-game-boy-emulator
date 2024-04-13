@@ -1,6 +1,5 @@
 use crate::cpu::{Register16bTarget, RegisterTarget};
 use crate::gameboy::Gameboy;
-use crate::instructions::binary;
 
 pub fn xor(target: RegisterTarget) -> impl Fn(&mut Gameboy) {
     move |gameboy: &mut Gameboy| {

@@ -2,6 +2,7 @@ mod adc;
 mod add;
 mod and;
 mod binary;
+mod bit;
 mod call;
 mod cp;
 mod dec;
@@ -13,8 +14,10 @@ mod misc;
 mod nop;
 mod or;
 mod rst;
+mod sbc;
 mod stack;
 mod sub;
+mod swap;
 mod xor;
 
 use super::cpu::*;
@@ -63,7 +66,10 @@ pub fn from_byte(byte: u8) -> Box<dyn Fn(&mut gameboy::Gameboy)> {
 
         0x31 => Box::new(ld::ld_d16_r16(Register16bTarget::SP)),
         0x21 => Box::new(ld::ld_d16_r16(Register16bTarget::HL)),
-        0x2A => Box::new(ld::ld_hl_inc()),
+        0x22 => Box::new(ld::ld_mem_at_hl_a_inc),
+        0x32 => Box::new(ld::ld_mem_at_hl_a_dec),
+        0x2A => Box::new(ld::ld_a_mem_at_hl_inc),
+        0x3A => Box::new(ld::ld_a_mem_at_hl_dec),
         // 0x33 => Box::new(inc::inc_sp()),
         0x06 => Box::new(ld::ld_d8_r(RegisterTarget::B)),
         0x16 => Box::new(ld::ld_d8_r(RegisterTarget::D)),
@@ -129,7 +135,13 @@ pub fn from_byte(byte: u8) -> Box<dyn Fn(&mut gameboy::Gameboy)> {
         // 0x74 => Box::new(ld::ld_r_r(RegisterTarget::H, RegisterTarget::H)),
         // 0x75 => Box::new(ld::ld_r_r(RegisterTarget::H, RegisterTarget::L)),
         // 0x76 => Box::new(ld::ld_r_r(RegisterTarget::H, RegisterTarget::A)),
-        // 0x77 => Box::new(ld::ld_r_r(RegisterTarget::H, RegisterTarget::A)),
+        0x70 => Box::new(ld::ld_r_mem_at_hl(RegisterTarget::B)),
+        0x71 => Box::new(ld::ld_r_mem_at_hl(RegisterTarget::C)),
+        0x72 => Box::new(ld::ld_r_mem_at_hl(RegisterTarget::D)),
+        0x73 => Box::new(ld::ld_r_mem_at_hl(RegisterTarget::E)),
+        0x74 => Box::new(ld::ld_r_mem_at_hl(RegisterTarget::H)),
+        0x75 => Box::new(ld::ld_r_mem_at_hl(RegisterTarget::L)),
+        0x77 => Box::new(ld::ld_r_mem_at_hl(RegisterTarget::A)),
         0x78 => Box::new(ld::ld_r_r(RegisterTarget::A, RegisterTarget::B)),
         0x79 => Box::new(ld::ld_r_r(RegisterTarget::A, RegisterTarget::C)),
         0x7A => Box::new(ld::ld_r_r(RegisterTarget::A, RegisterTarget::D)),
@@ -153,13 +165,21 @@ pub fn from_byte(byte: u8) -> Box<dyn Fn(&mut gameboy::Gameboy)> {
         0x8B => Box::new(adc::adc(RegisterTarget::E)),
         0x8C => Box::new(adc::adc(RegisterTarget::H)),
         0x8D => Box::new(adc::adc(RegisterTarget::L)),
-        0x97 => Box::new(sub::sub_r_r_a(RegisterTarget::A)),
         0x90 => Box::new(sub::sub_r_r_a(RegisterTarget::B)),
         0x91 => Box::new(sub::sub_r_r_a(RegisterTarget::C)),
         0x92 => Box::new(sub::sub_r_r_a(RegisterTarget::D)),
         0x93 => Box::new(sub::sub_r_r_a(RegisterTarget::E)),
         0x94 => Box::new(sub::sub_r_r_a(RegisterTarget::H)),
         0x95 => Box::new(sub::sub_r_r_a(RegisterTarget::L)),
+        0x97 => Box::new(sub::sub_r_r_a(RegisterTarget::A)),
+        0x98 => Box::new(sbc::sbc_r_r_a(RegisterTarget::B)),
+        0x99 => Box::new(sbc::sbc_r_r_a(RegisterTarget::C)),
+        0x9A => Box::new(sbc::sbc_r_r_a(RegisterTarget::D)),
+        0x9B => Box::new(sbc::sbc_r_r_a(RegisterTarget::E)),
+        0x9C => Box::new(sbc::sbc_r_r_a(RegisterTarget::H)),
+        0x9D => Box::new(sbc::sbc_r_r_a(RegisterTarget::L)),
+        // 0x9E => Box::new(sbc::sbc_r_r_a(RegisterTarget::A)),
+        0x9F => Box::new(sbc::sbc_r_r_a(RegisterTarget::A)),
 
         0xA0 => Box::new(and::and(RegisterTarget::B)),
         0xA1 => Box::new(and::and(RegisterTarget::C)),
@@ -222,6 +242,87 @@ pub fn from_byte(byte: u8) -> Box<dyn Fn(&mut gameboy::Gameboy)> {
 
         other => {
             panic!("Unsupported instruction {:X}", other)
+        }
+    }
+}
+
+pub fn from_prefixed_byte(byte: u8) -> Box<dyn Fn(&mut gameboy::Gameboy)> {
+    match byte {
+        0x30 => Box::new(swap::swap(RegisterTarget::B)),
+        0x31 => Box::new(swap::swap(RegisterTarget::C)),
+        0x32 => Box::new(swap::swap(RegisterTarget::D)),
+        0x33 => Box::new(swap::swap(RegisterTarget::E)),
+        0x34 => Box::new(swap::swap(RegisterTarget::H)),
+        0x35 => Box::new(swap::swap(RegisterTarget::L)),
+        // 0x36 => Box::new(swap::swap(RegisterTarget::C)),
+        0x37 => Box::new(swap::swap(RegisterTarget::A)),
+
+        0xC0 => Box::new(bit::set_r(RegisterTarget::B, 0)),
+        0xC1 => Box::new(bit::set_r(RegisterTarget::C, 0)),
+        0xC2 => Box::new(bit::set_r(RegisterTarget::D, 0)),
+        0xC3 => Box::new(bit::set_r(RegisterTarget::E, 0)),
+        0xC4 => Box::new(bit::set_r(RegisterTarget::H, 0)),
+        0xC5 => Box::new(bit::set_r(RegisterTarget::L, 0)),
+        0xC6 => Box::new(bit::set_mem_at_hl(0)),
+        0xC7 => Box::new(bit::set_r(RegisterTarget::A, 0)),
+        0xC8 => Box::new(bit::set_r(RegisterTarget::B, 1)),
+        0xC9 => Box::new(bit::set_r(RegisterTarget::C, 1)),
+        0xCA => Box::new(bit::set_r(RegisterTarget::D, 1)),
+        0xCB => Box::new(bit::set_r(RegisterTarget::E, 1)),
+        0xCC => Box::new(bit::set_r(RegisterTarget::H, 1)),
+        0xCD => Box::new(bit::set_r(RegisterTarget::L, 1)),
+        0xCE => Box::new(bit::set_mem_at_hl(1)),
+        0xCF => Box::new(bit::set_r(RegisterTarget::A, 1)),
+        0xD0 => Box::new(bit::set_r(RegisterTarget::B, 2)),
+        0xD1 => Box::new(bit::set_r(RegisterTarget::C, 2)),
+        0xD2 => Box::new(bit::set_r(RegisterTarget::D, 2)),
+        0xD3 => Box::new(bit::set_r(RegisterTarget::E, 2)),
+        0xD4 => Box::new(bit::set_r(RegisterTarget::H, 2)),
+        0xD5 => Box::new(bit::set_r(RegisterTarget::L, 2)),
+        0xD6 => Box::new(bit::set_mem_at_hl(2)),
+        0xD7 => Box::new(bit::set_r(RegisterTarget::A, 2)),
+        0xD8 => Box::new(bit::set_r(RegisterTarget::B, 3)),
+        0xD9 => Box::new(bit::set_r(RegisterTarget::C, 3)),
+        0xDA => Box::new(bit::set_r(RegisterTarget::D, 3)),
+        0xDB => Box::new(bit::set_r(RegisterTarget::E, 3)),
+        0xDC => Box::new(bit::set_r(RegisterTarget::H, 3)),
+        0xDD => Box::new(bit::set_r(RegisterTarget::L, 3)),
+        0xDE => Box::new(bit::set_mem_at_hl(3)),
+        0xDF => Box::new(bit::set_r(RegisterTarget::A, 3)),
+        0xE0 => Box::new(bit::set_r(RegisterTarget::B, 4)),
+        0xE1 => Box::new(bit::set_r(RegisterTarget::C, 4)),
+        0xE2 => Box::new(bit::set_r(RegisterTarget::D, 4)),
+        0xE3 => Box::new(bit::set_r(RegisterTarget::E, 4)),
+        0xE4 => Box::new(bit::set_r(RegisterTarget::H, 4)),
+        0xE5 => Box::new(bit::set_r(RegisterTarget::L, 4)),
+        0xE6 => Box::new(bit::set_mem_at_hl(4)),
+        0xE7 => Box::new(bit::set_r(RegisterTarget::A, 4)),
+        0xE8 => Box::new(bit::set_r(RegisterTarget::B, 5)),
+        0xE9 => Box::new(bit::set_r(RegisterTarget::C, 5)),
+        0xEA => Box::new(bit::set_r(RegisterTarget::D, 5)),
+        0xEB => Box::new(bit::set_r(RegisterTarget::E, 5)),
+        0xEC => Box::new(bit::set_r(RegisterTarget::H, 5)),
+        0xED => Box::new(bit::set_r(RegisterTarget::L, 5)),
+        0xEE => Box::new(bit::set_mem_at_hl(5)),
+        0xEF => Box::new(bit::set_r(RegisterTarget::A, 5)),
+        0xF0 => Box::new(bit::set_r(RegisterTarget::B, 6)),
+        0xF1 => Box::new(bit::set_r(RegisterTarget::C, 6)),
+        0xF2 => Box::new(bit::set_r(RegisterTarget::D, 6)),
+        0xF3 => Box::new(bit::set_r(RegisterTarget::E, 6)),
+        0xF4 => Box::new(bit::set_r(RegisterTarget::H, 6)),
+        0xF5 => Box::new(bit::set_r(RegisterTarget::L, 6)),
+        0xF6 => Box::new(bit::set_mem_at_hl(6)),
+        0xF7 => Box::new(bit::set_r(RegisterTarget::A, 6)),
+        0xF8 => Box::new(bit::set_r(RegisterTarget::B, 7)),
+        0xF9 => Box::new(bit::set_r(RegisterTarget::C, 7)),
+        0xFA => Box::new(bit::set_r(RegisterTarget::D, 7)),
+        0xFB => Box::new(bit::set_r(RegisterTarget::E, 7)),
+        0xFC => Box::new(bit::set_r(RegisterTarget::H, 7)),
+        0xFD => Box::new(bit::set_r(RegisterTarget::L, 7)),
+        0xFE => Box::new(bit::set_mem_at_hl(7)),
+        0xFF => Box::new(bit::set_r(RegisterTarget::A, 7)),
+        other => {
+            panic!("Unsupported prefixed instruction {:X}", other)
         }
     }
 }
