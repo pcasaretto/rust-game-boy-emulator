@@ -243,6 +243,15 @@ pub fn from_byte(byte: u8) -> Box<Instruction> {
         0xB6 => Box::new(pai(or::or_mem_at_r16(Register16bTarget::HL))),
         0xB7 => Box::new(pai(or::or(RegisterTarget::A))),
 
+        0xB8 => Box::new(pai(cp::cp(RegisterTarget::B))),
+        0xB9 => Box::new(pai(cp::cp(RegisterTarget::C))),
+        0xBA => Box::new(pai(cp::cp(RegisterTarget::D))),
+        0xBB => Box::new(pai(cp::cp(RegisterTarget::E))),
+        0xBC => Box::new(pai(cp::cp(RegisterTarget::H))),
+        0xBD => Box::new(pai(cp::cp(RegisterTarget::L))),
+        0xBE => Box::new(pai(cp::cp_mem_at_r16(Register16bTarget::HL))),
+        0xBF => Box::new(pai(cp::cp(RegisterTarget::A))),
+
         0xC1 => Box::new(pai(stack::pop(Register16bTarget::BC))),
         0xD1 => Box::new(pai(stack::pop(Register16bTarget::DE))),
         0xE1 => Box::new(pai(stack::pop(Register16bTarget::HL))),

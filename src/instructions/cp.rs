@@ -9,13 +9,34 @@ pub fn cp_d8(gameboy: &mut Gameboy) -> u8 {
     TICKS
 }
 
+pub fn cp(target: RegisterTarget) -> impl Fn(&mut Gameboy) -> u8 {
+    move |gameboy| {
+        let a = gameboy.cpu.registers.get_u8(RegisterTarget::A);
+        let value = gameboy.cpu.registers.get_u8(target);
+        gameboy.cpu.registers.f.zero = a == value;
+        const TICKS: u8 = 4;
+        TICKS
+    }
+}
+
+pub(crate) fn cp_mem_at_r16(hl: super::Register16bTarget) -> impl Fn(&mut Gameboy) -> u8 {
+    move |gameboy| {
+        let a = gameboy.cpu.registers.get_u8(RegisterTarget::A);
+        let addr = gameboy.cpu.registers.get_u16(hl);
+        let value = gameboy.bus.read_byte(addr);
+        gameboy.cpu.registers.f.zero = a == value;
+        const TICKS: u8 = 8;
+        TICKS
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::cpu::{Registers, CPU};
+    use crate::cpu::{Register16bTarget, Registers, CPU};
 
     #[test]
-    fn test_cp() {
+    fn test_cp_d8() {
         let mut gameboy = Gameboy {
             cpu: CPU {
                 registers: Registers {
@@ -33,7 +54,7 @@ mod tests {
     }
 
     #[test]
-    fn test_cp_not_equal() {
+    fn test_cp_d8_not_equal() {
         let mut gameboy = Gameboy {
             cpu: CPU {
                 registers: Registers {
@@ -46,6 +67,78 @@ mod tests {
         };
         gameboy.bus.write_byte(gameboy.cpu.registers.pc, 14);
         cp_d8(&mut gameboy);
+        assert!(!gameboy.cpu.registers.f.zero);
+    }
+
+    #[test]
+    fn test_cp() {
+        let mut gameboy = Gameboy {
+            cpu: CPU {
+                registers: Registers {
+                    a: 13,
+                    b: 13,
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        cp(RegisterTarget::B)(&mut gameboy);
+        assert!(gameboy.cpu.registers.f.zero);
+    }
+
+    #[test]
+    fn test_cp_not_equal() {
+        let mut gameboy = Gameboy {
+            cpu: CPU {
+                registers: Registers {
+                    a: 13,
+                    b: 14,
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        cp(RegisterTarget::B)(&mut gameboy);
+        assert!(!gameboy.cpu.registers.f.zero);
+    }
+
+    #[test]
+    fn test_cp_mem_at_r16() {
+        let mut gameboy = Gameboy {
+            cpu: CPU {
+                registers: Registers {
+                    a: 13,
+                    h: 0xC0,
+                    l: 0x00,
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        gameboy.bus.write_byte(0xC000, 13);
+        cp_mem_at_r16(Register16bTarget::HL)(&mut gameboy);
+        assert!(gameboy.cpu.registers.f.zero);
+    }
+
+    #[test]
+    fn test_cp_mem_at_r16_not_equal() {
+        let mut gameboy = Gameboy {
+            cpu: CPU {
+                registers: Registers {
+                    a: 14,
+                    h: 0xC0,
+                    l: 0x00,
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        gameboy.bus.write_byte(0xC000, 13);
+        cp_mem_at_r16(Register16bTarget::HL)(&mut gameboy);
         assert!(!gameboy.cpu.registers.f.zero);
     }
 }
