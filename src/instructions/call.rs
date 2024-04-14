@@ -33,15 +33,15 @@ mod tests {
     #[test]
     fn test_call_a16() {
         let mut gameboy = Gameboy::default();
-        gameboy.cpu.registers.pc = 0x0301;
+        gameboy.cpu.registers.pc = 0xC050;
         gameboy.cpu.registers.sp = 0xFFFE;
         gameboy.bus.memory[gameboy.cpu.registers.pc as usize + 1] = 0xCD;
         gameboy.bus.memory[gameboy.cpu.registers.pc as usize + 2] = 0xAB;
         call_a16(&mut gameboy);
         assert_eq!(gameboy.cpu.registers.pc, 0xABCD);
         assert_eq!(gameboy.cpu.registers.sp, 0xFFFC);
-        assert_eq!(gameboy.bus.memory[0xFFFD], 0x03);
-        assert_eq!(gameboy.bus.memory[0xFFFC], 0x04);
+        assert_eq!(gameboy.bus.memory[0xFFFD], 0xC0);
+        assert_eq!(gameboy.bus.memory[0xFFFC], 0x53); // address of next instruction
     }
 
     #[test]

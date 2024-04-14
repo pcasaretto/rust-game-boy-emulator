@@ -9,7 +9,7 @@ pub struct Gameboy<'a> {
     pub bus: MemoryBus<'a>,
     pub opcode_info: OpcodeInfo,
     pub interrupts_enabled: bool,
-    scanline_counter: u64,
+    pub scanline_counter: u64,
 }
 
 impl<'a> Default for Gameboy<'a> {
@@ -190,7 +190,7 @@ mod tests {
                     a: 3,
                     c: 4,
                     f: FlagsRegister::from(0),
-                    pc: 1245,
+                    pc: 0xC050,
                     ..Default::default()
                 },
                 ..Default::default()
@@ -203,6 +203,6 @@ mod tests {
         };
         gameboy.run_next_instruction();
         assert_eq!(gameboy.cpu.registers.get_u8(RegisterTarget::A), 7);
-        assert_eq!(gameboy.cpu.registers.get_u16(Register16bTarget::PC), 1246);
+        assert_eq!(gameboy.cpu.registers.get_u16(Register16bTarget::PC), 0xC051);
     }
 }

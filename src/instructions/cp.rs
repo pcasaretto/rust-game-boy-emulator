@@ -27,7 +27,7 @@ mod tests {
             },
             ..Default::default()
         };
-        gameboy.bus.write_byte(gameboy.cpu.registers.pc, 13);
+        gameboy.bus.write_byte(gameboy.cpu.registers.pc + 1, 13);
         cp_d8(&mut gameboy);
         assert!(gameboy.cpu.registers.f.zero);
     }
