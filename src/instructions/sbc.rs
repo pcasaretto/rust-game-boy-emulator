@@ -1,4 +1,4 @@
-use crate::cpu::{self, Register16bTarget, RegisterTarget};
+use crate::cpu::{Register16bTarget, RegisterTarget};
 use crate::gameboy::Gameboy;
 
 pub fn sbc_r_r_a(target: RegisterTarget) -> impl Fn(&mut Gameboy) -> u8 {

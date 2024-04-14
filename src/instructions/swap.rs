@@ -1,4 +1,4 @@
-use crate::cpu::{Register16bTarget, RegisterTarget};
+use crate::cpu::{RegisterTarget};
 use crate::gameboy::Gameboy;
 
 pub fn swap(target: RegisterTarget) -> impl Fn(&mut Gameboy) -> u8 {
@@ -20,7 +20,7 @@ pub fn swap(target: RegisterTarget) -> impl Fn(&mut Gameboy) -> u8 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::cpu::{FlagsRegister, Registers, CPU};
+    use crate::cpu::{Registers, CPU};
 
     #[test]
     fn test_swap() {

@@ -144,10 +144,11 @@ impl<'a> Gameboy<'a> {
 
     pub fn read_next_byte(&mut self) -> u8 {
         let address = self.cpu.registers.get_u16(Register16bTarget::PC);
+        let new_address = address.wrapping_add(1);
         self.cpu
             .registers
-            .set_u16(Register16bTarget::PC, address.wrapping_add(1));
-        self.bus.read_byte(address)
+            .set_u16(Register16bTarget::PC, new_address);
+        self.bus.read_byte(new_address)
     }
 }
 
