@@ -2,12 +2,14 @@ use crate::cpu::{Register16bTarget, CPU};
 use crate::instructions;
 use crate::memory::MemoryBus;
 use crate::opcode_info::{OpcodeInfo, OperandInformation};
+use std::time::Instant;
 
 pub struct Gameboy<'a> {
     pub cpu: CPU,
     pub bus: MemoryBus<'a>,
     pub opcode_info: OpcodeInfo,
     pub interrupts_enabled: bool,
+    scanline_counter: u64,
 }
 
 impl<'a> Default for Gameboy<'a> {
@@ -23,6 +25,7 @@ impl<'a> Default for Gameboy<'a> {
             opcode_info,
             bus: MemoryBus::default(),
             interrupts_enabled: false,
+            scanline_counter: 0,
         }
     }
 }
@@ -45,24 +48,36 @@ impl<'a> Gameboy<'a> {
         // load first 0x8000 bytes of cartridge into memory
         // self.bus.memory[..0x8000].copy_from_slice(&self.cartridge[..0x8000]);
 
-        let mut total_cycles: u64 = 0;
         loop {
-            log::debug!("{:?}", self.cpu.registers);
-            if self.cpu.registers.get_u16(Register16bTarget::PC) >= 0x100 {
-                break;
-            }
-            total_cycles += self.step();
+            let before = Instant::now();
+            self.run_frame();
+            let elapsed = before.elapsed();
+            let fps = 1.0 / elapsed.as_secs_f64();
+            println!("FPS: {:.2?}", fps);
         }
-        // log::info!("total cycles: {}", total_cycles);
     }
 
-    pub fn step(&mut self) -> u64 {
-        let instruction = self.get_next_instruction();
-        let cycles = instruction(self);
+    fn run_frame(&mut self) {
+        const MAX_TICKS: u64 = 69905 * 4;
+        // frame
+        {
+            let mut ticks: u64 = 0;
+            while ticks < MAX_TICKS {
+                log::debug!("{:?}", self.cpu.registers);
+                if self.cpu.registers.get_u16(Register16bTarget::PC) >= 0x100 {
+                    break;
+                }
+                ticks += self.run_next_instruction();
 
-        self.handle_interrupts();
-        self.serial_comm();
-        cycles as u64
+                self.handle_interrupts();
+                self.serial_comm();
+                self.update_graphics(ticks);
+            }
+        }
+    }
+
+    pub fn run_next_instruction(&mut self) -> u64 {
+        self.get_next_instruction()(self) as u64
     }
 
     fn handle_interrupts(&mut self) {
@@ -150,6 +165,16 @@ impl<'a> Gameboy<'a> {
             .set_u16(Register16bTarget::PC, new_address);
         self.bus.read_byte(new_address)
     }
+
+    fn update_graphics(&mut self, ticks: u64) {
+        self.scanline_counter += ticks;
+        if self.scanline_counter >= 456 * 4 {
+            self.scanline_counter = 0;
+            // self.update_scanline();
+            self.bus
+                .write_byte(0xFF44, self.bus.read_byte(0xFF44).wrapping_add(1));
+        }
+    }
 }
 
 #[cfg(test)]
@@ -176,7 +201,7 @@ mod tests {
             },
             ..Default::default()
         };
-        gameboy.step();
+        gameboy.run_next_instruction();
         assert_eq!(gameboy.cpu.registers.get_u8(RegisterTarget::A), 7);
         assert_eq!(gameboy.cpu.registers.get_u16(Register16bTarget::PC), 1246);
     }

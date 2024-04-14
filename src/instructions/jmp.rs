@@ -10,56 +10,76 @@ pub fn jmp_a16(gameboy: &mut Gameboy) -> u8 {
 
 pub fn jr_z(gameboy: &mut Gameboy) -> u8 {
     if !gameboy.cpu.registers.f.zero {
+        gameboy.cpu.registers.pc = gameboy.cpu.registers.pc.wrapping_add(2);
         const TICKS: u8 = 8;
         return TICKS;
     }
-    let current_pc = gameboy.cpu.registers.pc;
     let offset = gameboy.read_next_byte();
-    gameboy.cpu.registers.pc = current_pc.wrapping_add(offset as i8 as u16);
+    gameboy.cpu.registers.pc = gameboy
+        .cpu
+        .registers
+        .pc
+        .wrapping_add(offset as i8 as u16 + 1);
     const TICKS: u8 = 12;
     return TICKS;
 }
 
 pub fn jr_nz(gameboy: &mut Gameboy) -> u8 {
     if gameboy.cpu.registers.f.zero {
+        gameboy.cpu.registers.pc = gameboy.cpu.registers.pc.wrapping_add(2);
         const TICKS: u8 = 8;
         return TICKS;
     }
-    let current_pc = gameboy.cpu.registers.pc;
     let offset = gameboy.read_next_byte();
-    gameboy.cpu.registers.pc = current_pc.wrapping_add(offset as i8 as u16);
+    gameboy.cpu.registers.pc = gameboy
+        .cpu
+        .registers
+        .pc
+        .wrapping_add(offset as i8 as u16 + 1);
     const TICKS: u8 = 12;
     return TICKS;
 }
 
 pub fn jr_nc(gameboy: &mut Gameboy) -> u8 {
     if gameboy.cpu.registers.f.carry {
+        gameboy.cpu.registers.pc = gameboy.cpu.registers.pc.wrapping_add(2);
         const TICKS: u8 = 8;
         return TICKS;
     }
-    let current_pc = gameboy.cpu.registers.pc;
     let offset = gameboy.read_next_byte();
-    gameboy.cpu.registers.pc = current_pc.wrapping_add(offset as i8 as u16);
+    gameboy.cpu.registers.pc = gameboy
+        .cpu
+        .registers
+        .pc
+        .wrapping_add(offset as i8 as u16 + 1);
     const TICKS: u8 = 12;
     return TICKS;
 }
 
 pub fn jr_c(gameboy: &mut Gameboy) -> u8 {
     if !gameboy.cpu.registers.f.carry {
+        gameboy.cpu.registers.pc = gameboy.cpu.registers.pc.wrapping_add(2);
         const TICKS: u8 = 8;
         return TICKS;
     }
-    let current_pc = gameboy.cpu.registers.pc;
     let offset = gameboy.read_next_byte();
-    gameboy.cpu.registers.pc = current_pc.wrapping_add(offset as i8 as u16);
+    gameboy.cpu.registers.pc = gameboy
+        .cpu
+        .registers
+        .pc
+        .wrapping_add(offset as i8 as u16 + 1);
     const TICKS: u8 = 12;
     return TICKS;
 }
 
 pub fn jr(gameboy: &mut Gameboy) -> u8 {
     const TICKS: u8 = 12;
-    let offset = gameboy.bus.memory[gameboy.cpu.registers.pc as usize];
-    gameboy.cpu.registers.pc = gameboy.cpu.registers.pc.wrapping_add(offset as i8 as u16);
+    let offset = gameboy.read_next_byte();
+    gameboy.cpu.registers.pc = gameboy
+        .cpu
+        .registers
+        .pc
+        .wrapping_add(offset as i8 as u16 + 1);
     TICKS
 }
 

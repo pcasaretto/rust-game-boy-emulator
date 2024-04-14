@@ -12,6 +12,17 @@ pub fn ld_r16_n16(reg: Register16bTarget) -> impl Fn(&mut Gameboy) -> u8 {
     }
 }
 
+pub fn ld_mem_at_d16_r16(target: Register16bTarget) -> impl Fn(&mut Gameboy) -> u8 {
+    move |gameboy: &mut Gameboy| {
+        let low = gameboy.read_next_byte();
+        let high = gameboy.read_next_byte();
+        let value = u16::from_be_bytes([high, low]);
+        gameboy.cpu.registers.set_u16(target, value);
+        const TICKS: u8 = 20;
+        TICKS
+    }
+}
+
 pub fn ld_r_r(src: RegisterTarget, dest: RegisterTarget) -> impl Fn(&mut Gameboy) -> u8 {
     move |gameboy: &mut Gameboy| {
         let value = gameboy.cpu.registers.get_u8(src);
@@ -85,14 +96,20 @@ pub fn ld_d8_r(target: RegisterTarget) -> impl Fn(&mut Gameboy) -> u8 {
     }
 }
 
-pub fn ld_a_mem_at_d8() -> impl Fn(&mut Gameboy) -> u8 {
-    move |gameboy: &mut Gameboy| {
-        let addr = 0xFF00 + gameboy.read_next_byte() as u16;
-        let value = gameboy.cpu.registers.get_u8(RegisterTarget::A);
-        gameboy.bus.write_byte(addr, value);
-        const TICKS: u8 = 12;
-        TICKS
-    }
+pub fn ld_mem_at_d8_a(gameboy: &mut Gameboy) -> u8 {
+    let addr = 0xFF00 + gameboy.read_next_byte() as u16;
+    let value = gameboy.bus.read_byte(addr);
+    gameboy.cpu.registers.set_u8(RegisterTarget::A, value);
+    const TICKS: u8 = 12;
+    TICKS
+}
+
+pub fn ld_a_mem_at_d8(gameboy: &mut Gameboy) -> u8 {
+    let addr = 0xFF00 + gameboy.read_next_byte() as u16;
+    let value = gameboy.bus.read_byte(addr);
+    gameboy.cpu.registers.set_u8(RegisterTarget::A, value);
+    const TICKS: u8 = 12;
+    TICKS
 }
 
 pub fn ld_r_mem_at_hl(target: RegisterTarget) -> impl Fn(&mut Gameboy) -> u8 {

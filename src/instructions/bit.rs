@@ -25,7 +25,7 @@ pub fn set_r(target: RegisterTarget, bit_position: u8) -> impl Fn(&mut Gameboy) 
     }
 }
 
-pub(crate) fn bit_r(target: RegisterTarget, bit_position: u8) -> impl Fn(&mut Gameboy) -> u8 {
+pub fn bit_r(target: RegisterTarget, bit_position: u8) -> impl Fn(&mut Gameboy) -> u8 {
     move |gameboy: &mut Gameboy| {
         let value = gameboy.cpu.registers.get_u8(target);
         let result = value & (1 << bit_position);
@@ -39,7 +39,7 @@ pub(crate) fn bit_r(target: RegisterTarget, bit_position: u8) -> impl Fn(&mut Ga
     }
 }
 
-pub(crate) fn bit_mem_at_hl(bit_position: u8) -> impl Fn(&mut Gameboy) -> u8 {
+pub fn bit_mem_at_hl(bit_position: u8) -> impl Fn(&mut Gameboy) -> u8 {
     move |gameboy: &mut Gameboy| {
         let addr = gameboy.cpu.registers.get_u16(Register16bTarget::HL);
         let value = gameboy.bus.read_byte(addr);
