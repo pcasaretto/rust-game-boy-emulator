@@ -107,13 +107,13 @@ impl<'a> Gameboy<'a> {
     fn get_next_instruction(&mut self) -> Box<instructions::Instruction> {
         let address = self.cpu.registers.get_u16(Register16bTarget::PC);
 
-        let mut instruction_byte = self.read_next_byte();
+        let mut instruction_byte = self.bus.read_byte(address);
 
         let opcode_info;
         let instruction;
 
         if instruction_byte == 0xCB {
-            instruction_byte = self.read_next_byte();
+            instruction_byte = self.bus.read_byte(address.wrapping_add(1));
 
             instruction = instructions::from_prefixed_byte(instruction_byte);
             opcode_info = self
@@ -144,11 +144,10 @@ impl<'a> Gameboy<'a> {
 
     pub fn read_next_byte(&mut self) -> u8 {
         let address = self.cpu.registers.get_u16(Register16bTarget::PC);
-        let byte = self.bus.read_byte(address);
         self.cpu
             .registers
             .set_u16(Register16bTarget::PC, address.wrapping_add(1));
-        byte
+        self.bus.read_byte(address)
     }
 }
 

@@ -18,12 +18,13 @@ impl Default for MemoryBus<'_> {
 
 impl<'a> MemoryBus<'a> {
     pub fn read_byte(&self, address: u16) -> u8 {
-        log::debug!("Read from {:04X}", address);
-        match address {
+        let value = match address {
             0x0000..=0x0FF if self.boot_rom_enabled => self.boot_rom[address as usize],
             0x0000..=0x3FFF if !self.boot_rom_enabled => self.cartridge_rom[address as usize],
             other => self.memory[other as usize],
-        }
+        };
+        log::debug!("Read from {:04X}: value {:02X}", address, value);
+        value
     }
 
     pub fn write_byte(&mut self, address: u16, value: u8) {

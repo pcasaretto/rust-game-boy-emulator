@@ -1,7 +1,12 @@
 use crate::cpu::Register16bTarget;
 use crate::cpu::RegisterTarget;
-use crate::gameboy;
 use crate::gameboy::Gameboy;
+
+pub fn rl_a(gameboy: &mut Gameboy) -> u8 {
+    rl_r(RegisterTarget::A)(gameboy);
+    const CYCLE: u8 = 4;
+    CYCLE
+}
 
 pub fn rl_r(target: RegisterTarget) -> impl Fn(&mut Gameboy) -> u8 {
     move |gameboy: &mut Gameboy| {

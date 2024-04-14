@@ -13,8 +13,9 @@ pub fn jr_z(gameboy: &mut Gameboy) -> u8 {
         const TICKS: u8 = 8;
         return TICKS;
     }
-    let offset = gameboy.bus.memory[gameboy.cpu.registers.pc as usize];
-    gameboy.cpu.registers.pc = gameboy.cpu.registers.pc.wrapping_add(offset as i8 as u16);
+    let current_pc = gameboy.cpu.registers.pc;
+    let offset = gameboy.read_next_byte();
+    gameboy.cpu.registers.pc = current_pc.wrapping_add(offset as i8 as u16);
     const TICKS: u8 = 12;
     return TICKS;
 }
@@ -122,33 +123,23 @@ mod tests {
     }
 
     #[test]
-    fn test_jr_nz_flag_unset() {
+    fn test_jr_nz_flag_set() {
         let mut gameboy = Gameboy::default();
-        gameboy.cpu.registers.pc = 0x1000;
-        gameboy.cpu.registers.f.zero = false;
-        gameboy.bus.memory[0x1000] = 0x01;
+        gameboy.cpu.registers.pc = 0xC050;
+        gameboy.cpu.registers.f.zero = true;
+        gameboy.bus.memory[0xC050] = 0x01;
         jr_nz(&mut gameboy);
-        assert_eq!(gameboy.cpu.registers.pc, 0x1001);
+        assert_eq!(gameboy.cpu.registers.pc, 0xC050);
     }
 
     #[test]
     fn test_jr_nz_flag_unset_signed_negative() {
         let mut gameboy = Gameboy::default();
-        gameboy.cpu.registers.pc = 0x1000;
+        gameboy.cpu.registers.pc = 0xC050;
         gameboy.cpu.registers.f.zero = false;
-        gameboy.bus.memory[0x1005] = -5i8 as u8;
+        gameboy.bus.memory[0xC050] = -5 as i8 as u8;
         jr_nz(&mut gameboy);
-        assert_eq!(gameboy.cpu.registers.pc, 0x1000);
-    }
-
-    #[test]
-    fn test_jr_nz_flag_set() {
-        let mut gameboy = Gameboy::default();
-        gameboy.cpu.registers.pc = 0x1000;
-        gameboy.cpu.registers.f.zero = true;
-        gameboy.bus.memory[0x1000] = 0x05;
-        jr_nz(&mut gameboy);
-        assert_eq!(gameboy.cpu.registers.pc, 0x1000);
+        assert_eq!(gameboy.cpu.registers.pc, 0xC04B);
     }
 
     #[test]
@@ -176,9 +167,9 @@ mod tests {
         let mut gameboy = Gameboy::default();
         gameboy.cpu.registers.pc = 0x1000;
         gameboy.cpu.registers.f.carry = true;
-        gameboy.bus.memory[0x1005] = -5i8 as u8;
+        gameboy.bus.memory[0x1000] = -5i8 as u8;
         jr_c(&mut gameboy);
-        assert_eq!(gameboy.cpu.registers.pc, 0x1000);
+        assert_eq!(gameboy.cpu.registers.pc, 0x0ffb);
     }
 
     #[test]
@@ -186,9 +177,9 @@ mod tests {
         let mut gameboy = Gameboy::default();
         gameboy.cpu.registers.pc = 0x1000;
         gameboy.cpu.registers.f.carry = false;
-        gameboy.bus.memory[0x1000] = 0x01;
+        gameboy.bus.memory[0x1000] = 0x05;
         jr_nc(&mut gameboy);
-        assert_eq!(gameboy.cpu.registers.pc, 0x1001);
+        assert_eq!(gameboy.cpu.registers.pc, 0x1005);
     }
 
     #[test]
@@ -206,8 +197,8 @@ mod tests {
         let mut gameboy = Gameboy::default();
         gameboy.cpu.registers.pc = 0x1000;
         gameboy.cpu.registers.f.carry = false;
-        gameboy.bus.memory[0x1005] = -5i8 as u8;
+        gameboy.bus.memory[0x1000] = -5i8 as u8;
         jr_nc(&mut gameboy);
-        assert_eq!(gameboy.cpu.registers.pc, 0x1000);
+        assert_eq!(gameboy.cpu.registers.pc, 0x0ffb);
     }
 }
