@@ -49,6 +49,9 @@ impl<'a> Gameboy<'a> {
         // self.bus.memory[..0x8000].copy_from_slice(&self.cartridge[..0x8000]);
 
         loop {
+            // if self.cpu.registers.get_u16(Register16bTarget::PC) >= 0x100 {
+            //     break;
+            // }
             let before = Instant::now();
             self.run_frame();
             let elapsed = before.elapsed();
@@ -64,9 +67,9 @@ impl<'a> Gameboy<'a> {
             let mut ticks: u64 = 0;
             while ticks < MAX_TICKS {
                 log::debug!("{:?}", self.cpu.registers);
-                if self.cpu.registers.get_u16(Register16bTarget::PC) >= 0x100 {
-                    break;
-                }
+                // if self.cpu.registers.get_u16(Register16bTarget::PC) >= 0x100 {
+                //     break;
+                // }
                 ticks += self.run_next_instruction();
 
                 self.handle_interrupts();

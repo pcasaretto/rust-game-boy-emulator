@@ -18,7 +18,7 @@ impl Default for MemoryBus<'_> {
 
 impl<'a> MemoryBus<'a> {
     pub fn read_byte(&self, address: u16) -> u8 {
-        if self.boot_rom_enabled && address <= self.boot_rom.len() as u16 {
+        if self.boot_rom_enabled && address < self.boot_rom.len() as u16 {
             return self.boot_rom[address as usize];
         }
         let value = match address {

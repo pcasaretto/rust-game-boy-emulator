@@ -51,6 +51,18 @@ pub fn ld_mem_at_d16_r(src: RegisterTarget) -> impl Fn(&mut Gameboy) -> u8 {
     }
 }
 
+pub fn ld_r_mem_at_d16(target: RegisterTarget) -> impl Fn(&mut Gameboy) -> u8 {
+    move |gameboy: &mut Gameboy| {
+        let low = gameboy.read_next_byte();
+        let high = gameboy.read_next_byte();
+        let addr = u16::from_be_bytes([high, low]);
+        let value = gameboy.bus.read_byte(addr);
+        gameboy.cpu.registers.set_u8(target, value);
+        const TICKS: u8 = 16;
+        TICKS
+    }
+}
+
 pub fn ld_r_mem_at_r16(
     src: Register16bTarget,
     dest: RegisterTarget,
@@ -279,6 +291,17 @@ mod tests {
         gameboy.bus.memory[0xC052] = 0xC1;
         ld_mem_at_d16_r(RegisterTarget::A)(&mut gameboy);
         assert_eq!(gameboy.bus.memory[0xC101], 0x34);
+    }
+
+    #[test]
+    fn test_ld_r_mem_at_d16() {
+        let mut gameboy = Gameboy::default();
+        gameboy.cpu.registers.pc = 0xC050;
+        gameboy.bus.memory[0xC051] = 0x01;
+        gameboy.bus.memory[0xC052] = 0xC1;
+        gameboy.bus.memory[0xC101] = 0x34;
+        ld_r_mem_at_d16(RegisterTarget::A)(&mut gameboy);
+        assert_eq!(gameboy.cpu.registers.get_u8(RegisterTarget::A), 0x34);
     }
 
     #[test]
