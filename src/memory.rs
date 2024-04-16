@@ -30,8 +30,16 @@ impl<'a> MemoryBus<'a> {
     }
 
     pub fn write_byte(&mut self, address: u16, value: u8) {
-        log::debug!("Writing {:02X} to {:04X}", value, address);
+        log::info!("Writing {:02X} to {:04X}", value, address);
         match address {
+            0xFF46 => {
+                // DMA transfer
+                let start_address = (value as u16) << 8;
+                for i in 0..0xA0 {
+                    let byte = self.memory[(start_address + i) as usize];
+                    self.memory[0xFE00 + i as usize] = byte;
+                }
+            }
             0xFF50 if self.boot_rom_enabled => {
                 log::info!("Disabling boot ROM");
                 self.boot_rom_enabled = false;

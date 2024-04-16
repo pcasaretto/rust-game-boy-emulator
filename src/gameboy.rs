@@ -1,7 +1,8 @@
 use crate::cpu::{Register16bTarget, CPU};
-use crate::instructions;
 use crate::memory::MemoryBus;
 use crate::opcode_info::{OpcodeInfo, OperandInformation};
+use crate::ppu::PPU;
+use crate::{instructions, ppu};
 use std::time::Instant;
 
 pub struct Gameboy<'a> {
@@ -45,36 +46,47 @@ impl<'a> Gameboy<'a> {
     pub fn run(&mut self, cartridge: &'a [u8; 0x200000]) {
         self.bus.cartridge_rom = cartridge;
 
-        // load first 0x8000 bytes of cartridge into memory
-        // self.bus.memory[..0x8000].copy_from_slice(&self.cartridge[..0x8000]);
+        let sdl_context = sdl2::init().unwrap();
 
-        loop {
-            // if self.cpu.registers.get_u16(Register16bTarget::PC) >= 0x100 {
-            //     break;
-            // }
+        let mut ppu = PPU::new(&sdl_context);
+
+        let mut event_pump = sdl_context.event_pump().unwrap();
+
+        'running: loop {
             let before = Instant::now();
-            self.run_frame();
+            for event in event_pump.poll_iter() {
+                match event {
+                    sdl2::event::Event::Quit { .. }
+                    | sdl2::event::Event::KeyDown {
+                        keycode: Some(sdl2::keyboard::Keycode::Escape),
+                        ..
+                    } => break 'running,
+                    _ => {}
+                }
+            }
+
+            self.run_frame(&mut ppu);
             let elapsed = before.elapsed();
             let fps = 1.0 / elapsed.as_secs_f64();
             println!("FPS: {:.2?}", fps);
+            ppu.draw();
         }
     }
 
-    fn run_frame(&mut self) {
+    fn run_frame(&mut self, ppu: &mut PPU) {
         const MAX_TICKS: u64 = 69905 * 4;
         // frame
         {
             let mut ticks: u64 = 0;
             while ticks < MAX_TICKS {
                 log::debug!("{:?}", self.cpu.registers);
-                // if self.cpu.registers.get_u16(Register16bTarget::PC) >= 0x100 {
                 //     break;
-                // }
+                // if self.cpu.registers.get_u16(Register16bTarget::PC) >= 0x100 {
                 ticks += self.run_next_instruction();
 
                 self.handle_interrupts();
                 self.serial_comm();
-                self.update_graphics(ticks);
+                self.update_graphics(ticks, ppu);
             }
         }
     }
@@ -169,13 +181,23 @@ impl<'a> Gameboy<'a> {
         self.bus.read_byte(new_address)
     }
 
-    fn update_graphics(&mut self, ticks: u64) {
+    fn update_graphics(&mut self, ticks: u64, ppu: &mut PPU) {
         self.scanline_counter += ticks;
         if self.scanline_counter >= 456 * 4 {
             self.scanline_counter = 0;
             // self.update_scanline();
-            self.bus
-                .write_byte(0xFF44, self.bus.read_byte(0xFF44).wrapping_add(1));
+            let mut current_scanline = self.bus.read_byte(0xFF44);
+            if current_scanline == 144 {
+                // RequestInterupt(0);
+            }
+            if current_scanline > 153 {
+                current_scanline = 0;
+            } else {
+                current_scanline += 1;
+            }
+            // TODO: writing directly to memory
+            self.bus.memory[0xFF44] = current_scanline;
+            ppu.update(self, current_scanline);
         }
     }
 }
