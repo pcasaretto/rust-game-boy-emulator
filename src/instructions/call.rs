@@ -44,6 +44,50 @@ pub fn ret(gameboy: &mut Gameboy) -> u8 {
     TICKS
 }
 
+pub fn ret_nz(gameboy: &mut Gameboy) -> u8 {
+    if !gameboy.cpu.registers.f.zero {
+        ret(gameboy);
+        const TICKS: u8 = 20;
+        return TICKS;
+    }
+    gameboy.cpu.registers.pc = gameboy.cpu.registers.pc.wrapping_add(2);
+    const TICKS: u8 = 8;
+    TICKS
+}
+
+pub fn ret_z(gameboy: &mut Gameboy) -> u8 {
+    if gameboy.cpu.registers.f.zero {
+        ret(gameboy);
+        const TICKS: u8 = 20;
+        return TICKS;
+    }
+    gameboy.cpu.registers.pc = gameboy.cpu.registers.pc.wrapping_add(2);
+    const TICKS: u8 = 8;
+    TICKS
+}
+
+pub fn ret_nc(gameboy: &mut Gameboy) -> u8 {
+    if !gameboy.cpu.registers.f.carry {
+        ret(gameboy);
+        const TICKS: u8 = 20;
+        return TICKS;
+    }
+    gameboy.cpu.registers.pc = gameboy.cpu.registers.pc.wrapping_add(2);
+    const TICKS: u8 = 8;
+    TICKS
+}
+
+pub fn ret_c(gameboy: &mut Gameboy) -> u8 {
+    if gameboy.cpu.registers.f.carry {
+        ret(gameboy);
+        const TICKS: u8 = 20;
+        return TICKS;
+    }
+    gameboy.cpu.registers.pc = gameboy.cpu.registers.pc.wrapping_add(2);
+    const TICKS: u8 = 8;
+    TICKS
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -72,4 +116,40 @@ mod tests {
         assert_eq!(gameboy.cpu.registers.pc, 0x0301);
         assert_eq!(gameboy.cpu.registers.sp, 0xFFFE);
     }
+
+    macro_rules! conditional_ret {
+        ($($name:ident: $function:ident $flag_name:ident $flag_value:expr, $should_jump:expr,)*) => {
+           $(
+            #[test]
+            fn $name() {
+                let mut gameboy = Gameboy::default();
+                gameboy.cpu.registers.pc = 0xC050;
+                gameboy.cpu.registers.sp = 0xFFFC;
+                gameboy.bus.memory[0xFFFC] = 0x01;
+                gameboy.bus.memory[0xFFFD] = 0x03;
+                gameboy.cpu.registers.f.$flag_name = $flag_value;
+                $function(&mut gameboy);
+                if $should_jump {
+                assert_eq!(gameboy.cpu.registers.pc, 0x0301);
+                assert_eq!(gameboy.cpu.registers.sp, 0xFFFE);
+
+                } else {
+
+                assert_eq!(gameboy.cpu.registers.pc, 0xC052);
+                assert_eq!(gameboy.cpu.registers.sp, 0xFFFC);
+                }
+            })*
+        };
+    }
+
+    conditional_ret!(
+        test_ret_nz: ret_nz zero false, true,
+        test_ret_nz_zero_flag: ret_nz zero true, false,
+        test_ret_nc: ret_nc carry false, true,
+        test_ret_nc_zero_flag: ret_nc carry true, false,
+        test_rec_z: ret_z zero true, true,
+        test_rec_z_zero_flag: ret_z zero false, false,
+        test_rec_c: ret_c carry true, true,
+        test_rec_c_zero_flag: ret_c carry false, false,
+    );
 }

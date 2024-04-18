@@ -258,6 +258,11 @@ pub fn from_byte(byte: u8) -> Box<Instruction> {
         0xC4 => Box::new(call::call_nz_a16),
         0xD4 => Box::new(call::call_nc_a16),
 
+        0xC0 => Box::new(call::ret_nz),
+        0xD0 => Box::new(call::ret_nc),
+        0xC8 => Box::new(call::ret_z),
+        0xD8 => Box::new(call::ret_c),
+
         0xC5 => Box::new(pai(stack::push(Register16bTarget::BC))),
         0xD5 => Box::new(pai(stack::push(Register16bTarget::DE))),
         0xE5 => Box::new(pai(stack::push(Register16bTarget::HL))),
