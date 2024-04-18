@@ -1,5 +1,6 @@
 use crate::cpu::RegisterTarget;
-use crate::gameboy::Gameboy;
+use crate::gameboy::{self, Gameboy};
+use crate::instructions::Register16bTarget;
 
 pub fn dec_r(target: RegisterTarget) -> impl Fn(&mut Gameboy) -> u8 {
     const TICKS: u8 = 4;
@@ -16,10 +17,64 @@ pub fn dec_r(target: RegisterTarget) -> impl Fn(&mut Gameboy) -> u8 {
     }
 }
 
+pub fn dec_mem_at_hl(gameboy: &mut Gameboy) -> u8 {
+    let address = gameboy.cpu.registers.get_u16(Register16bTarget::HL);
+    let current_value = gameboy.bus.read_byte(address);
+    let (new_value, did_overflow) = current_value.overflowing_sub(1);
+    gameboy.bus.write_byte(address, new_value);
+
+    gameboy.cpu.registers.f.zero = new_value == 0;
+    gameboy.cpu.registers.f.subtract = true;
+    gameboy.cpu.registers.f.half_carry = current_value & 0x10 == 0x10;
+    gameboy.cpu.registers.f.carry = did_overflow;
+    const TICKS: u8 = 12;
+    TICKS
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::cpu::{FlagsRegister, Registers, CPU};
+    use crate::cpu::{FlagsRegister, Register16bTarget, Registers, CPU};
+
+    #[test]
+    fn test_dec_mem_at_hl() {
+        let mut gameboy = Gameboy::default();
+        let addr: u16 = 0xC050;
+        gameboy.cpu.registers.set_u16(Register16bTarget::HL, addr);
+        gameboy.bus.write_byte(addr, 0x12);
+        dec_mem_at_hl(&mut gameboy);
+        assert_eq!(gameboy.bus.read_byte(addr), 0x11);
+    }
+
+    #[test]
+    fn test_dec_mem_at_hl_overflow() {
+        let mut gameboy = Gameboy::default();
+        let addr: u16 = 0xC050;
+        gameboy.cpu.registers.set_u16(Register16bTarget::HL, addr);
+        gameboy.bus.write_byte(addr, 0x00);
+        dec_mem_at_hl(&mut gameboy);
+        assert_eq!(gameboy.bus.read_byte(addr), 0xFF);
+    }
+
+    #[test]
+    fn test_dec_mem_at_hl_zero() {
+        let mut gameboy = Gameboy::default();
+        let addr: u16 = 0xC050;
+        gameboy.cpu.registers.set_u16(Register16bTarget::HL, addr);
+        gameboy.bus.write_byte(addr, 0x01);
+        dec_mem_at_hl(&mut gameboy);
+        assert!(gameboy.cpu.registers.f.zero);
+    }
+
+    #[test]
+    fn test_dec_mem_at_hl_half_carry() {
+        let mut gameboy = Gameboy::default();
+        let addr: u16 = 0xC050;
+        gameboy.cpu.registers.set_u16(Register16bTarget::HL, addr);
+        gameboy.bus.write_byte(addr, 0x10);
+        dec_mem_at_hl(&mut gameboy);
+        assert!(gameboy.cpu.registers.f.half_carry);
+    }
 
     #[test]
     fn test_dec_r() {
