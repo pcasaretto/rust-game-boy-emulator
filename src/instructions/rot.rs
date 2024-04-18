@@ -3,16 +3,71 @@ use crate::cpu::RegisterTarget;
 use crate::gameboy::Gameboy;
 
 pub fn rl_a(gameboy: &mut Gameboy) -> u8 {
-    rl_r(RegisterTarget::A)(gameboy);
-    gameboy.cpu.registers.f.zero = false;
-    const CYCLE: u8 = 4;
-    CYCLE
+    //     Rotate A left through Carry flag.
+    // Flags affected:
+    // Z - Set if result is zero.
+    // N - Reset.
+    // H - Reset.
+    // C - Contains old bit 7 data.
+    let value = gameboy.cpu.registers.a;
+    let carry = gameboy.cpu.registers.f.carry;
+    let new_carry = value & 0x80 != 0;
+    let new_value = (value << 1) | (carry as u8);
+    gameboy.cpu.registers.a = new_value;
+    gameboy.cpu.registers.f.zero = new_value == 0;
+    gameboy.cpu.registers.f.subtract = false;
+    gameboy.cpu.registers.f.half_carry = false;
+    gameboy.cpu.registers.f.carry = new_carry;
+    const TICKS: u8 = 4;
+    TICKS
 }
 
 pub fn rlc_a(gameboy: &mut Gameboy) -> u8 {
-    // rl_r(RegisterTarget::A)(gameboy);
-    const CYCLE: u8 = 4;
-    CYCLE
+    // Rotate A left. Old bit 7 to Carry flag.
+    //     Flags affected:
+    // Z - Set if result is zero.
+    // N - Reset.
+    // H - Reset.
+    // C - Contains old bit 7 data.
+    let value = gameboy.cpu.registers.a;
+    let new_carry = value & 0x80 != 0;
+    let new_value = (value << 1) | (value >> 7);
+    gameboy.cpu.registers.a = new_value;
+    gameboy.cpu.registers.f.zero = new_value == 0;
+    gameboy.cpu.registers.f.subtract = false;
+    gameboy.cpu.registers.f.half_carry = false;
+    gameboy.cpu.registers.f.carry = new_carry;
+
+    const TICKS: u8 = 4;
+    TICKS
+}
+
+pub fn rr_a(gameboy: &mut Gameboy) -> u8 {
+    let value = gameboy.cpu.registers.a;
+    let carry = gameboy.cpu.registers.f.carry;
+    let new_carry = value & 0x01 != 0;
+    let new_value = (value >> 1) | ((carry as u8) << 7);
+    gameboy.cpu.registers.a = new_value;
+    gameboy.cpu.registers.f.zero = new_value == 0;
+    gameboy.cpu.registers.f.subtract = false;
+    gameboy.cpu.registers.f.half_carry = false;
+    gameboy.cpu.registers.f.carry = new_carry;
+    const TICKS: u8 = 4;
+    TICKS
+}
+
+pub fn rrc_a(gameboy: &mut Gameboy) -> u8 {
+    let value = gameboy.cpu.registers.a;
+    let new_carry = value & 0x01 != 0;
+    let new_value = (value >> 1) | (value << 7);
+    gameboy.cpu.registers.a = new_value;
+    gameboy.cpu.registers.f.zero = new_value == 0;
+    gameboy.cpu.registers.f.subtract = false;
+    gameboy.cpu.registers.f.half_carry = false;
+    gameboy.cpu.registers.f.carry = new_carry;
+
+    const TICKS: u8 = 4;
+    TICKS
 }
 
 pub fn rl_r(target: RegisterTarget) -> impl Fn(&mut Gameboy) -> u8 {
@@ -26,8 +81,8 @@ pub fn rl_r(target: RegisterTarget) -> impl Fn(&mut Gameboy) -> u8 {
         gameboy.cpu.registers.f.subtract = false;
         gameboy.cpu.registers.f.half_carry = false;
         gameboy.cpu.registers.set_u8(target, new_value);
-        const CYCLE: u8 = 8;
-        CYCLE
+        const TICKS: u8 = 8;
+        TICKS
     }
 }
 
@@ -42,8 +97,8 @@ pub fn rl_mem_at_hl(gameboy: &mut Gameboy) -> u8 {
     gameboy.cpu.registers.f.subtract = false;
     gameboy.cpu.registers.f.half_carry = false;
     gameboy.bus.write_byte(addr, new_value);
-    const CYCLE: u8 = 16;
-    CYCLE
+    const TICKS: u8 = 16;
+    TICKS
 }
 
 pub fn rr_r(target: RegisterTarget) -> impl Fn(&mut Gameboy) -> u8 {
@@ -57,8 +112,8 @@ pub fn rr_r(target: RegisterTarget) -> impl Fn(&mut Gameboy) -> u8 {
         gameboy.cpu.registers.f.subtract = false;
         gameboy.cpu.registers.f.half_carry = false;
         gameboy.cpu.registers.set_u8(target, new_value);
-        const CYCLE: u8 = 8;
-        CYCLE
+        const TICKS: u8 = 8;
+        TICKS
     }
 }
 
@@ -73,8 +128,8 @@ pub fn rr_mem_at_hl(gameboy: &mut Gameboy) -> u8 {
     gameboy.cpu.registers.f.subtract = false;
     gameboy.cpu.registers.f.half_carry = false;
     gameboy.bus.write_byte(addr, new_value);
-    const CYCLE: u8 = 16;
-    CYCLE
+    const TICKS: u8 = 16;
+    TICKS
 }
 
 #[cfg(test)]

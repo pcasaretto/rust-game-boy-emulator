@@ -65,6 +65,8 @@ pub fn from_byte(byte: u8) -> Box<Instruction> {
 
         0x07 => Box::new(pai(rot::rlc_a)),
         0x17 => Box::new(pai(rot::rl_a)),
+        0x0F => Box::new(pai(rot::rrc_a)),
+        0x1F => Box::new(pai(rot::rr_a)),
 
         0x0A => Box::new(pai(ld::ld_r_mem_at_r16(
             Register16bTarget::BC,
