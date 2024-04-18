@@ -46,10 +46,50 @@ pub fn add_d8(gameboy: &mut Gameboy) -> u8 {
     TICKS
 }
 
+pub fn add_hl_r16(target: Register16bTarget) -> impl Fn(&mut Gameboy) -> u8 {
+    move |gameboy: &mut Gameboy| {
+        let hl = gameboy.cpu.registers.get_u16(Register16bTarget::HL);
+        let target = gameboy.cpu.registers.get_u16(target);
+        let (new_value, did_overflow) = hl.overflowing_add(target);
+        gameboy
+            .cpu
+            .registers
+            .set_u16(Register16bTarget::HL, new_value);
+
+        gameboy.cpu.registers.f.carry = did_overflow;
+        gameboy.cpu.registers.f.subtract = false;
+        let (_, half_carry) = (hl as u8).overflowing_add(target as u8);
+        gameboy.cpu.registers.f.half_carry = half_carry;
+        const TICKS: u8 = 8;
+        TICKS
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::cpu::{FlagsRegister, Register16bTarget, Registers, CPU};
+
+    #[test]
+    fn test_add_hl_r16() {
+        let mut gameboy = Gameboy::default();
+        gameboy.cpu.registers.set_u16(Register16bTarget::HL, 0xC050);
+        gameboy.cpu.registers.set_u16(Register16bTarget::BC, 0x001);
+        add_hl_r16(Register16bTarget::BC)(&mut gameboy);
+        assert_eq!(gameboy.cpu.registers.get_u16(Register16bTarget::HL), 0xC051);
+    }
+
+    #[test]
+    fn test_add_hl_r16_half_carry_flag() {
+        let mut gameboy = Gameboy::default();
+        gameboy
+            .cpu
+            .registers
+            .set_u16(Register16bTarget::HL, 0b0000_0000_1111_1111);
+        gameboy.cpu.registers.set_u16(Register16bTarget::BC, 0b1);
+        add_hl_r16(Register16bTarget::BC)(&mut gameboy);
+        assert!(gameboy.cpu.registers.f.half_carry);
+    }
 
     #[test]
     fn test_add() {

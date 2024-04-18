@@ -63,6 +63,11 @@ pub fn from_byte(byte: u8) -> Box<Instruction> {
         ))),
         0x11 => Box::new(pai(ld::ld_r16_n16(Register16bTarget::DE))),
 
+        0x09 => Box::new(pai(add::add_hl_r16(Register16bTarget::BC))),
+        0x19 => Box::new(pai(add::add_hl_r16(Register16bTarget::DE))),
+        0x29 => Box::new(pai(add::add_hl_r16(Register16bTarget::HL))),
+        0x39 => Box::new(pai(add::add_hl_r16(Register16bTarget::SP))),
+
         0x07 => Box::new(pai(rot::rlc_a)),
         0x17 => Box::new(pai(rot::rl_a)),
         0x0F => Box::new(pai(rot::rrc_a)),
