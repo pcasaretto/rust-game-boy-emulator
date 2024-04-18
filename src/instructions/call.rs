@@ -19,7 +19,7 @@ pub fn call_nz_a16(gameboy: &mut Gameboy) -> u8 {
     if !gameboy.cpu.registers.f.zero {
         call_a16(gameboy)
     } else {
-        gameboy.cpu.registers.pc += 2;
+        gameboy.cpu.registers.pc = gameboy.cpu.registers.pc.wrapping_add(3);
         12
     }
 }
@@ -28,7 +28,7 @@ pub fn call_nc_a16(gameboy: &mut Gameboy) -> u8 {
     if !gameboy.cpu.registers.f.carry {
         call_a16(gameboy)
     } else {
-        gameboy.cpu.registers.pc += 2;
+        gameboy.cpu.registers.pc = gameboy.cpu.registers.pc.wrapping_add(3);
         12
     }
 }

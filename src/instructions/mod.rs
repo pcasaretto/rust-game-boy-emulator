@@ -28,6 +28,7 @@ use super::gameboy;
 /// the number of t-states (system clock ticks) that the instruction took to execute.
 pub type Instruction = dyn Fn(&mut gameboy::Gameboy) -> u8;
 
+/// pai means post advance instruction
 fn pai(instruction: impl Fn(&mut gameboy::Gameboy) -> u8) -> impl Fn(&mut gameboy::Gameboy) -> u8 {
     move |gameboy: &mut gameboy::Gameboy| {
         let ticks = instruction(gameboy);
@@ -49,18 +50,22 @@ fn double_pc_advancing_instruction(
 pub fn from_byte(byte: u8) -> Box<Instruction> {
     match byte {
         0x00 => Box::new(pai(nop::nop)),
+        0x10 => Box::new(pai(misc::stop)),
+
         0x01 => Box::new(pai(ld::ld_r16_n16(Register16bTarget::BC))),
         0x02 => Box::new(pai(ld::ld_mem_at_r16_r(
             Register16bTarget::BC,
             RegisterTarget::A,
         ))),
         0x08 => Box::new(pai(ld::ld_mem_at_d16_r16(Register16bTarget::SP))),
-        0x10 => Box::new(pai(misc::stop)),
         0x12 => Box::new(pai(ld::ld_mem_at_r16_r(
             Register16bTarget::DE,
             RegisterTarget::A,
         ))),
         0x11 => Box::new(pai(ld::ld_r16_n16(Register16bTarget::DE))),
+
+        0x07 => Box::new(pai(rot::rlc_a)),
+        0x17 => Box::new(pai(rot::rl_a)),
 
         0x0A => Box::new(pai(ld::ld_r_mem_at_r16(
             Register16bTarget::BC,
@@ -70,8 +75,6 @@ pub fn from_byte(byte: u8) -> Box<Instruction> {
             Register16bTarget::DE,
             RegisterTarget::A,
         ))),
-
-        0x17 => Box::new(pai(rot::rl_a)),
 
         0x03 => Box::new(pai(inc::inc_r16(Register16bTarget::BC))),
         0x04 => Box::new(pai(inc::inc_r(RegisterTarget::B))),

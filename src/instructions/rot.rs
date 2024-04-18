@@ -4,6 +4,13 @@ use crate::gameboy::Gameboy;
 
 pub fn rl_a(gameboy: &mut Gameboy) -> u8 {
     rl_r(RegisterTarget::A)(gameboy);
+    gameboy.cpu.registers.f.zero = false;
+    const CYCLE: u8 = 4;
+    CYCLE
+}
+
+pub fn rlc_a(gameboy: &mut Gameboy) -> u8 {
+    // rl_r(RegisterTarget::A)(gameboy);
     const CYCLE: u8 = 4;
     CYCLE
 }
