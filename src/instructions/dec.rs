@@ -31,6 +31,17 @@ pub fn dec_mem_at_hl(gameboy: &mut Gameboy) -> u8 {
     TICKS
 }
 
+pub fn dec_r16(target: Register16bTarget) -> impl Fn(&mut Gameboy) -> u8 {
+    const TICKS: u8 = 8;
+    move |gameboy: &mut Gameboy| {
+        let current_value = gameboy.cpu.registers.get_u16(target);
+        gameboy
+            .cpu
+            .registers
+            .set_u16(target, current_value.wrapping_sub(1));
+        TICKS
+    }
+}
 #[cfg(test)]
 mod tests {
     use super::*;

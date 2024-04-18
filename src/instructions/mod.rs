@@ -63,6 +63,11 @@ pub fn from_byte(byte: u8) -> Box<Instruction> {
         ))),
         0x11 => Box::new(pai(ld::ld_r16_n16(Register16bTarget::DE))),
 
+        0x0B => Box::new(pai(dec::dec_r16(Register16bTarget::BC))),
+        0x1B => Box::new(pai(dec::dec_r16(Register16bTarget::DE))),
+        0x2B => Box::new(pai(dec::dec_r16(Register16bTarget::HL))),
+        0x3B => Box::new(pai(dec::dec_r16(Register16bTarget::SP))),
+
         0x09 => Box::new(pai(add::add_hl_r16(Register16bTarget::BC))),
         0x19 => Box::new(pai(add::add_hl_r16(Register16bTarget::DE))),
         0x29 => Box::new(pai(add::add_hl_r16(Register16bTarget::HL))),
@@ -277,6 +282,8 @@ pub fn from_byte(byte: u8) -> Box<Instruction> {
         0xCD => Box::new(call::call_a16),
         0xC9 => Box::new(call::ret),
 
+        0xE9 => Box::new(pai(jmp::jp_hl)),
+
         0xC6 => Box::new(pai(add::add_d8)),
         0xD6 => Box::new(pai(sub::sub_d8)),
         0xE6 => Box::new(pai(and::and_d8)),
@@ -307,7 +314,7 @@ pub fn from_byte(byte: u8) -> Box<Instruction> {
         0xFE => Box::new(pai(cp::cp_d8)),
 
         other => {
-            panic!("Unsupported instruction {:X}", other)
+            panic!("Unsupported instruction {:02X}", other)
         }
     }
 }
@@ -497,7 +504,7 @@ pub fn from_prefixed_byte(byte: u8) -> Box<Instruction> {
         0xFE => Box::new(dpai(bit::set_mem_at_hl(7))),
         0xFF => Box::new(dpai(bit::set_r(RegisterTarget::A, 7))),
         other => {
-            panic!("Unsupported prefixed instruction {:X}", other)
+            panic!("Unsupported prefixed instruction {:02X}", other)
         }
     }
 }

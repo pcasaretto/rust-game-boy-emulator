@@ -1,4 +1,4 @@
-use crate::gameboy::Gameboy;
+use crate::{gameboy::Gameboy, instructions::Register16bTarget};
 
 pub fn jmp_a16(gameboy: &mut Gameboy) -> u8 {
     let low = gameboy.read_next_byte();
@@ -80,6 +80,12 @@ pub fn jr(gameboy: &mut Gameboy) -> u8 {
         .registers
         .pc
         .wrapping_add(offset as i8 as u16 + 1);
+    TICKS
+}
+
+pub fn jp_hl(gameboy: &mut Gameboy) -> u8 {
+    gameboy.cpu.registers.pc = gameboy.cpu.registers.get_u16(Register16bTarget::HL);
+    const TICKS: u8 = 4;
     TICKS
 }
 
