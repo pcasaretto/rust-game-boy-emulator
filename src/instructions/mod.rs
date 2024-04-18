@@ -153,7 +153,7 @@ pub fn from_byte(byte: u8) -> Box<Instruction> {
         0x54 => Box::new(pai(ld::ld_r_r(RegisterTarget::H, RegisterTarget::D))),
         0x55 => Box::new(pai(ld::ld_r_r(RegisterTarget::L, RegisterTarget::D))),
         0x56 => Box::new(pai(ld::ld_r_mem_at_hl(RegisterTarget::D))),
-        0x57 => Box::new(pai(ld::ld_r_r(RegisterTarget::A, RegisterTarget::E))),
+        0x57 => Box::new(pai(ld::ld_r_r(RegisterTarget::A, RegisterTarget::D))),
         0x58 => Box::new(pai(ld::ld_r_r(RegisterTarget::B, RegisterTarget::E))),
         0x59 => Box::new(pai(ld::ld_r_r(RegisterTarget::C, RegisterTarget::E))),
         0x5A => Box::new(pai(ld::ld_r_r(RegisterTarget::D, RegisterTarget::E))),

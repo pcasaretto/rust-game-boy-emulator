@@ -25,12 +25,12 @@ impl<'a> MemoryBus<'a> {
             0x0000..=0x3FFF => self.cartridge_rom[address as usize],
             other => self.memory[other as usize],
         };
-        log::debug!("Read from {:04X}: value {:02X}", address, value);
+        // log::debug!("Read from {:04X}: value {:02X}", address, value);
         value
     }
 
     pub fn write_byte(&mut self, address: u16, value: u8) {
-        log::info!("Writing {:02X} to {:04X}", value, address);
+        // log::info!("Writing {:02X} to {:04X}", value, address);
         match address {
             0xFF46 => {
                 // DMA transfer
