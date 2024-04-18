@@ -15,6 +15,7 @@ mod or;
 mod rot;
 mod rst;
 mod sbc;
+mod shift;
 mod stack;
 mod sub;
 mod swap;
@@ -37,9 +38,7 @@ fn pai(instruction: impl Fn(&mut gameboy::Gameboy) -> u8) -> impl Fn(&mut gamebo
     }
 }
 
-fn double_pc_advancing_instruction(
-    instruction: impl Fn(&mut gameboy::Gameboy) -> u8,
-) -> impl Fn(&mut gameboy::Gameboy) -> u8 {
+fn dpai(instruction: impl Fn(&mut gameboy::Gameboy) -> u8) -> impl Fn(&mut gameboy::Gameboy) -> u8 {
     move |gameboy: &mut gameboy::Gameboy| {
         let ticks = instruction(gameboy);
         gameboy.cpu.registers.pc = gameboy.cpu.registers.pc.wrapping_add(2);
@@ -298,539 +297,188 @@ pub fn from_byte(byte: u8) -> Box<Instruction> {
 
 pub fn from_prefixed_byte(byte: u8) -> Box<Instruction> {
     match byte {
-        0x30 => Box::new(double_pc_advancing_instruction(swap::swap(
-            RegisterTarget::B,
-        ))),
-        0x31 => Box::new(double_pc_advancing_instruction(swap::swap(
-            RegisterTarget::C,
-        ))),
-        0x32 => Box::new(double_pc_advancing_instruction(swap::swap(
-            RegisterTarget::D,
-        ))),
-        0x33 => Box::new(double_pc_advancing_instruction(swap::swap(
-            RegisterTarget::E,
-        ))),
-        0x34 => Box::new(double_pc_advancing_instruction(swap::swap(
-            RegisterTarget::H,
-        ))),
-        0x35 => Box::new(double_pc_advancing_instruction(swap::swap(
-            RegisterTarget::L,
-        ))),
+        0x30 => Box::new(dpai(swap::swap(RegisterTarget::B))),
+        0x31 => Box::new(dpai(swap::swap(RegisterTarget::C))),
+        0x32 => Box::new(dpai(swap::swap(RegisterTarget::D))),
+        0x33 => Box::new(dpai(swap::swap(RegisterTarget::E))),
+        0x34 => Box::new(dpai(swap::swap(RegisterTarget::H))),
+        0x35 => Box::new(dpai(swap::swap(RegisterTarget::L))),
         // 0x36 => Box::new(swap::swap(RegisterTarget::C)),
-        0x37 => Box::new(double_pc_advancing_instruction(swap::swap(
-            RegisterTarget::A,
-        ))),
+        0x37 => Box::new(dpai(swap::swap(RegisterTarget::A))),
 
-        0x10 => Box::new(double_pc_advancing_instruction(rot::rl_r(
-            RegisterTarget::B,
-        ))),
-        0x11 => Box::new(double_pc_advancing_instruction(rot::rl_r(
-            RegisterTarget::C,
-        ))),
-        0x12 => Box::new(double_pc_advancing_instruction(rot::rl_r(
-            RegisterTarget::D,
-        ))),
-        0x13 => Box::new(double_pc_advancing_instruction(rot::rl_r(
-            RegisterTarget::E,
-        ))),
-        0x14 => Box::new(double_pc_advancing_instruction(rot::rl_r(
-            RegisterTarget::H,
-        ))),
-        0x15 => Box::new(double_pc_advancing_instruction(rot::rl_r(
-            RegisterTarget::L,
-        ))),
-        0x16 => Box::new(double_pc_advancing_instruction(rot::rl_mem_at_hl)),
-        0x17 => Box::new(double_pc_advancing_instruction(rot::rl_r(
-            RegisterTarget::A,
-        ))),
-        0x18 => Box::new(double_pc_advancing_instruction(rot::rr_r(
-            RegisterTarget::B,
-        ))),
-        0x19 => Box::new(double_pc_advancing_instruction(rot::rr_r(
-            RegisterTarget::C,
-        ))),
-        0x1A => Box::new(double_pc_advancing_instruction(rot::rr_r(
-            RegisterTarget::D,
-        ))),
-        0x1B => Box::new(double_pc_advancing_instruction(rot::rr_r(
-            RegisterTarget::E,
-        ))),
-        0x1C => Box::new(double_pc_advancing_instruction(rot::rr_r(
-            RegisterTarget::H,
-        ))),
-        0x1D => Box::new(double_pc_advancing_instruction(rot::rr_r(
-            RegisterTarget::L,
-        ))),
-        0x1E => Box::new(double_pc_advancing_instruction(rot::rr_mem_at_hl)),
-        0x1F => Box::new(double_pc_advancing_instruction(rot::rr_r(
-            RegisterTarget::A,
-        ))),
+        0x10 => Box::new(dpai(rot::rl_r(RegisterTarget::B))),
+        0x11 => Box::new(dpai(rot::rl_r(RegisterTarget::C))),
+        0x12 => Box::new(dpai(rot::rl_r(RegisterTarget::D))),
+        0x13 => Box::new(dpai(rot::rl_r(RegisterTarget::E))),
+        0x14 => Box::new(dpai(rot::rl_r(RegisterTarget::H))),
+        0x15 => Box::new(dpai(rot::rl_r(RegisterTarget::L))),
+        0x16 => Box::new(dpai(rot::rl_mem_at_hl)),
+        0x17 => Box::new(dpai(rot::rl_r(RegisterTarget::A))),
+        0x18 => Box::new(dpai(rot::rr_r(RegisterTarget::B))),
+        0x19 => Box::new(dpai(rot::rr_r(RegisterTarget::C))),
+        0x1A => Box::new(dpai(rot::rr_r(RegisterTarget::D))),
+        0x1B => Box::new(dpai(rot::rr_r(RegisterTarget::E))),
+        0x1C => Box::new(dpai(rot::rr_r(RegisterTarget::H))),
+        0x1D => Box::new(dpai(rot::rr_r(RegisterTarget::L))),
+        0x1E => Box::new(dpai(rot::rr_mem_at_hl)),
+        0x1F => Box::new(dpai(rot::rr_r(RegisterTarget::A))),
 
-        0x40 => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::B,
-            0,
-        ))),
-        0x41 => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::C,
-            0,
-        ))),
-        0x42 => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::D,
-            0,
-        ))),
-        0x43 => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::E,
-            0,
-        ))),
-        0x44 => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::H,
-            0,
-        ))),
-        0x45 => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::L,
-            0,
-        ))),
-        0x46 => Box::new(double_pc_advancing_instruction(bit::bit_mem_at_hl(0))),
-        0x47 => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::A,
-            0,
-        ))),
-        0x48 => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::B,
-            1,
-        ))),
-        0x49 => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::C,
-            1,
-        ))),
-        0x4A => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::D,
-            1,
-        ))),
-        0x4B => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::E,
-            1,
-        ))),
-        0x4C => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::H,
-            1,
-        ))),
-        0x4D => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::L,
-            1,
-        ))),
-        0x4E => Box::new(double_pc_advancing_instruction(bit::bit_mem_at_hl(1))),
-        0x4F => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::A,
-            1,
-        ))),
-        0x50 => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::B,
-            2,
-        ))),
-        0x51 => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::C,
-            2,
-        ))),
-        0x52 => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::D,
-            2,
-        ))),
-        0x53 => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::E,
-            2,
-        ))),
-        0x54 => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::H,
-            2,
-        ))),
-        0x55 => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::L,
-            2,
-        ))),
-        0x56 => Box::new(double_pc_advancing_instruction(bit::bit_mem_at_hl(2))),
-        0x57 => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::A,
-            2,
-        ))),
-        0x58 => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::B,
-            3,
-        ))),
-        0x59 => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::C,
-            3,
-        ))),
-        0x5A => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::D,
-            3,
-        ))),
-        0x5B => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::E,
-            3,
-        ))),
-        0x5C => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::H,
-            3,
-        ))),
-        0x5D => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::L,
-            3,
-        ))),
-        0x5E => Box::new(double_pc_advancing_instruction(bit::bit_mem_at_hl(3))),
-        0x5F => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::A,
-            3,
-        ))),
-        0x60 => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::B,
-            4,
-        ))),
-        0x61 => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::C,
-            4,
-        ))),
-        0x62 => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::D,
-            4,
-        ))),
-        0x63 => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::E,
-            4,
-        ))),
-        0x64 => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::H,
-            4,
-        ))),
-        0x65 => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::L,
-            4,
-        ))),
-        0x66 => Box::new(double_pc_advancing_instruction(bit::bit_mem_at_hl(4))),
-        0x67 => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::A,
-            4,
-        ))),
-        0x68 => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::B,
-            5,
-        ))),
-        0x69 => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::C,
-            5,
-        ))),
-        0x6A => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::D,
-            5,
-        ))),
-        0x6B => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::E,
-            5,
-        ))),
-        0x6C => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::H,
-            5,
-        ))),
-        0x6D => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::L,
-            5,
-        ))),
-        0x6E => Box::new(double_pc_advancing_instruction(bit::bit_mem_at_hl(5))),
-        0x6F => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::A,
-            5,
-        ))),
-        0x70 => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::B,
-            6,
-        ))),
-        0x71 => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::C,
-            6,
-        ))),
-        0x72 => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::D,
-            6,
-        ))),
-        0x73 => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::E,
-            6,
-        ))),
-        0x74 => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::H,
-            6,
-        ))),
-        0x75 => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::L,
-            6,
-        ))),
-        0x76 => Box::new(double_pc_advancing_instruction(bit::bit_mem_at_hl(6))),
-        0x77 => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::A,
-            6,
-        ))),
-        0x78 => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::B,
-            7,
-        ))),
-        0x79 => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::C,
-            7,
-        ))),
-        0x7A => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::D,
-            7,
-        ))),
-        0x7B => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::E,
-            7,
-        ))),
-        0x7C => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::H,
-            7,
-        ))),
-        0x7D => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::L,
-            7,
-        ))),
-        0x7E => Box::new(double_pc_advancing_instruction(bit::bit_mem_at_hl(7))),
-        0x7F => Box::new(double_pc_advancing_instruction(bit::bit_r(
-            RegisterTarget::A,
-            7,
-        ))),
+        0x20 => Box::new(dpai(shift::sla(RegisterTarget::B))),
+        0x21 => Box::new(dpai(shift::sla(RegisterTarget::C))),
+        0x22 => Box::new(dpai(shift::sla(RegisterTarget::D))),
+        0x23 => Box::new(dpai(shift::sla(RegisterTarget::E))),
+        0x24 => Box::new(dpai(shift::sla(RegisterTarget::H))),
+        0x25 => Box::new(dpai(shift::sla(RegisterTarget::L))),
+        0x26 => Box::new(dpai(shift::sla_mem_at_hl)),
+        0x27 => Box::new(dpai(shift::sla(RegisterTarget::A))),
 
-        0xC0 => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::B,
-            0,
-        ))),
-        0xC1 => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::C,
-            0,
-        ))),
-        0xC2 => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::D,
-            0,
-        ))),
-        0xC3 => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::E,
-            0,
-        ))),
-        0xC4 => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::H,
-            0,
-        ))),
-        0xC5 => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::L,
-            0,
-        ))),
-        0xC6 => Box::new(double_pc_advancing_instruction(bit::set_mem_at_hl(0))),
-        0xC7 => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::A,
-            0,
-        ))),
-        0xC8 => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::B,
-            1,
-        ))),
-        0xC9 => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::C,
-            1,
-        ))),
-        0xCA => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::D,
-            1,
-        ))),
-        0xCB => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::E,
-            1,
-        ))),
-        0xCC => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::H,
-            1,
-        ))),
-        0xCD => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::L,
-            1,
-        ))),
-        0xCE => Box::new(double_pc_advancing_instruction(bit::set_mem_at_hl(1))),
-        0xCF => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::A,
-            1,
-        ))),
-        0xD0 => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::B,
-            2,
-        ))),
-        0xD1 => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::C,
-            2,
-        ))),
-        0xD2 => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::D,
-            2,
-        ))),
-        0xD3 => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::E,
-            2,
-        ))),
-        0xD4 => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::H,
-            2,
-        ))),
-        0xD5 => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::L,
-            2,
-        ))),
-        0xD6 => Box::new(double_pc_advancing_instruction(bit::set_mem_at_hl(2))),
-        0xD7 => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::A,
-            2,
-        ))),
-        0xD8 => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::B,
-            3,
-        ))),
-        0xD9 => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::C,
-            3,
-        ))),
-        0xDA => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::D,
-            3,
-        ))),
-        0xDB => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::E,
-            3,
-        ))),
-        0xDC => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::H,
-            3,
-        ))),
-        0xDD => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::L,
-            3,
-        ))),
-        0xDE => Box::new(double_pc_advancing_instruction(bit::set_mem_at_hl(3))),
-        0xDF => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::A,
-            3,
-        ))),
-        0xE0 => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::B,
-            4,
-        ))),
-        0xE1 => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::C,
-            4,
-        ))),
-        0xE2 => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::D,
-            4,
-        ))),
-        0xE3 => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::E,
-            4,
-        ))),
-        0xE4 => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::H,
-            4,
-        ))),
-        0xE5 => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::L,
-            4,
-        ))),
-        0xE6 => Box::new(double_pc_advancing_instruction(bit::set_mem_at_hl(4))),
-        0xE7 => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::A,
-            4,
-        ))),
-        0xE8 => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::B,
-            5,
-        ))),
-        0xE9 => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::C,
-            5,
-        ))),
-        0xEA => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::D,
-            5,
-        ))),
-        0xEB => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::E,
-            5,
-        ))),
-        0xEC => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::H,
-            5,
-        ))),
-        0xED => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::L,
-            5,
-        ))),
-        0xEE => Box::new(double_pc_advancing_instruction(bit::set_mem_at_hl(5))),
-        0xEF => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::A,
-            5,
-        ))),
-        0xF0 => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::B,
-            6,
-        ))),
-        0xF1 => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::C,
-            6,
-        ))),
-        0xF2 => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::D,
-            6,
-        ))),
-        0xF3 => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::E,
-            6,
-        ))),
-        0xF4 => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::H,
-            6,
-        ))),
-        0xF5 => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::L,
-            6,
-        ))),
-        0xF6 => Box::new(double_pc_advancing_instruction(bit::set_mem_at_hl(6))),
-        0xF7 => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::A,
-            6,
-        ))),
-        0xF8 => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::B,
-            7,
-        ))),
-        0xF9 => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::C,
-            7,
-        ))),
-        0xFA => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::D,
-            7,
-        ))),
-        0xFB => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::E,
-            7,
-        ))),
-        0xFC => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::H,
-            7,
-        ))),
-        0xFD => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::L,
-            7,
-        ))),
-        0xFE => Box::new(double_pc_advancing_instruction(bit::set_mem_at_hl(7))),
-        0xFF => Box::new(double_pc_advancing_instruction(bit::set_r(
-            RegisterTarget::A,
-            7,
-        ))),
+        0x28 => Box::new(dpai(shift::sra(RegisterTarget::B))),
+        0x29 => Box::new(dpai(shift::sra(RegisterTarget::C))),
+        0x2a => Box::new(dpai(shift::sra(RegisterTarget::D))),
+        0x2b => Box::new(dpai(shift::sra(RegisterTarget::E))),
+        0x2c => Box::new(dpai(shift::sra(RegisterTarget::H))),
+        0x2d => Box::new(dpai(shift::sra(RegisterTarget::L))),
+        0x2e => Box::new(dpai(shift::sra_mem_at_hl)),
+        0x2f => Box::new(dpai(shift::sra(RegisterTarget::A))),
+
+        0x38 => Box::new(dpai(shift::srl(RegisterTarget::B))),
+        0x39 => Box::new(dpai(shift::srl(RegisterTarget::C))),
+        0x3a => Box::new(dpai(shift::srl(RegisterTarget::D))),
+        0x3b => Box::new(dpai(shift::srl(RegisterTarget::E))),
+        0x3c => Box::new(dpai(shift::srl(RegisterTarget::H))),
+        0x3d => Box::new(dpai(shift::srl(RegisterTarget::L))),
+        0x3e => Box::new(dpai(shift::srl_mem_at_hl)),
+        0x3f => Box::new(dpai(shift::srl(RegisterTarget::A))),
+
+        0x40 => Box::new(dpai(bit::bit_r(RegisterTarget::B, 0))),
+        0x41 => Box::new(dpai(bit::bit_r(RegisterTarget::C, 0))),
+        0x42 => Box::new(dpai(bit::bit_r(RegisterTarget::D, 0))),
+        0x43 => Box::new(dpai(bit::bit_r(RegisterTarget::E, 0))),
+        0x44 => Box::new(dpai(bit::bit_r(RegisterTarget::H, 0))),
+        0x45 => Box::new(dpai(bit::bit_r(RegisterTarget::L, 0))),
+        0x46 => Box::new(dpai(bit::bit_mem_at_hl(0))),
+        0x47 => Box::new(dpai(bit::bit_r(RegisterTarget::A, 0))),
+        0x48 => Box::new(dpai(bit::bit_r(RegisterTarget::B, 1))),
+        0x49 => Box::new(dpai(bit::bit_r(RegisterTarget::C, 1))),
+        0x4A => Box::new(dpai(bit::bit_r(RegisterTarget::D, 1))),
+        0x4B => Box::new(dpai(bit::bit_r(RegisterTarget::E, 1))),
+        0x4C => Box::new(dpai(bit::bit_r(RegisterTarget::H, 1))),
+        0x4D => Box::new(dpai(bit::bit_r(RegisterTarget::L, 1))),
+        0x4E => Box::new(dpai(bit::bit_mem_at_hl(1))),
+        0x4F => Box::new(dpai(bit::bit_r(RegisterTarget::A, 1))),
+        0x50 => Box::new(dpai(bit::bit_r(RegisterTarget::B, 2))),
+        0x51 => Box::new(dpai(bit::bit_r(RegisterTarget::C, 2))),
+        0x52 => Box::new(dpai(bit::bit_r(RegisterTarget::D, 2))),
+        0x53 => Box::new(dpai(bit::bit_r(RegisterTarget::E, 2))),
+        0x54 => Box::new(dpai(bit::bit_r(RegisterTarget::H, 2))),
+        0x55 => Box::new(dpai(bit::bit_r(RegisterTarget::L, 2))),
+        0x56 => Box::new(dpai(bit::bit_mem_at_hl(2))),
+        0x57 => Box::new(dpai(bit::bit_r(RegisterTarget::A, 2))),
+        0x58 => Box::new(dpai(bit::bit_r(RegisterTarget::B, 3))),
+        0x59 => Box::new(dpai(bit::bit_r(RegisterTarget::C, 3))),
+        0x5A => Box::new(dpai(bit::bit_r(RegisterTarget::D, 3))),
+        0x5B => Box::new(dpai(bit::bit_r(RegisterTarget::E, 3))),
+        0x5C => Box::new(dpai(bit::bit_r(RegisterTarget::H, 3))),
+        0x5D => Box::new(dpai(bit::bit_r(RegisterTarget::L, 3))),
+        0x5E => Box::new(dpai(bit::bit_mem_at_hl(3))),
+        0x5F => Box::new(dpai(bit::bit_r(RegisterTarget::A, 3))),
+        0x60 => Box::new(dpai(bit::bit_r(RegisterTarget::B, 4))),
+        0x61 => Box::new(dpai(bit::bit_r(RegisterTarget::C, 4))),
+        0x62 => Box::new(dpai(bit::bit_r(RegisterTarget::D, 4))),
+        0x63 => Box::new(dpai(bit::bit_r(RegisterTarget::E, 4))),
+        0x64 => Box::new(dpai(bit::bit_r(RegisterTarget::H, 4))),
+        0x65 => Box::new(dpai(bit::bit_r(RegisterTarget::L, 4))),
+        0x66 => Box::new(dpai(bit::bit_mem_at_hl(4))),
+        0x67 => Box::new(dpai(bit::bit_r(RegisterTarget::A, 4))),
+        0x68 => Box::new(dpai(bit::bit_r(RegisterTarget::B, 5))),
+        0x69 => Box::new(dpai(bit::bit_r(RegisterTarget::C, 5))),
+        0x6A => Box::new(dpai(bit::bit_r(RegisterTarget::D, 5))),
+        0x6B => Box::new(dpai(bit::bit_r(RegisterTarget::E, 5))),
+        0x6C => Box::new(dpai(bit::bit_r(RegisterTarget::H, 5))),
+        0x6D => Box::new(dpai(bit::bit_r(RegisterTarget::L, 5))),
+        0x6E => Box::new(dpai(bit::bit_mem_at_hl(5))),
+        0x6F => Box::new(dpai(bit::bit_r(RegisterTarget::A, 5))),
+        0x70 => Box::new(dpai(bit::bit_r(RegisterTarget::B, 6))),
+        0x71 => Box::new(dpai(bit::bit_r(RegisterTarget::C, 6))),
+        0x72 => Box::new(dpai(bit::bit_r(RegisterTarget::D, 6))),
+        0x73 => Box::new(dpai(bit::bit_r(RegisterTarget::E, 6))),
+        0x74 => Box::new(dpai(bit::bit_r(RegisterTarget::H, 6))),
+        0x75 => Box::new(dpai(bit::bit_r(RegisterTarget::L, 6))),
+        0x76 => Box::new(dpai(bit::bit_mem_at_hl(6))),
+        0x77 => Box::new(dpai(bit::bit_r(RegisterTarget::A, 6))),
+        0x78 => Box::new(dpai(bit::bit_r(RegisterTarget::B, 7))),
+        0x79 => Box::new(dpai(bit::bit_r(RegisterTarget::C, 7))),
+        0x7A => Box::new(dpai(bit::bit_r(RegisterTarget::D, 7))),
+        0x7B => Box::new(dpai(bit::bit_r(RegisterTarget::E, 7))),
+        0x7C => Box::new(dpai(bit::bit_r(RegisterTarget::H, 7))),
+        0x7D => Box::new(dpai(bit::bit_r(RegisterTarget::L, 7))),
+        0x7E => Box::new(dpai(bit::bit_mem_at_hl(7))),
+        0x7F => Box::new(dpai(bit::bit_r(RegisterTarget::A, 7))),
+
+        0xC0 => Box::new(dpai(bit::set_r(RegisterTarget::B, 0))),
+        0xC1 => Box::new(dpai(bit::set_r(RegisterTarget::C, 0))),
+        0xC2 => Box::new(dpai(bit::set_r(RegisterTarget::D, 0))),
+        0xC3 => Box::new(dpai(bit::set_r(RegisterTarget::E, 0))),
+        0xC4 => Box::new(dpai(bit::set_r(RegisterTarget::H, 0))),
+        0xC5 => Box::new(dpai(bit::set_r(RegisterTarget::L, 0))),
+        0xC6 => Box::new(dpai(bit::set_mem_at_hl(0))),
+        0xC7 => Box::new(dpai(bit::set_r(RegisterTarget::A, 0))),
+        0xC8 => Box::new(dpai(bit::set_r(RegisterTarget::B, 1))),
+        0xC9 => Box::new(dpai(bit::set_r(RegisterTarget::C, 1))),
+        0xCA => Box::new(dpai(bit::set_r(RegisterTarget::D, 1))),
+        0xCB => Box::new(dpai(bit::set_r(RegisterTarget::E, 1))),
+        0xCC => Box::new(dpai(bit::set_r(RegisterTarget::H, 1))),
+        0xCD => Box::new(dpai(bit::set_r(RegisterTarget::L, 1))),
+        0xCE => Box::new(dpai(bit::set_mem_at_hl(1))),
+        0xCF => Box::new(dpai(bit::set_r(RegisterTarget::A, 1))),
+        0xD0 => Box::new(dpai(bit::set_r(RegisterTarget::B, 2))),
+        0xD1 => Box::new(dpai(bit::set_r(RegisterTarget::C, 2))),
+        0xD2 => Box::new(dpai(bit::set_r(RegisterTarget::D, 2))),
+        0xD3 => Box::new(dpai(bit::set_r(RegisterTarget::E, 2))),
+        0xD4 => Box::new(dpai(bit::set_r(RegisterTarget::H, 2))),
+        0xD5 => Box::new(dpai(bit::set_r(RegisterTarget::L, 2))),
+        0xD6 => Box::new(dpai(bit::set_mem_at_hl(2))),
+        0xD7 => Box::new(dpai(bit::set_r(RegisterTarget::A, 2))),
+        0xD8 => Box::new(dpai(bit::set_r(RegisterTarget::B, 3))),
+        0xD9 => Box::new(dpai(bit::set_r(RegisterTarget::C, 3))),
+        0xDA => Box::new(dpai(bit::set_r(RegisterTarget::D, 3))),
+        0xDB => Box::new(dpai(bit::set_r(RegisterTarget::E, 3))),
+        0xDC => Box::new(dpai(bit::set_r(RegisterTarget::H, 3))),
+        0xDD => Box::new(dpai(bit::set_r(RegisterTarget::L, 3))),
+        0xDE => Box::new(dpai(bit::set_mem_at_hl(3))),
+        0xDF => Box::new(dpai(bit::set_r(RegisterTarget::A, 3))),
+        0xE0 => Box::new(dpai(bit::set_r(RegisterTarget::B, 4))),
+        0xE1 => Box::new(dpai(bit::set_r(RegisterTarget::C, 4))),
+        0xE2 => Box::new(dpai(bit::set_r(RegisterTarget::D, 4))),
+        0xE3 => Box::new(dpai(bit::set_r(RegisterTarget::E, 4))),
+        0xE4 => Box::new(dpai(bit::set_r(RegisterTarget::H, 4))),
+        0xE5 => Box::new(dpai(bit::set_r(RegisterTarget::L, 4))),
+        0xE6 => Box::new(dpai(bit::set_mem_at_hl(4))),
+        0xE7 => Box::new(dpai(bit::set_r(RegisterTarget::A, 4))),
+        0xE8 => Box::new(dpai(bit::set_r(RegisterTarget::B, 5))),
+        0xE9 => Box::new(dpai(bit::set_r(RegisterTarget::C, 5))),
+        0xEA => Box::new(dpai(bit::set_r(RegisterTarget::D, 5))),
+        0xEB => Box::new(dpai(bit::set_r(RegisterTarget::E, 5))),
+        0xEC => Box::new(dpai(bit::set_r(RegisterTarget::H, 5))),
+        0xED => Box::new(dpai(bit::set_r(RegisterTarget::L, 5))),
+        0xEE => Box::new(dpai(bit::set_mem_at_hl(5))),
+        0xEF => Box::new(dpai(bit::set_r(RegisterTarget::A, 5))),
+        0xF0 => Box::new(dpai(bit::set_r(RegisterTarget::B, 6))),
+        0xF1 => Box::new(dpai(bit::set_r(RegisterTarget::C, 6))),
+        0xF2 => Box::new(dpai(bit::set_r(RegisterTarget::D, 6))),
+        0xF3 => Box::new(dpai(bit::set_r(RegisterTarget::E, 6))),
+        0xF4 => Box::new(dpai(bit::set_r(RegisterTarget::H, 6))),
+        0xF5 => Box::new(dpai(bit::set_r(RegisterTarget::L, 6))),
+        0xF6 => Box::new(dpai(bit::set_mem_at_hl(6))),
+        0xF7 => Box::new(dpai(bit::set_r(RegisterTarget::A, 6))),
+        0xF8 => Box::new(dpai(bit::set_r(RegisterTarget::B, 7))),
+        0xF9 => Box::new(dpai(bit::set_r(RegisterTarget::C, 7))),
+        0xFA => Box::new(dpai(bit::set_r(RegisterTarget::D, 7))),
+        0xFB => Box::new(dpai(bit::set_r(RegisterTarget::E, 7))),
+        0xFC => Box::new(dpai(bit::set_r(RegisterTarget::H, 7))),
+        0xFD => Box::new(dpai(bit::set_r(RegisterTarget::L, 7))),
+        0xFE => Box::new(dpai(bit::set_mem_at_hl(7))),
+        0xFF => Box::new(dpai(bit::set_r(RegisterTarget::A, 7))),
         other => {
             panic!("Unsupported prefixed instruction {:X}", other)
         }
