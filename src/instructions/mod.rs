@@ -51,7 +51,6 @@ pub fn from_byte(byte: u8) -> Box<Instruction> {
         0x00 => Box::new(pai(nop::nop)),
         0x10 => Box::new(pai(misc::stop)),
 
-        0x01 => Box::new(pai(ld::ld_r16_n16(Register16bTarget::BC))),
         0x02 => Box::new(pai(ld::ld_mem_at_r16_r(
             Register16bTarget::BC,
             RegisterTarget::A,
@@ -61,7 +60,11 @@ pub fn from_byte(byte: u8) -> Box<Instruction> {
             Register16bTarget::DE,
             RegisterTarget::A,
         ))),
+
+        0x01 => Box::new(pai(ld::ld_r16_n16(Register16bTarget::BC))),
         0x11 => Box::new(pai(ld::ld_r16_n16(Register16bTarget::DE))),
+        0x21 => Box::new(pai(ld::ld_r16_n16(Register16bTarget::HL))),
+        0x31 => Box::new(pai(ld::ld_r16_n16(Register16bTarget::SP))),
 
         0x0B => Box::new(pai(dec::dec_r16(Register16bTarget::BC))),
         0x1B => Box::new(pai(dec::dec_r16(Register16bTarget::DE))),
@@ -88,12 +91,13 @@ pub fn from_byte(byte: u8) -> Box<Instruction> {
         ))),
 
         0x03 => Box::new(pai(inc::inc_r16(Register16bTarget::BC))),
-        0x04 => Box::new(pai(inc::inc_r(RegisterTarget::B))),
         0x13 => Box::new(pai(inc::inc_r16(Register16bTarget::DE))),
-        0x14 => Box::new(pai(inc::inc_r(RegisterTarget::D))),
         0x23 => Box::new(pai(inc::inc_r16(Register16bTarget::HL))),
-        0x24 => Box::new(pai(inc::inc_r(RegisterTarget::H))),
         0x33 => Box::new(pai(inc::inc_r16(Register16bTarget::SP))),
+
+        0x04 => Box::new(pai(inc::inc_r(RegisterTarget::B))),
+        0x14 => Box::new(pai(inc::inc_r(RegisterTarget::D))),
+        0x24 => Box::new(pai(inc::inc_r(RegisterTarget::H))),
         0x0C => Box::new(pai(inc::inc_r(RegisterTarget::C))),
         0x1C => Box::new(pai(inc::inc_r(RegisterTarget::E))),
         0x2C => Box::new(pai(inc::inc_r(RegisterTarget::L))),
@@ -114,8 +118,6 @@ pub fn from_byte(byte: u8) -> Box<Instruction> {
         0x28 => Box::new(jmp::jr_z),
         0x38 => Box::new(jmp::jr_c),
 
-        0x31 => Box::new(pai(ld::ld_r16_n16(Register16bTarget::SP))),
-        0x21 => Box::new(pai(ld::ld_r16_n16(Register16bTarget::HL))),
         0x22 => Box::new(pai(ld::ld_mem_at_hl_a_inc)),
         0x32 => Box::new(pai(ld::ld_mem_at_hl_a_dec)),
         0x2A => Box::new(pai(ld::ld_a_mem_at_hl_inc)),
@@ -201,20 +203,21 @@ pub fn from_byte(byte: u8) -> Box<Instruction> {
         0x85 => Box::new(pai(add::add(RegisterTarget::L))),
         0x86 => Box::new(pai(add::add_mem_at_hl)),
         0x87 => Box::new(pai(add::add(RegisterTarget::A))),
-        0x8E => Box::new(pai(adc::adc_mem_at_hl())),
-        0x8F => Box::new(pai(adc::adc(RegisterTarget::A))),
         0x88 => Box::new(pai(adc::adc(RegisterTarget::B))),
         0x89 => Box::new(pai(adc::adc(RegisterTarget::C))),
         0x8A => Box::new(pai(adc::adc(RegisterTarget::D))),
         0x8B => Box::new(pai(adc::adc(RegisterTarget::E))),
         0x8C => Box::new(pai(adc::adc(RegisterTarget::H))),
         0x8D => Box::new(pai(adc::adc(RegisterTarget::L))),
+        0x8E => Box::new(pai(adc::adc_mem_at_hl)),
+        0x8F => Box::new(pai(adc::adc(RegisterTarget::A))),
         0x90 => Box::new(pai(sub::sub_r_r_a(RegisterTarget::B))),
         0x91 => Box::new(pai(sub::sub_r_r_a(RegisterTarget::C))),
         0x92 => Box::new(pai(sub::sub_r_r_a(RegisterTarget::D))),
         0x93 => Box::new(pai(sub::sub_r_r_a(RegisterTarget::E))),
         0x94 => Box::new(pai(sub::sub_r_r_a(RegisterTarget::H))),
         0x95 => Box::new(pai(sub::sub_r_r_a(RegisterTarget::L))),
+        //0x96
         0x97 => Box::new(pai(sub::sub_r_r_a(RegisterTarget::A))),
         0x98 => Box::new(pai(sbc::sbc_r_r_a(RegisterTarget::B))),
         0x99 => Box::new(pai(sbc::sbc_r_r_a(RegisterTarget::C))),
@@ -304,7 +307,7 @@ pub fn from_byte(byte: u8) -> Box<Instruction> {
         0xD7 => Box::new(rst::rst(0x10)),
         0xDF => Box::new(rst::rst(0x18)),
         0xE7 => Box::new(rst::rst(0x20)),
-        0xEF => Box::new(rst::rst(0x08)),
+        0xEF => Box::new(rst::rst(0x28)),
         0xF7 => Box::new(rst::rst(0x30)),
         0xFF => Box::new(rst::rst(0x38)),
 

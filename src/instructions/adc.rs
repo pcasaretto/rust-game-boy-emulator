@@ -37,24 +37,22 @@ pub fn adc_n8(gameboy: &mut Gameboy) -> u8 {
     TICKS
 }
 
-pub fn adc_mem_at_hl() -> impl Fn(&mut Gameboy) -> u8 {
-    move |gameboy: &mut Gameboy| {
-        let addr = gameboy.cpu.registers.get_u16(Register16bTarget::HL);
-        let mut addend = gameboy.bus.read_byte(addr);
-        let current_value = gameboy.cpu.registers.get_u8(RegisterTarget::A);
-        if gameboy.cpu.registers.f.carry {
-            addend += 1;
-        }
-        let (new_value, did_overflow) = current_value.overflowing_add(addend);
-        gameboy.cpu.registers.set_u8(RegisterTarget::A, new_value);
-
-        gameboy.cpu.registers.f.carry = did_overflow;
-        gameboy.cpu.registers.f.subtract = false;
-        gameboy.cpu.registers.f.zero = new_value == 0;
-        gameboy.cpu.registers.f.half_carry = (current_value & 0xF) + (addend & 0xF) > 0xF;
-        const TICKS: u8 = 8;
-        TICKS
+pub fn adc_mem_at_hl(gameboy: &mut Gameboy) -> u8 {
+    let addr = gameboy.cpu.registers.get_u16(Register16bTarget::HL);
+    let mut addend = gameboy.bus.read_byte(addr);
+    let current_value = gameboy.cpu.registers.get_u8(RegisterTarget::A);
+    if gameboy.cpu.registers.f.carry {
+        addend += 1;
     }
+    let (new_value, did_overflow) = current_value.overflowing_add(addend);
+    gameboy.cpu.registers.set_u8(RegisterTarget::A, new_value);
+
+    gameboy.cpu.registers.f.carry = did_overflow;
+    gameboy.cpu.registers.f.subtract = false;
+    gameboy.cpu.registers.f.zero = new_value == 0;
+    gameboy.cpu.registers.f.half_carry = (current_value & 0xF) + (addend & 0xF) > 0xF;
+    const TICKS: u8 = 8;
+    TICKS
 }
 
 #[cfg(test)]
@@ -209,7 +207,7 @@ mod tests {
             ..Default::default()
         };
         gameboy.bus.write_byte(0xFFDA, 13);
-        adc_mem_at_hl()(&mut gameboy);
+        adc_mem_at_hl(&mut gameboy);
         assert_eq!(gameboy.cpu.registers.a, 47);
     }
 
@@ -229,7 +227,7 @@ mod tests {
         };
         gameboy.cpu.registers.f.carry = true;
         gameboy.bus.write_byte(0xFFDA, 13);
-        adc_mem_at_hl()(&mut gameboy);
+        adc_mem_at_hl(&mut gameboy);
         assert_eq!(gameboy.cpu.registers.a, 48);
     }
 
@@ -248,7 +246,7 @@ mod tests {
             ..Default::default()
         };
         gameboy.bus.write_byte(0xFFDA, 13);
-        adc_mem_at_hl()(&mut gameboy);
+        adc_mem_at_hl(&mut gameboy);
         assert!(gameboy.cpu.registers.f.carry);
     }
 
@@ -267,7 +265,7 @@ mod tests {
             ..Default::default()
         };
         gameboy.bus.write_byte(0xFFDA, 0x10);
-        adc_mem_at_hl()(&mut gameboy);
+        adc_mem_at_hl(&mut gameboy);
         assert!(gameboy.cpu.registers.f.zero);
     }
 
@@ -287,7 +285,7 @@ mod tests {
         };
         gameboy.cpu.registers.f.subtract = true;
         gameboy.bus.write_byte(0xFFDA, 0x10);
-        adc_mem_at_hl()(&mut gameboy);
+        adc_mem_at_hl(&mut gameboy);
         assert!(!gameboy.cpu.registers.f.subtract);
     }
 
@@ -306,7 +304,7 @@ mod tests {
             ..Default::default()
         };
         gameboy.bus.write_byte(0xFFDA, 1);
-        adc_mem_at_hl()(&mut gameboy);
+        adc_mem_at_hl(&mut gameboy);
         assert!(gameboy.cpu.registers.f.half_carry);
     }
 }
