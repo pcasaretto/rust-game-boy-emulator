@@ -289,6 +289,10 @@ pub fn from_byte(byte: u8) -> Box<Instruction> {
         0xEF => Box::new(rst::rst(0x08)),
         0xF7 => Box::new(rst::rst(0x30)),
         0xFF => Box::new(rst::rst(0x38)),
+
+        0xCE => Box::new(pai(adc::adc_n8)),
+        0xDE => Box::new(pai(sbc::sbc_n8)),
+        0xEE => Box::new(pai(xor::xor_d8)),
         0xFE => Box::new(pai(cp::cp_d8)),
 
         other => {

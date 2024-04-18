@@ -1,5 +1,5 @@
 use crate::cpu::{Register16bTarget, RegisterTarget};
-use crate::gameboy::Gameboy;
+use crate::gameboy::{self, Gameboy};
 
 pub fn adc(target: RegisterTarget) -> impl Fn(&mut Gameboy) -> u8 {
     move |gameboy: &mut Gameboy| {
@@ -18,6 +18,23 @@ pub fn adc(target: RegisterTarget) -> impl Fn(&mut Gameboy) -> u8 {
         const TICKS: u8 = 4;
         TICKS
     }
+}
+
+pub fn adc_n8(gameboy: &mut Gameboy) -> u8 {
+    let mut addend = gameboy.read_next_byte();
+    let current_value = gameboy.cpu.registers.a;
+    if gameboy.cpu.registers.f.carry {
+        addend += 1;
+    }
+    let (new_value, did_overflow) = current_value.overflowing_add(addend);
+    gameboy.cpu.registers.a = new_value;
+
+    gameboy.cpu.registers.f.carry = did_overflow;
+    gameboy.cpu.registers.f.subtract = false;
+    gameboy.cpu.registers.f.zero = new_value == 0;
+    gameboy.cpu.registers.f.half_carry = (current_value & 0xF) + (addend & 0xF) > 0xF;
+    const TICKS: u8 = 8;
+    TICKS
 }
 
 pub fn adc_mem_at_hl() -> impl Fn(&mut Gameboy) -> u8 {

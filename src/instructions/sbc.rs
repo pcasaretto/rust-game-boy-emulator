@@ -20,7 +20,7 @@ pub fn sbc_r_r_a(target: RegisterTarget) -> impl Fn(&mut Gameboy) -> u8 {
     }
 }
 
-pub fn sbc_d8(gameboy: &mut Gameboy) -> u8 {
+pub fn sbc_n8(gameboy: &mut Gameboy) -> u8 {
     let mut d8 = gameboy.bus.memory[gameboy.cpu.registers.get_u16(Register16bTarget::PC) as usize];
     if gameboy.cpu.registers.f.carry {
         d8 += 1;

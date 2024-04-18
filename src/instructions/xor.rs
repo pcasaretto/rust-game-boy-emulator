@@ -19,6 +19,23 @@ pub fn xor(target: RegisterTarget) -> impl Fn(&mut Gameboy) -> u8 {
     }
 }
 
+pub fn xor_d8(gameboy: &mut Gameboy) -> u8 {
+    let value = gameboy.read_next_byte();
+
+    let a = gameboy.cpu.registers.get_u8(RegisterTarget::A);
+
+    let result = a ^ value;
+
+    gameboy.cpu.registers.set_u8(RegisterTarget::A, result);
+
+    gameboy.cpu.registers.f.zero = result == 0;
+    gameboy.cpu.registers.f.subtract = false;
+    gameboy.cpu.registers.f.half_carry = false;
+    gameboy.cpu.registers.f.carry = false;
+    const TICKS: u8 = 8;
+    TICKS
+}
+
 pub fn xor_mem_at_r16(reg: Register16bTarget) -> impl Fn(&mut Gameboy) -> u8 {
     move |gameboy: &mut Gameboy| {
         let addr = gameboy.cpu.registers.get_u16(reg);
