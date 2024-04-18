@@ -38,6 +38,22 @@ pub fn and_mem_at_r16(reg: Register16bTarget) -> impl Fn(&mut Gameboy) -> u8 {
     }
 }
 
+pub fn and_d8(gameboy: &mut Gameboy) -> u8 {
+    let value = gameboy.read_next_byte();
+    let a = gameboy.cpu.registers.get_u8(RegisterTarget::A);
+
+    let result = a & value;
+
+    gameboy.cpu.registers.set_u8(RegisterTarget::A, result);
+
+    gameboy.cpu.registers.f.zero = result == 0;
+    gameboy.cpu.registers.f.subtract = false;
+    gameboy.cpu.registers.f.half_carry = true;
+    gameboy.cpu.registers.f.carry = false;
+    const TICKS: u8 = 8;
+    TICKS
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -14,7 +14,6 @@ pub struct PPU {
     texture_creator: sdl2::render::TextureCreator<sdl2::video::WindowContext>,
     texture: RefCell<sdl2::render::Texture<'static>>,
     frambuffer_alpha: [u32; 160 * 144],
-    bg_alpha: [u32; 256 * 256],
 }
 
 macro_rules! flag_set_at {

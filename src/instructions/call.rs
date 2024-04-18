@@ -15,6 +15,24 @@ pub fn call_a16(gameboy: &mut Gameboy) -> u8 {
     TICKS
 }
 
+pub fn call_nz_a16(gameboy: &mut Gameboy) -> u8 {
+    if !gameboy.cpu.registers.f.zero {
+        call_a16(gameboy)
+    } else {
+        gameboy.cpu.registers.pc += 2;
+        12
+    }
+}
+
+pub fn call_nc_a16(gameboy: &mut Gameboy) -> u8 {
+    if !gameboy.cpu.registers.f.carry {
+        call_a16(gameboy)
+    } else {
+        gameboy.cpu.registers.pc += 2;
+        12
+    }
+}
+
 pub fn ret(gameboy: &mut Gameboy) -> u8 {
     let low = gameboy.bus.read_byte(gameboy.cpu.registers.sp);
     gameboy.cpu.registers.sp = gameboy.cpu.registers.sp.wrapping_add(1);
