@@ -12,7 +12,6 @@ pub fn dec_r(target: RegisterTarget) -> impl Fn(&mut Gameboy) -> u8 {
         gameboy.cpu.registers.f.zero = new_value == 0;
         gameboy.cpu.registers.f.subtract = true;
         gameboy.cpu.registers.f.half_carry = current_value & 0x10 == 0x10;
-        gameboy.cpu.registers.f.carry = did_overflow;
         TICKS
     }
 }
@@ -26,7 +25,6 @@ pub fn dec_mem_at_hl(gameboy: &mut Gameboy) -> u8 {
     gameboy.cpu.registers.f.zero = new_value == 0;
     gameboy.cpu.registers.f.subtract = true;
     gameboy.cpu.registers.f.half_carry = current_value & 0x10 == 0x10;
-    gameboy.cpu.registers.f.carry = did_overflow;
     const TICKS: u8 = 12;
     TICKS
 }
@@ -169,6 +167,6 @@ mod tests {
             ..Default::default()
         };
         dec_r(RegisterTarget::B)(&mut gameboy);
-        assert!(gameboy.cpu.registers.f.carry);
+        assert!(!gameboy.cpu.registers.f.carry);
     }
 }
