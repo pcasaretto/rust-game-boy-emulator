@@ -10,7 +10,6 @@ pub fn inc_r(target: RegisterTarget) -> impl Fn(&mut Gameboy) -> u8 {
         gameboy.cpu.registers.f.zero = new_value == 0;
         gameboy.cpu.registers.f.subtract = false;
         gameboy.cpu.registers.f.half_carry = current_value & 0xF == 0xF;
-        gameboy.cpu.registers.f.carry = did_overflow;
         const TICKS: u8 = 4;
         TICKS
     }
@@ -92,6 +91,7 @@ mod tests {
 
     #[test]
     fn test_inc_r_carry_flag() {
+        // does not change carry
         let mut gameboy = Gameboy {
             cpu: CPU {
                 registers: Registers {
@@ -104,6 +104,6 @@ mod tests {
             ..Default::default()
         };
         inc_r(RegisterTarget::B)(&mut gameboy);
-        assert!(gameboy.cpu.registers.f.carry);
+        assert!(!gameboy.cpu.registers.f.carry);
     }
 }

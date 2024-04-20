@@ -22,7 +22,7 @@ impl<'a> MemoryBus<'a> {
             return self.boot_rom[address as usize];
         }
         let value = match address {
-            0x0000..=0x3FFF => self.cartridge_rom[address as usize],
+            0x0000..=0x7FFF => self.cartridge_rom[address as usize],
             other => self.memory[other as usize],
         };
         // log::debug!("Read from {:04X}: value {:02X}", address, value);

@@ -74,10 +74,8 @@ impl PPU {
         }
 
         if flag_set_at!(control, 1) {
-            //render sprites
+            self.render_sprites(gameboy, current_scanline);
         }
-
-        // tiledata = (((memory[0xff40] >> 4) & 1) == 1) ? 0x8000 : 0x8800;
     }
 
     pub fn draw(&mut self) {
@@ -196,6 +194,67 @@ impl PPU {
             2 => DARK_GRAY,
             3 => BLACK,
             _ => panic!("Invalid color"),
+        }
+    }
+
+    fn render_sprites(&mut self, gameboy: &gameboy::Gameboy, current_scanline: u8) {
+        let control = gameboy.bus.read_byte(0xff40);
+        let use8x16 = flag_set_at!(control, 2);
+
+        for sprite in 0..40 {
+            let index = sprite * 4;
+            let y_pos = gameboy.bus.read_byte(0xfe00 + index) - 16;
+            let x_pos = gameboy.bus.read_byte(0xfe00 + index + 1) - 8;
+            let tile_location = gameboy.bus.read_byte(0xfe00 + index + 2);
+            let attributes = gameboy.bus.read_byte(0xfe00 + index + 3);
+
+            let x_flip = flag_set_at!(attributes, 5);
+            let y_flip = flag_set_at!(attributes, 6);
+
+            let y_size = if use8x16 { 16 } else { 8 };
+
+            // Check if sprite is on this line
+            if (current_scanline >= y_pos) && (current_scanline < y_pos + y_size) {
+                let mut line = (current_scanline - y_pos) as i8;
+
+                if y_flip {
+                    line -= y_size as i8;
+                    line *= -1;
+                }
+
+                line *= 2;
+
+                let data_address = 0x8000 + (tile_location as u16 * 16) + (line as u16);
+
+                let data1 = gameboy.bus.read_byte(data_address);
+                let data2 = gameboy.bus.read_byte(data_address + 1);
+
+                for tile_pixel in 7..=0 {
+                    let mut color_bit = tile_pixel as i8;
+                    if x_flip {
+                        color_bit -= 7;
+                        color_bit *= -1;
+                    }
+
+                    let mut color_num = ((data2 >> color_bit) & 1) << 1;
+                    color_num |= (data1 >> color_bit) & 1;
+
+                    let color = self.get_color(color_num, gameboy.bus.read_byte(0xFF48));
+                    if color == WHITE {
+                        continue;
+                    }
+
+                    let pixel = x_pos + 7 - tile_pixel;
+
+                    if (current_scanline > 143) || (pixel > 159) {
+                        continue;
+                    }
+
+                    self.frambuffer_alpha
+                        [(current_scanline as usize * 160 + (pixel as usize)) as usize] =
+                        u32::from_be_bytes(color.rgba().into());
+                }
+            }
         }
     }
 }

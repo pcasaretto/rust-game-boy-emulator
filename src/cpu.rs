@@ -8,6 +8,7 @@ pub enum RegisterTarget {
     C,
     D,
     E,
+    F,
     H,
     L,
 }
@@ -63,6 +64,7 @@ impl Registers {
             RegisterTarget::E => self.e,
             RegisterTarget::H => self.h,
             RegisterTarget::L => self.l,
+            RegisterTarget::F => u8::from(self.f),
         }
     }
 
@@ -75,6 +77,7 @@ impl Registers {
             RegisterTarget::E => self.e = value,
             RegisterTarget::H => self.h = value,
             RegisterTarget::L => self.l = value,
+            RegisterTarget::F => self.f = FlagsRegister::from(value),
         }
     }
 
