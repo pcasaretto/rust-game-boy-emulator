@@ -178,7 +178,7 @@ mod tests {
             cpu: CPU {
                 registers: Registers {
                     a: 4,
-                    pc: 0x0012,
+                    pc: 0xC051,
                     f: FlagsRegister::from(0),
                     ..Default::default()
                 },
@@ -186,7 +186,7 @@ mod tests {
             },
             ..Default::default()
         };
-        gameboy.bus.memory[0x0012] = 1;
+        gameboy.bus.memory[0xC051] = 1;
         sbc_n8(&mut gameboy);
         assert_eq!(gameboy.cpu.registers.a, 3);
     }
@@ -196,7 +196,7 @@ mod tests {
         let mut gameboy = Gameboy {
             cpu: CPU {
                 registers: Registers {
-                    pc: 0x0012,
+                    pc: 0xC051,
                     a: 4,
                     f: FlagsRegister::from(0),
                     ..Default::default()
@@ -205,7 +205,7 @@ mod tests {
             },
             ..Default::default()
         };
-        gameboy.bus.memory[0x0012] = 5;
+        gameboy.bus.memory[0xC051] = 5;
         sbc_n8(&mut gameboy);
         assert_eq!(gameboy.cpu.registers.a, 255);
     }
@@ -216,7 +216,7 @@ mod tests {
             cpu: CPU {
                 registers: Registers {
                     a: 4,
-                    pc: 0x0012,
+                    pc: 0xC051,
                     f: FlagsRegister::from(0),
                     ..Default::default()
                 },
@@ -224,7 +224,7 @@ mod tests {
             },
             ..Default::default()
         };
-        gameboy.bus.memory[0x0012] = 5;
+        gameboy.bus.memory[0xC051] = 5;
         sbc_n8(&mut gameboy);
         assert!(gameboy.cpu.registers.f.carry);
     }
@@ -234,7 +234,7 @@ mod tests {
         let mut gameboy = Gameboy {
             cpu: CPU {
                 registers: Registers {
-                    pc: 0x0012,
+                    pc: 0xC051,
                     a: 5,
                     f: FlagsRegister::from(0),
                     ..Default::default()
@@ -243,7 +243,7 @@ mod tests {
             },
             ..Default::default()
         };
-        gameboy.bus.memory[0x0012] = 5;
+        gameboy.bus.memory[0xC051] = 5;
         sbc_n8(&mut gameboy);
         assert!(gameboy.cpu.registers.f.zero);
     }
@@ -253,7 +253,7 @@ mod tests {
         let mut gameboy = Gameboy {
             cpu: CPU {
                 registers: Registers {
-                    pc: 0x0012,
+                    pc: 0xC051,
                     a: 5,
                     f: FlagsRegister::from(0),
                     ..Default::default()
@@ -262,7 +262,7 @@ mod tests {
             },
             ..Default::default()
         };
-        gameboy.bus.memory[0x0012] = 5;
+        gameboy.bus.memory[0xC051] = 5;
         sbc_n8(&mut gameboy);
         assert!(gameboy.cpu.registers.f.subtract);
     }
@@ -272,7 +272,7 @@ mod tests {
         let mut gameboy = Gameboy {
             cpu: CPU {
                 registers: Registers {
-                    pc: 0x0012,
+                    pc: 0xC051,
                     a: 0b00010000,
                     f: FlagsRegister::from(0),
                     ..Default::default()
@@ -281,7 +281,7 @@ mod tests {
             },
             ..Default::default()
         };
-        gameboy.bus.memory[0x0012] = 1;
+        gameboy.bus.memory[0xC051] = 1;
         sbc_n8(&mut gameboy);
         assert!(gameboy.cpu.registers.f.half_carry);
     }

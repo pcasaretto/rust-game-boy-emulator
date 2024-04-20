@@ -19,23 +19,21 @@ pub fn and(target: RegisterTarget) -> impl Fn(&mut Gameboy) -> u8 {
     }
 }
 
-pub fn and_mem_at_r16(reg: Register16bTarget) -> impl Fn(&mut Gameboy) -> u8 {
-    move |gameboy: &mut Gameboy| {
-        let addr = gameboy.cpu.registers.get_u16(reg);
-        let value = gameboy.bus.read_byte(addr);
-        let a = gameboy.cpu.registers.get_u8(RegisterTarget::A);
+pub fn and_mem_at_r16(gameboy: &mut Gameboy) -> u8 {
+    let addr = gameboy.cpu.registers.get_u16(Register16bTarget::HL);
+    let value = gameboy.bus.read_byte(addr);
+    let a = gameboy.cpu.registers.get_u8(RegisterTarget::A);
 
-        let result = a & value;
+    let result = a & value;
 
-        gameboy.cpu.registers.set_u8(RegisterTarget::A, result);
+    gameboy.cpu.registers.set_u8(RegisterTarget::A, result);
 
-        gameboy.cpu.registers.f.zero = result == 0;
-        gameboy.cpu.registers.f.subtract = false;
-        gameboy.cpu.registers.f.half_carry = true;
-        gameboy.cpu.registers.f.carry = false;
-        const TICKS: u8 = 8;
-        TICKS
-    }
+    gameboy.cpu.registers.f.zero = result == 0;
+    gameboy.cpu.registers.f.subtract = false;
+    gameboy.cpu.registers.f.half_carry = true;
+    gameboy.cpu.registers.f.carry = false;
+    const TICKS: u8 = 8;
+    TICKS
 }
 
 pub fn and_d8(gameboy: &mut Gameboy) -> u8 {
@@ -117,5 +115,25 @@ mod tests {
         gameboy.cpu.registers.f.subtract = true;
         and(RegisterTarget::B)(&mut gameboy);
         assert!(!gameboy.cpu.registers.f.subtract);
+    }
+
+    #[test]
+    fn test_and_mem_at_r16() {
+        let mut gameboy = Gameboy::default();
+        gameboy.cpu.registers.set_u16(Register16bTarget::HL, 0xC050);
+        gameboy.cpu.registers.set_u8(RegisterTarget::A, 0b1000_1010);
+        gameboy.bus.write_byte(0xC050, 0b1010_1010);
+        and_mem_at_r16(&mut gameboy);
+        assert_eq!(gameboy.cpu.registers.a, 0b1000_1010);
+    }
+
+    #[test]
+    fn test_and_d8() {
+        let mut gameboy = Gameboy::default();
+        gameboy.cpu.registers.pc = 0xC050;
+        gameboy.cpu.registers.set_u8(RegisterTarget::A, 0b1010_1010);
+        gameboy.bus.write_byte(0xC051, 0b1100_1010);
+        and_d8(&mut gameboy);
+        assert_eq!(gameboy.cpu.registers.a, 0b1000_1010);
     }
 }

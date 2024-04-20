@@ -103,10 +103,10 @@ pub fn from_byte(byte: u8) -> Box<Instruction> {
         0x2C => Box::new(pai(inc::inc_r(RegisterTarget::L))),
         0x3C => Box::new(pai(inc::inc_r(RegisterTarget::A))),
 
+        0x35 => Box::new(pai(dec::dec_mem_at_hl)),
         0x05 => Box::new(pai(dec::dec_r(RegisterTarget::B))),
         0x15 => Box::new(pai(dec::dec_r(RegisterTarget::D))),
         0x25 => Box::new(pai(dec::dec_r(RegisterTarget::H))),
-        0x35 => Box::new(pai(dec::dec_mem_at_hl)),
         0x0D => Box::new(pai(dec::dec_r(RegisterTarget::C))),
         0x1D => Box::new(pai(dec::dec_r(RegisterTarget::E))),
         0x2D => Box::new(pai(dec::dec_r(RegisterTarget::L))),
@@ -234,7 +234,7 @@ pub fn from_byte(byte: u8) -> Box<Instruction> {
         0xA3 => Box::new(pai(and::and(RegisterTarget::E))),
         0xA4 => Box::new(pai(and::and(RegisterTarget::H))),
         0xA5 => Box::new(pai(and::and(RegisterTarget::L))),
-        0xA6 => Box::new(pai(and::and_mem_at_r16(Register16bTarget::HL))),
+        0xA6 => Box::new(pai(and::and_mem_at_r16)),
         0xA7 => Box::new(pai(and::and(RegisterTarget::A))),
 
         0xA8 => Box::new(pai(xor::xor(RegisterTarget::B))),
@@ -269,6 +269,11 @@ pub fn from_byte(byte: u8) -> Box<Instruction> {
         0xE1 => Box::new(pai(stack::pop(Register16bTarget::HL))),
         0xF1 => Box::new(pai(stack::pop(Register16bTarget::AF))),
 
+        0xC2 => Box::new(jmp::jp_nz_a16),
+        0xD2 => Box::new(jmp::jp_nc_a16),
+        0xCA => Box::new(jmp::jp_z_a16),
+        0xDA => Box::new(jmp::jp_c_a16),
+
         0xC4 => Box::new(call::call_nz_a16),
         0xD4 => Box::new(call::call_nc_a16),
 
@@ -285,7 +290,7 @@ pub fn from_byte(byte: u8) -> Box<Instruction> {
         0xCD => Box::new(call::call_a16),
         0xC9 => Box::new(call::ret),
 
-        0xE9 => Box::new(pai(jmp::jp_hl)),
+        0xE9 => Box::new(jmp::jp_hl),
 
         0xC6 => Box::new(pai(add::add_d8)),
         0xD6 => Box::new(pai(sub::sub_d8)),
