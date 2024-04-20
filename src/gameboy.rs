@@ -68,7 +68,7 @@ impl<'a> Gameboy<'a> {
             self.run_frame(&mut ppu);
             let elapsed = before.elapsed();
             let fps = 1.0 / elapsed.as_secs_f64();
-            println!("FPS: {:.2?}", fps);
+            log::info!("FPS: {:.2?}", fps);
             ppu.draw();
         }
     }
