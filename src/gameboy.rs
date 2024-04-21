@@ -1,8 +1,10 @@
 use crate::cpu::{Register16bTarget, RegisterTarget, CPU};
-use crate::memory::MemoryBus;
+use crate::memory::special_addresses::*;
+use crate::memory::{self, MemoryBus};
 use crate::opcode_info::{OpcodeInfo, OperandInformation};
 use crate::ppu::PPU;
 use crate::{instructions, ppu};
+use std::mem;
 use std::time::Instant;
 
 pub enum Interrupt {
@@ -61,6 +63,8 @@ pub struct Gameboy<'a> {
     pub opcode_info: OpcodeInfo,
     pub interrupts_enabled: bool,
     pub scanline_counter: u64,
+    pub divider_counter: u8,
+    pub timer_counter: u64,
 }
 
 impl<'a> Default for Gameboy<'a> {
@@ -77,6 +81,8 @@ impl<'a> Default for Gameboy<'a> {
             bus: MemoryBus::default(),
             interrupts_enabled: false,
             scanline_counter: 0,
+            divider_counter: 0,
+            timer_counter: 0,
         }
     }
 }
@@ -124,33 +130,35 @@ impl<'a> Gameboy<'a> {
     }
 
     fn run_frame(&mut self, ppu: &mut PPU) {
-        const MAX_TICKS: u64 = 69905 * 4;
-        // frame
+        const MAX_TICKS: u64 = 69905 * 4; // 69905 cycles per frame, 4 ticks per cycle
+                                          // frame
         {
-            let mut ticks: u64 = 0;
-            while ticks < MAX_TICKS {
+            let mut frame_ticks: u64 = 0;
+            while frame_ticks < MAX_TICKS {
                 log::debug!("{:?}", self.cpu.registers);
                 //     break;
                 // if self.cpu.registers.get_u16(Register16bTarget::PC) >= 0x100 {
-                ticks += self.run_next_instruction();
+                let ticks = self.run_next_instruction();
 
                 self.handle_interrupts();
-                self.serial_comm();
+                // self.serial_comm();
+                self.update_timers(ticks);
                 self.update_graphics(ticks, ppu);
+                frame_ticks += ticks as u64;
             }
         }
     }
 
-    pub fn run_next_instruction(&mut self) -> u64 {
-        self.get_next_instruction()(self) as u64
+    pub fn run_next_instruction(&mut self) -> u8 {
+        self.get_next_instruction()(self)
     }
 
     fn handle_interrupts(&mut self) {
         // check if interrupts are enabled
         if self.interrupts_enabled {
             // check if any interrupts are enabled
-            let interrupt_enable = self.bus.read_byte(0xFFFF);
-            let interrupt_flags = self.bus.read_byte(0xFF0F);
+            let interrupt_enable = self.bus.memory[IE];
+            let interrupt_flags = self.bus.memory[IF];
             let interrupt_value = interrupt_enable & interrupt_flags;
             if interrupt_value != 0 {
                 log::debug!("Interrupt: 0x{:02X}", interrupt_value);
@@ -158,8 +166,7 @@ impl<'a> Gameboy<'a> {
                 self.interrupts_enabled = false;
                 let (interrupt, interrupt_handler) = Interrupt::interrupt_address(interrupt_value);
                 // disable interrupt
-                self.bus
-                    .write_byte(0xFF0F, interrupt_flags & !u8::from(interrupt));
+                self.bus.memory[IF] = interrupt_flags & !u8::from(interrupt);
                 // push current program counter to stack
                 let pc = self.cpu.registers.get_u16(Register16bTarget::PC);
                 self.cpu.registers.stack_push(pc, &mut self.bus);
@@ -173,10 +180,10 @@ impl<'a> Gameboy<'a> {
 
     fn serial_comm(&mut self) {
         // read from serial port if requested
-        if self.bus.memory[0xFF02] == 0x81 {
-            let byte = self.bus.read_byte(0xFF01);
+        if self.bus.memory[SC] == 0x81 {
+            let byte = self.bus.memory[SB];
             print!("{}", byte as char);
-            self.bus.memory[0xFF02] = 0x0;
+            self.bus.memory[SB] = 0x0;
         }
     }
 
@@ -219,8 +226,8 @@ impl<'a> Gameboy<'a> {
     }
 
     pub fn request_interrupt(&mut self, interrupt: Interrupt) {
-        let interrupt_flags = self.bus.read_byte(0xFF0F);
-        self.bus.memory[0xFF0F] = interrupt_flags | u8::from(interrupt);
+        let interrupt_flags = self.bus.memory[IF];
+        self.bus.memory[IF] = interrupt_flags | u8::from(interrupt);
     }
 
     pub fn read_next_byte(&mut self) -> u8 {
@@ -232,12 +239,12 @@ impl<'a> Gameboy<'a> {
         self.bus.read_byte(new_address)
     }
 
-    fn update_graphics(&mut self, ticks: u64, ppu: &mut PPU) {
-        self.scanline_counter += ticks;
+    fn update_graphics(&mut self, ticks: u8, ppu: &mut PPU) {
+        self.scanline_counter += ticks as u64;
         if self.scanline_counter >= 456 * 4 {
             self.scanline_counter = 0;
             // self.update_scanline();
-            let mut current_scanline = self.bus.read_byte(0xFF44);
+            let mut current_scanline = self.bus.memory[LY];
             if current_scanline == 144 {
                 // RequestInterupt(0);
             }
@@ -250,6 +257,31 @@ impl<'a> Gameboy<'a> {
             self.bus.memory[0xFF44] = current_scanline;
             ppu.update(self, current_scanline);
         }
+    }
+
+    fn update_timers(&mut self, ticks: u8) {
+        let tac = self.bus.memory[TAC];
+        let mut tima = self.bus.memory[TIMA];
+        let mut tima = self.bus.memory[TMA];
+        let mut div = self.bus.memory[DIV];
+
+        let mut timer = 0;
+        match tac & 0x3 {
+            0 => timer = 1024,
+            1 => timer = 16,
+            2 => timer = 64,
+            3 => timer = 256,
+            _ => panic!("invalid timer"),
+        }
+
+        let (new_divider_counter, overflow) = self.divider_counter.overflowing_add(ticks);
+        self.divider_counter = new_divider_counter;
+        if overflow {
+            div = div.wrapping_add(1);
+        }
+
+        self.bus.memory[memory::special_addresses::DIV as usize] = div;
+        self.bus.memory[0xFF05] = tima;
     }
 }
 
