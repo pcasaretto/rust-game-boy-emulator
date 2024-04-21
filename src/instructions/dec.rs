@@ -3,15 +3,15 @@ use crate::gameboy::{self, Gameboy};
 use crate::instructions::Register16bTarget;
 
 pub fn dec_r(target: RegisterTarget) -> impl Fn(&mut Gameboy) -> u8 {
-    const TICKS: u8 = 4;
     move |gameboy: &mut Gameboy| {
         let current_value = gameboy.cpu.registers.get_u8(target);
-        let (new_value, did_overflow) = current_value.overflowing_sub(1);
+        let new_value = current_value.wrapping_sub(1);
         gameboy.cpu.registers.set_u8(target, new_value);
 
         gameboy.cpu.registers.f.zero = new_value == 0;
         gameboy.cpu.registers.f.subtract = true;
-        gameboy.cpu.registers.f.half_carry = current_value & 0x10 == 0x10;
+        gameboy.cpu.registers.f.half_carry = current_value & 0x0F == 0;
+        const TICKS: u8 = 4;
         TICKS
     }
 }
@@ -19,12 +19,12 @@ pub fn dec_r(target: RegisterTarget) -> impl Fn(&mut Gameboy) -> u8 {
 pub fn dec_mem_at_hl(gameboy: &mut Gameboy) -> u8 {
     let address = gameboy.cpu.registers.get_u16(Register16bTarget::HL);
     let current_value = gameboy.bus.read_byte(address);
-    let (new_value, did_overflow) = current_value.overflowing_sub(1);
+    let new_value = current_value.wrapping_sub(1);
     gameboy.bus.write_byte(address, new_value);
 
     gameboy.cpu.registers.f.zero = new_value == 0;
     gameboy.cpu.registers.f.subtract = true;
-    gameboy.cpu.registers.f.half_carry = current_value & 0x10 == 0x10;
+    gameboy.cpu.registers.f.half_carry = current_value & 0x0F == 0;
     const TICKS: u8 = 12;
     TICKS
 }
@@ -80,7 +80,8 @@ mod tests {
         let mut gameboy = Gameboy::default();
         let addr: u16 = 0xC050;
         gameboy.cpu.registers.set_u16(Register16bTarget::HL, addr);
-        gameboy.bus.write_byte(addr, 0x10);
+        gameboy.bus.write_byte(addr, 0x60);
+        // Set if no borrow from bit 4.
         dec_mem_at_hl(&mut gameboy);
         assert!(gameboy.cpu.registers.f.half_carry);
     }
@@ -138,19 +139,18 @@ mod tests {
 
     #[test]
     fn test_dec_r_half_carry_flag() {
-        let mut gameboy = Gameboy {
-            cpu: CPU {
-                registers: Registers {
-                    b: 0x10,
-                    f: FlagsRegister::from(0),
-                    ..Default::default()
-                },
-                ..Default::default()
-            },
-            ..Default::default()
-        };
+        let mut gameboy = Gameboy::default();
+        gameboy.cpu.registers.set_u8(RegisterTarget::B, 0x60);
         dec_r(RegisterTarget::B)(&mut gameboy);
         assert!(gameboy.cpu.registers.f.half_carry);
+
+        gameboy.cpu.registers.set_u8(RegisterTarget::B, 0x10);
+        dec_r(RegisterTarget::B)(&mut gameboy);
+        assert!(gameboy.cpu.registers.f.half_carry);
+
+        gameboy.cpu.registers.set_u8(RegisterTarget::B, 0x11);
+        dec_r(RegisterTarget::B)(&mut gameboy);
+        assert!(!gameboy.cpu.registers.f.half_carry);
     }
 
     #[test]

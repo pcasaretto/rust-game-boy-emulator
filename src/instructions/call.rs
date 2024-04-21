@@ -50,7 +50,7 @@ pub fn ret_nz(gameboy: &mut Gameboy) -> u8 {
         const TICKS: u8 = 20;
         return TICKS;
     }
-    gameboy.cpu.registers.pc = gameboy.cpu.registers.pc.wrapping_add(2);
+    gameboy.cpu.registers.pc = gameboy.cpu.registers.pc.wrapping_add(1);
     const TICKS: u8 = 8;
     TICKS
 }
@@ -61,7 +61,7 @@ pub fn ret_z(gameboy: &mut Gameboy) -> u8 {
         const TICKS: u8 = 20;
         return TICKS;
     }
-    gameboy.cpu.registers.pc = gameboy.cpu.registers.pc.wrapping_add(2);
+    gameboy.cpu.registers.pc = gameboy.cpu.registers.pc.wrapping_add(1);
     const TICKS: u8 = 8;
     TICKS
 }
@@ -72,7 +72,7 @@ pub fn ret_nc(gameboy: &mut Gameboy) -> u8 {
         const TICKS: u8 = 20;
         return TICKS;
     }
-    gameboy.cpu.registers.pc = gameboy.cpu.registers.pc.wrapping_add(2);
+    gameboy.cpu.registers.pc = gameboy.cpu.registers.pc.wrapping_add(1);
     const TICKS: u8 = 8;
     TICKS
 }
@@ -83,7 +83,7 @@ pub fn ret_c(gameboy: &mut Gameboy) -> u8 {
         const TICKS: u8 = 20;
         return TICKS;
     }
-    gameboy.cpu.registers.pc = gameboy.cpu.registers.pc.wrapping_add(2);
+    gameboy.cpu.registers.pc = gameboy.cpu.registers.pc.wrapping_add(1);
     const TICKS: u8 = 8;
     TICKS
 }
@@ -135,7 +135,7 @@ mod tests {
 
                 } else {
 
-                assert_eq!(gameboy.cpu.registers.pc, 0xC052);
+                assert_eq!(gameboy.cpu.registers.pc, 0xC051);
                 assert_eq!(gameboy.cpu.registers.sp, 0xFFFC);
                 }
             })*
