@@ -1,9 +1,59 @@
-use crate::cpu::{Register16bTarget, CPU};
+use crate::cpu::{Register16bTarget, RegisterTarget, CPU};
 use crate::memory::MemoryBus;
 use crate::opcode_info::{OpcodeInfo, OperandInformation};
 use crate::ppu::PPU;
 use crate::{instructions, ppu};
 use std::time::Instant;
+
+pub enum Interrupt {
+    VBlank,
+    LCDStat,
+    Timer,
+    Serial,
+    Joypad,
+}
+
+impl Interrupt {
+    pub fn interrupt_address(value: u8) -> (Interrupt, u16) {
+        if value & u8::from(Interrupt::VBlank) != 0 {
+            (Interrupt::VBlank, 0x0040)
+        } else if value & u8::from(Interrupt::LCDStat) != 0 {
+            (Interrupt::LCDStat, 0x0048)
+        } else if value & u8::from(Interrupt::Timer) != 0 {
+            (Interrupt::Timer, 0x0050)
+        } else if value & u8::from(Interrupt::Serial) != 0 {
+            (Interrupt::Serial, 0x0058)
+        } else if value & u8::from(Interrupt::Joypad) != 0 {
+            (Interrupt::Joypad, 0x0060)
+        } else {
+            panic!("invalid interrupt");
+        }
+    }
+}
+
+impl std::convert::From<u8> for Interrupt {
+    fn from(byte: u8) -> Self {
+        match byte {
+            0x01 => Interrupt::VBlank,
+            0x02 => Interrupt::LCDStat,
+            0x04 => Interrupt::Timer,
+            0x08 => Interrupt::Serial,
+            0x10 => Interrupt::Joypad,
+            _ => panic!("invalid interrupt"),
+        }
+    }
+}
+impl std::convert::From<Interrupt> for u8 {
+    fn from(value: Interrupt) -> Self {
+        match value {
+            Interrupt::VBlank => 0x01,
+            Interrupt::LCDStat => 0x02,
+            Interrupt::Timer => 0x04,
+            Interrupt::Serial => 0x08,
+            Interrupt::Joypad => 0x10,
+        }
+    }
+}
 
 pub struct Gameboy<'a> {
     pub cpu: CPU,
@@ -101,23 +151,19 @@ impl<'a> Gameboy<'a> {
             // check if any interrupts are enabled
             let interrupt_enable = self.bus.read_byte(0xFFFF);
             let interrupt_flags = self.bus.read_byte(0xFF0F);
-            let interrupt = interrupt_enable & interrupt_flags;
-            if interrupt != 0 {
-                log::debug!("Interrupt: 0x{:02X}", interrupt);
+            let interrupt_value = interrupt_enable & interrupt_flags;
+            if interrupt_value != 0 {
+                log::debug!("Interrupt: 0x{:02X}", interrupt_value);
                 // disable interrupts
                 self.interrupts_enabled = false;
+                let (interrupt, interrupt_handler) = Interrupt::interrupt_address(interrupt_value);
+                // disable interrupt
+                self.bus
+                    .write_byte(0xFF0F, interrupt_flags & !u8::from(interrupt));
                 // push current program counter to stack
                 let pc = self.cpu.registers.get_u16(Register16bTarget::PC);
                 self.cpu.registers.stack_push(pc, &mut self.bus);
                 // jump to interrupt handler
-                let interrupt_handler = match interrupt {
-                    0x01 => 0x40, // V-Blank
-                    0x02 => 0x48, // LCD STAT
-                    0x04 => 0x50, // Timer
-                    0x08 => 0x58, // Serial
-                    0x10 => 0x60, // Joypad
-                    _ => panic!("invalid interrupt"),
-                };
                 self.cpu
                     .registers
                     .set_u16(Register16bTarget::PC, interrupt_handler);
@@ -170,6 +216,11 @@ impl<'a> Gameboy<'a> {
                 .collect::<Vec<String>>(),
         );
         instruction
+    }
+
+    pub fn request_interrupt(&mut self, interrupt: Interrupt) {
+        let interrupt_flags = self.bus.read_byte(0xFF0F);
+        self.bus.memory[0xFF0F] = interrupt_flags | u8::from(interrupt);
     }
 
     pub fn read_next_byte(&mut self) -> u8 {
