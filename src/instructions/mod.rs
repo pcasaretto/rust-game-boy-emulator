@@ -55,7 +55,7 @@ pub fn from_byte(byte: u8) -> Box<Instruction> {
             Register16bTarget::BC,
             RegisterTarget::A,
         ))),
-        0x08 => Box::new(pai(ld::ld_mem_at_d16_r16(Register16bTarget::SP))),
+        0x08 => Box::new(pai(ld::ld_mem_at_d16_sp)),
         0x12 => Box::new(pai(ld::ld_mem_at_r16_r(
             Register16bTarget::DE,
             RegisterTarget::A,
