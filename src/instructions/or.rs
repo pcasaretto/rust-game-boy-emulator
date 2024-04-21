@@ -25,7 +25,7 @@ pub fn or_mem_at_r16(reg: Register16bTarget) -> impl Fn(&mut Gameboy) -> u8 {
         let value = gameboy.bus.read_byte(addr);
         let a = gameboy.cpu.registers.get_u8(RegisterTarget::A);
 
-        let result = a & value;
+        let result = a | value;
 
         gameboy.cpu.registers.set_u8(RegisterTarget::A, result);
 
@@ -117,5 +117,24 @@ mod tests {
         gameboy.cpu.registers.f.subtract = true;
         or(RegisterTarget::B)(&mut gameboy);
         assert!(!gameboy.cpu.registers.f.subtract);
+    }
+
+    #[test]
+    fn test_or_mem_at_r16() {
+        let mut gameboy = Gameboy {
+            cpu: CPU {
+                registers: Registers {
+                    a: 0b1100_1010,
+                    b: 0xC0,
+                    c: 0x50,
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        gameboy.bus.write_byte(0xC050, 0b1010_1010);
+        or_mem_at_r16(Register16bTarget::BC)(&mut gameboy);
+        assert_eq!(gameboy.cpu.registers.a, 0b1110_1010);
     }
 }
