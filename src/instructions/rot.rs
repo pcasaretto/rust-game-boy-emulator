@@ -48,7 +48,7 @@ pub fn rr_a(gameboy: &mut Gameboy) -> u8 {
     let new_carry = value & 0x01 != 0;
     let new_value = (value >> 1) | ((carry as u8) << 7);
     gameboy.cpu.registers.a = new_value;
-    gameboy.cpu.registers.f.zero = new_value == 0;
+    gameboy.cpu.registers.f.zero = false;
     gameboy.cpu.registers.f.subtract = false;
     gameboy.cpu.registers.f.half_carry = false;
     gameboy.cpu.registers.f.carry = new_carry;
@@ -61,7 +61,7 @@ pub fn rrc_a(gameboy: &mut Gameboy) -> u8 {
     let new_carry = value & 0x01 != 0;
     let new_value = (value >> 1) | (value << 7);
     gameboy.cpu.registers.a = new_value;
-    gameboy.cpu.registers.f.zero = new_value == 0;
+    gameboy.cpu.registers.f.zero = false;
     gameboy.cpu.registers.f.subtract = false;
     gameboy.cpu.registers.f.half_carry = false;
     gameboy.cpu.registers.f.carry = new_carry;
