@@ -54,11 +54,11 @@ impl std::convert::From<u8> for Interrupt {
 impl std::convert::From<Interrupt> for u8 {
     fn from(value: Interrupt) -> Self {
         match value {
-            Interrupt::VBlank => 0x01,
-            Interrupt::LCDStat => 0x02,
-            Interrupt::Timer => 0x04,
-            Interrupt::Serial => 0x08,
-            Interrupt::Joypad => 0x10,
+            Interrupt::VBlank => 1 << 0,
+            Interrupt::LCDStat => 1 << 1,
+            Interrupt::Timer => 1 << 2,
+            Interrupt::Serial => 1 << 3,
+            Interrupt::Joypad => 1 << 4,
         }
     }
 }
@@ -273,10 +273,10 @@ impl<'a> Gameboy<'a> {
         let mut div = self.bus.memory[DIV];
 
         let frequency = match tac & 0x3 {
-            0 => 1024,
-            1 => 16,
-            2 => 64,
-            3 => 256,
+            0 => 4096,
+            1 => 262144,
+            2 => 65536,
+            3 => 16382,
             _ => panic!("invalid timer"),
         };
 

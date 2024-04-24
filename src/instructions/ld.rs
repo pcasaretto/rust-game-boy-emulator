@@ -206,17 +206,22 @@ pub fn ld_mem_at_c_a(gameboy: &mut Gameboy) -> u8 {
 pub fn ld_hl_sp_n8(gameboy: &mut Gameboy) -> u8 {
     let n = gameboy.read_next_byte() as i8;
     let sp = gameboy.cpu.registers.get_u16(Register16bTarget::SP);
-    let (result, overflow) = if n < 0 {
+
+    let (result, carry, half_carry) = if n < 0 {
         let t = n.abs() as u16;
-        sp.overflowing_sub(t)
+        let carry = sp <= t;
+        let half_carry = (sp & 0xF) <= (t & 0xF);
+        (sp.wrapping_sub(t), carry, half_carry)
     } else {
-        sp.overflowing_add(n as u16)
+        let carry = sp as u8 > 0xFF - n as u8;
+        let half_carry = sp as u8 & 0xF + n as u8 & 0xF > 0xF;
+        (sp.wrapping_add(n as u16), carry, half_carry)
     };
     gameboy.cpu.registers.set_u16(Register16bTarget::HL, result);
     gameboy.cpu.registers.f.zero = false;
     gameboy.cpu.registers.f.subtract = false;
-    gameboy.cpu.registers.f.half_carry = (sp ^ n as u16 ^ result) & 0x100 == 0x100;
-    gameboy.cpu.registers.f.carry = overflow;
+    gameboy.cpu.registers.f.half_carry = half_carry;
+    gameboy.cpu.registers.f.carry = carry;
     const TICKS: u8 = 12;
     TICKS
 }
@@ -251,6 +256,17 @@ mod tests {
     }
 
     #[test]
+    fn test_ld_hl_sp_n8_carry_flag() {
+        let mut gameboy = Gameboy::default();
+
+        gameboy.cpu.registers.pc = 0xC050;
+        gameboy.cpu.registers.sp = 0xDFFD;
+        gameboy.bus.write_byte(0xC051, 0xFE);
+        ld_hl_sp_n8(&mut gameboy);
+        assert!(gameboy.cpu.registers.f.carry);
+    }
+
+    #[test]
     fn test_ld_hl_sp_n8_half_carry_flag() {
         let mut gameboy = Gameboy::default();
 
@@ -263,6 +279,12 @@ mod tests {
         gameboy.cpu.registers.pc = 0xC050;
         gameboy.cpu.registers.sp = 0x0FFF;
         gameboy.bus.write_byte(0xC051, 0x01);
+        ld_hl_sp_n8(&mut gameboy);
+        assert!(gameboy.cpu.registers.f.half_carry);
+
+        gameboy.cpu.registers.pc = 0xC050;
+        gameboy.cpu.registers.sp = 0xDFFD;
+        gameboy.bus.write_byte(0xC051, 0xFE);
         ld_hl_sp_n8(&mut gameboy);
         assert!(gameboy.cpu.registers.f.half_carry);
     }
