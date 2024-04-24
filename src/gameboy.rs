@@ -7,6 +7,12 @@ use crate::{instructions, ppu};
 use std::mem;
 use std::time::Instant;
 
+macro_rules! flag_set_at {
+    ($byte:expr, $bit:expr) => {
+        ($byte >> $bit) & 1 == 1
+    };
+}
+
 pub enum Interrupt {
     VBlank,
     LCDStat,
@@ -259,20 +265,20 @@ impl<'a> Gameboy<'a> {
         }
     }
 
+    const CLOCK_SPEED: u64 = 4194304;
     fn update_timers(&mut self, ticks: u8) {
-        let tac = self.bus.memory[TAC];
-        let mut tima = self.bus.memory[TIMA];
-        let mut tima = self.bus.memory[TMA];
+        let mut tima = self.bus.memory[TIMA]; // timer
+        let tma = self.bus.memory[TMA]; // timer modulo
+        let tac = self.bus.memory[TAC]; // timer controller
         let mut div = self.bus.memory[DIV];
 
-        let mut timer = 0;
-        match tac & 0x3 {
-            0 => timer = 1024,
-            1 => timer = 16,
-            2 => timer = 64,
-            3 => timer = 256,
+        let frequency = match tac & 0x3 {
+            0 => 1024,
+            1 => 16,
+            2 => 64,
+            3 => 256,
             _ => panic!("invalid timer"),
-        }
+        };
 
         let (new_divider_counter, overflow) = self.divider_counter.overflowing_add(ticks);
         self.divider_counter = new_divider_counter;
@@ -280,8 +286,20 @@ impl<'a> Gameboy<'a> {
             div = div.wrapping_add(1);
         }
 
-        self.bus.memory[memory::special_addresses::DIV as usize] = div;
-        self.bus.memory[0xFF05] = tima;
+        if flag_set_at!(tac, 2) {
+            self.timer_counter += ticks as u64;
+            if self.timer_counter >= Self::CLOCK_SPEED / frequency {
+                self.timer_counter = 0;
+                tima = tima.wrapping_add(1);
+                if tima == 0 {
+                    tima = tma;
+                    self.request_interrupt(Interrupt::Timer);
+                }
+            }
+        }
+
+        self.bus.memory[memory::special_addresses::DIV] = div;
+        self.bus.memory[TIMA] = tima;
     }
 }
 
