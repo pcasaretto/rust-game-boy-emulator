@@ -13,14 +13,11 @@ pub fn ld_r16_n16(reg: Register16bTarget) -> impl Fn(&mut Gameboy) -> u8 {
 }
 
 pub fn ld_mem_at_d16_sp(gameboy: &mut Gameboy) -> u8 {
-    let low = gameboy.read_next_byte();
-    let high = gameboy.read_next_byte();
     let sp = gameboy.cpu.registers.get_u16(Register16bTarget::SP);
-    let addr = u16::from_be_bytes([high, low]);
-    gameboy.bus.write_byte(addr, sp.to_be_bytes()[0]);
-    gameboy
-        .bus
-        .write_byte(addr.wrapping_add(1), sp.to_be_bytes()[1]);
+    let addr = u16::from_le_bytes([gameboy.read_next_byte(), gameboy.read_next_byte()]);
+    let [low, high] = sp.to_le_bytes();
+    gameboy.bus.write_byte(addr, low);
+    gameboy.bus.write_byte(addr.wrapping_add(1), high);
     const TICKS: u8 = 20;
     TICKS
 }
@@ -484,5 +481,18 @@ mod tests {
         gameboy.cpu.registers.set_u8(RegisterTarget::A, 0x42);
         ld_mem_at_c_a(&mut gameboy);
         assert_eq!(gameboy.bus.read_byte(0xFF34), 0x42);
+    }
+
+    #[test]
+    fn test_ld_mem_at_d16_sp() {
+        let mut gameboy = Gameboy::default();
+        gameboy.cpu.registers.pc = 0xC050;
+        gameboy.bus.memory[0xC051] = 0x02;
+        gameboy.bus.memory[0xC052] = 0xDD;
+        gameboy.cpu.registers.sp = 0xDF7E;
+        ld_mem_at_d16_sp(&mut gameboy);
+        assert_eq!(gameboy.bus.read_byte(0xDD02), 0x7E);
+        assert_eq!(gameboy.bus.read_byte(0xDD03), 0xDF);
+        assert_eq!(gameboy.cpu.registers.pc, 0xC052);
     }
 }
