@@ -21,18 +21,19 @@ pub fn adc(target: RegisterTarget) -> impl Fn(&mut Gameboy) -> u8 {
 }
 
 pub fn adc_n8(gameboy: &mut Gameboy) -> u8 {
-    let mut addend = gameboy.read_next_byte();
+    let addend = gameboy.read_next_byte();
     let current_value = gameboy.cpu.registers.a;
-    if gameboy.cpu.registers.f.carry {
-        addend += 1;
-    }
-    let (new_value, did_overflow) = current_value.overflowing_add(addend);
-    gameboy.cpu.registers.a = new_value;
 
-    gameboy.cpu.registers.f.carry = did_overflow;
+    let carry_in = if gameboy.cpu.registers.f.carry { 1 } else { 0 };
+    let new_value = current_value.wrapping_add(addend).wrapping_add(carry_in);
+    let carry = (current_value as u16 + addend as u16 + carry_in as u16) > 0xFF;
+    let half_carry = ((current_value & 0xF) + (addend & 0xF) + carry_in) > 0xF;
+
+    gameboy.cpu.registers.a = new_value;
+    gameboy.cpu.registers.f.carry = carry;
     gameboy.cpu.registers.f.subtract = false;
     gameboy.cpu.registers.f.zero = new_value == 0;
-    gameboy.cpu.registers.f.half_carry = (current_value & 0xF) + (addend & 0xF) > 0xF;
+    gameboy.cpu.registers.f.half_carry = half_carry;
     const TICKS: u8 = 8;
     TICKS
 }
@@ -305,6 +306,29 @@ mod tests {
         };
         gameboy.bus.write_byte(0xFFDA, 1);
         adc_mem_at_hl(&mut gameboy);
+        assert!(gameboy.cpu.registers.f.half_carry);
+    }
+
+    #[test]
+    fn test_adc_n8_half_carry_flag() {
+        let mut gameboy = Gameboy::default();
+        gameboy.cpu.registers.pc = 0xC050;
+        gameboy.cpu.registers.a = 0x00;
+        gameboy.bus.write_byte(0xC051, 0x0F);
+        gameboy.cpu.registers.f.carry = true;
+        adc_n8(&mut gameboy);
+        gameboy.cpu.registers.a = 0x10;
+        assert!(gameboy.cpu.registers.f.half_carry);
+    }
+
+    #[test]
+    fn test_adc_n8_half_carry_flag_2() {
+        let mut gameboy = Gameboy::default();
+        gameboy.cpu.registers.pc = 0xC050;
+        gameboy.cpu.registers.a = 0xFF;
+        gameboy.bus.write_byte(0xC051, 0x01);
+        adc_n8(&mut gameboy);
+        gameboy.cpu.registers.a = 0x00;
         assert!(gameboy.cpu.registers.f.half_carry);
     }
 }

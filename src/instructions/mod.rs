@@ -308,6 +308,7 @@ pub fn from_byte(byte: u8) -> Box<Instruction> {
         0xF3 => Box::new(pai(int::di)),
         0xFB => Box::new(pai(int::ei)),
 
+        0xE8 => Box::new(pai(add::add_sp_n8)),
         0xF8 => Box::new(pai(ld::ld_hl_sp_n8)),
         0xF9 => Box::new(pai(ld::ld_sp_hl)),
 

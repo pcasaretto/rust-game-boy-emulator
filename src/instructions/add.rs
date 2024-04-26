@@ -64,6 +64,31 @@ pub fn add_hl_r16(target: Register16bTarget) -> impl Fn(&mut Gameboy) -> u8 {
     }
 }
 
+pub fn add_sp_n8(gameboy: &mut Gameboy) -> u8 {
+    let n8 = gameboy.read_next_byte() as i8;
+    let sp = gameboy.cpu.registers.sp;
+
+    let (result, carry, half_carry) = if n8 < 0 {
+        let t = n8.abs() as u16;
+        let carry = false;
+        let half_carry = false;
+        (sp.wrapping_sub(t), carry, half_carry)
+    } else {
+        let carry = sp as u8 > 0xFF - n8 as u8;
+        let half_carry = sp as u8 & 0xF + n8 as u8 & 0xF > 0xF;
+        (sp.wrapping_add(n8 as u16), carry, half_carry)
+    };
+
+    gameboy.cpu.registers.sp = result;
+
+    gameboy.cpu.registers.f.zero = false;
+    gameboy.cpu.registers.f.subtract = false;
+    gameboy.cpu.registers.f.half_carry = half_carry;
+    gameboy.cpu.registers.f.carry = carry;
+    const TICKS: u8 = 16;
+    TICKS
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

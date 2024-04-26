@@ -209,8 +209,8 @@ pub fn ld_hl_sp_n8(gameboy: &mut Gameboy) -> u8 {
 
     let (result, carry, half_carry) = if n < 0 {
         let t = n.abs() as u16;
-        let carry = sp <= t;
-        let half_carry = (sp & 0xF) <= (t & 0xF);
+        let carry = false;
+        let half_carry = false;
         (sp.wrapping_sub(t), carry, half_carry)
     } else {
         let carry = sp as u8 > 0xFF - n as u8;
@@ -261,6 +261,12 @@ mod tests {
 
         gameboy.cpu.registers.pc = 0xC050;
         gameboy.cpu.registers.sp = 0xDFFD;
+        gameboy.bus.write_byte(0xC051, 0x03);
+        ld_hl_sp_n8(&mut gameboy);
+        assert!(gameboy.cpu.registers.f.carry);
+
+        gameboy.cpu.registers.pc = 0xC050;
+        gameboy.cpu.registers.sp = 0xDF01;
         gameboy.bus.write_byte(0xC051, 0xFE);
         ld_hl_sp_n8(&mut gameboy);
         assert!(gameboy.cpu.registers.f.carry);
