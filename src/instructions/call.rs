@@ -24,8 +24,26 @@ pub fn call_nz_a16(gameboy: &mut Gameboy) -> u8 {
     }
 }
 
+pub fn call_z_a16(gameboy: &mut Gameboy) -> u8 {
+    if gameboy.cpu.registers.f.zero {
+        call_a16(gameboy)
+    } else {
+        gameboy.cpu.registers.pc = gameboy.cpu.registers.pc.wrapping_add(3);
+        12
+    }
+}
+
 pub fn call_nc_a16(gameboy: &mut Gameboy) -> u8 {
     if !gameboy.cpu.registers.f.carry {
+        call_a16(gameboy)
+    } else {
+        gameboy.cpu.registers.pc = gameboy.cpu.registers.pc.wrapping_add(3);
+        12
+    }
+}
+
+pub fn call_c_a16(gameboy: &mut Gameboy) -> u8 {
+    if gameboy.cpu.registers.f.carry {
         call_a16(gameboy)
     } else {
         gameboy.cpu.registers.pc = gameboy.cpu.registers.pc.wrapping_add(3);
@@ -42,6 +60,11 @@ pub fn ret(gameboy: &mut Gameboy) -> u8 {
     gameboy.cpu.registers.pc = u16::from_le_bytes([low, high]);
     const TICKS: u8 = 16;
     TICKS
+}
+
+pub fn reti(gameboy: &mut Gameboy) -> u8 {
+    gameboy.interrupts_enabled = true;
+    ret(gameboy)
 }
 
 pub fn ret_nz(gameboy: &mut Gameboy) -> u8 {

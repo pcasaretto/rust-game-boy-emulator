@@ -3,7 +3,11 @@ use crate::gameboy::Gameboy;
 
 pub fn rst(offset: u8) -> impl Fn(&mut Gameboy) -> u8 {
     move |gameboy: &mut Gameboy| {
-        let pc = gameboy.cpu.registers.get_u16(Register16bTarget::PC);
+        let pc = gameboy
+            .cpu
+            .registers
+            .get_u16(Register16bTarget::PC)
+            .wrapping_add(1);
         let [high, low] = pc.to_be_bytes();
         gameboy.cpu.registers.sp = gameboy.cpu.registers.sp.wrapping_sub(1);
         gameboy.bus.write_byte(gameboy.cpu.registers.sp, high);
@@ -36,7 +40,7 @@ mod tests {
         rst(0x08)(&mut gameboy);
         assert_eq!(gameboy.cpu.registers.sp, 0xFFFC);
         assert_eq!(gameboy.bus.memory[0xFFFD], 0x12);
-        assert_eq!(gameboy.bus.memory[0xFFFC], 0x34);
+        assert_eq!(gameboy.bus.memory[0xFFFC], 0x35);
         assert_eq!(gameboy.cpu.registers.pc, 0x08);
     }
 }
