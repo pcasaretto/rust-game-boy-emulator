@@ -68,7 +68,7 @@ mod tests {
         };
         gameboy.cpu.registers.f.zero = false;
         swap(RegisterTarget::A)(&mut gameboy);
-        assert_eq!(gameboy.cpu.registers.f.zero, true);
+        assert!(gameboy.cpu.registers.f.zero);
     }
 
     #[test]
@@ -76,7 +76,7 @@ mod tests {
         let mut gameboy = Gameboy::default();
         gameboy.cpu.registers.f.half_carry = true;
         swap(RegisterTarget::A)(&mut gameboy);
-        assert_eq!(gameboy.cpu.registers.f.half_carry, false);
+        assert!(!gameboy.cpu.registers.f.half_carry);
     }
 
     #[test]
@@ -84,7 +84,7 @@ mod tests {
         let mut gameboy = Gameboy::default();
         gameboy.cpu.registers.f.carry = true;
         swap(RegisterTarget::A)(&mut gameboy);
-        assert_eq!(gameboy.cpu.registers.f.carry, false);
+        assert!(!gameboy.cpu.registers.f.carry);
     }
 
     #[test]
@@ -92,6 +92,6 @@ mod tests {
         let mut gameboy = Gameboy::default();
         gameboy.cpu.registers.f.subtract = true;
         swap(RegisterTarget::A)(&mut gameboy);
-        assert_eq!(gameboy.cpu.registers.f.subtract, false);
+        assert!(!gameboy.cpu.registers.f.subtract);
     }
 }

@@ -105,9 +105,9 @@ mod tests {
         let mut gameboy = Gameboy::default();
         gameboy.cpu.registers.set_u8(RegisterTarget::A, 0b00001000);
         bit_r(RegisterTarget::A, 3)(&mut gameboy);
-        assert_eq!(gameboy.cpu.registers.f.zero, false);
-        assert_eq!(gameboy.cpu.registers.f.subtract, false);
-        assert_eq!(gameboy.cpu.registers.f.half_carry, true);
+        assert!(!gameboy.cpu.registers.f.zero);
+        assert!(!gameboy.cpu.registers.f.subtract);
+        assert!(gameboy.cpu.registers.f.half_carry);
     }
 
     #[test]
@@ -115,9 +115,9 @@ mod tests {
         let mut gameboy = Gameboy::default();
         gameboy.cpu.registers.set_u8(RegisterTarget::A, 0b00000000);
         bit_r(RegisterTarget::A, 3)(&mut gameboy);
-        assert_eq!(gameboy.cpu.registers.f.zero, true);
-        assert_eq!(gameboy.cpu.registers.f.subtract, false);
-        assert_eq!(gameboy.cpu.registers.f.half_carry, true);
+        assert!(gameboy.cpu.registers.f.zero);
+        assert!(!gameboy.cpu.registers.f.subtract);
+        assert!(gameboy.cpu.registers.f.half_carry);
     }
 
     #[test]
@@ -126,9 +126,9 @@ mod tests {
         gameboy.cpu.registers.set_u16(Register16bTarget::HL, 0xC050);
         gameboy.bus.write_byte(0xC050, 0b00001000);
         bit_mem_at_hl(3)(&mut gameboy);
-        assert_eq!(gameboy.cpu.registers.f.zero, false);
-        assert_eq!(gameboy.cpu.registers.f.subtract, false);
-        assert_eq!(gameboy.cpu.registers.f.half_carry, true);
+        assert!(!gameboy.cpu.registers.f.zero);
+        assert!(!gameboy.cpu.registers.f.subtract);
+        assert!(gameboy.cpu.registers.f.half_carry);
     }
 
     #[test]
@@ -137,8 +137,8 @@ mod tests {
         gameboy.cpu.registers.set_u16(Register16bTarget::HL, 0xC050);
         gameboy.bus.write_byte(0xC050, 0b00000000);
         bit_mem_at_hl(3)(&mut gameboy);
-        assert_eq!(gameboy.cpu.registers.f.zero, true);
-        assert_eq!(gameboy.cpu.registers.f.subtract, false);
-        assert_eq!(gameboy.cpu.registers.f.half_carry, true);
+        assert!(gameboy.cpu.registers.f.zero);
+        assert!(!gameboy.cpu.registers.f.subtract);
+        assert!(gameboy.cpu.registers.f.half_carry);
     }
 }

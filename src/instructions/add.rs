@@ -69,9 +69,9 @@ pub fn add_sp_n8(gameboy: &mut Gameboy) -> u8 {
     let sp = gameboy.cpu.registers.sp;
 
     let (result, carry, half_carry) = if n8 < 0 {
-        let t = n8.abs() as u16;
+        let t = n8.unsigned_abs() as u16;
         let carry = sp & 0xFF < t;
-        let half_carry = sp & 0xF < t as u16 & 0xF;
+        let half_carry = sp & 0xF < t & 0xF;
         (sp.wrapping_sub(t), !carry, !half_carry)
     } else {
         let carry = sp as u8 > 0xFF - n8 as u8;

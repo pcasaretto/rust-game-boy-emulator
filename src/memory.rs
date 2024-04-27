@@ -45,12 +45,12 @@ impl<'a> MemoryBus<'a> {
         if self.boot_rom_enabled && address < self.boot_rom.len() as u16 {
             return self.boot_rom[address as usize];
         }
-        let value = match address {
+        
+        // log::debug!("Read from {:04X}: value {:02X}", address, value);
+        match address {
             0x0000..=0x7FFF => self.cartridge_rom[address as usize],
             other => self.memory[other as usize],
-        };
-        // log::debug!("Read from {:04X}: value {:02X}", address, value);
-        value
+        }
     }
 
     pub fn write_byte(&mut self, address: u16, value: u8) {

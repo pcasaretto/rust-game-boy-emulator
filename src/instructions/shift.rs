@@ -103,10 +103,10 @@ mod tests {
         gameboy.cpu.registers.set_u8(RegisterTarget::A, 0b1100_1100);
         let cycles = sla(RegisterTarget::A)(&mut gameboy);
         assert_eq!(gameboy.cpu.registers.get_u8(RegisterTarget::A), 0b1001_1000);
-        assert_eq!(gameboy.cpu.registers.f.zero, false);
-        assert_eq!(gameboy.cpu.registers.f.subtract, false);
-        assert_eq!(gameboy.cpu.registers.f.half_carry, false);
-        assert_eq!(gameboy.cpu.registers.f.carry, true);
+        assert!(!gameboy.cpu.registers.f.zero);
+        assert!(!gameboy.cpu.registers.f.subtract);
+        assert!(!gameboy.cpu.registers.f.half_carry);
+        assert!(gameboy.cpu.registers.f.carry);
         assert_eq!(cycles, 8);
     }
 
@@ -117,10 +117,10 @@ mod tests {
         gameboy.bus.write_byte(0xC050, 0b1100_1100);
         let cycles = sla_mem_at_hl(&mut gameboy);
         assert_eq!(gameboy.bus.read_byte(0xC050), 0b1001_1000);
-        assert_eq!(gameboy.cpu.registers.f.zero, false);
-        assert_eq!(gameboy.cpu.registers.f.subtract, false);
-        assert_eq!(gameboy.cpu.registers.f.half_carry, false);
-        assert_eq!(gameboy.cpu.registers.f.carry, true);
+        assert!(!gameboy.cpu.registers.f.zero);
+        assert!(!gameboy.cpu.registers.f.subtract);
+        assert!(!gameboy.cpu.registers.f.half_carry);
+        assert!(gameboy.cpu.registers.f.carry);
         assert_eq!(cycles, 16);
     }
 
@@ -130,10 +130,10 @@ mod tests {
         gameboy.cpu.registers.set_u8(RegisterTarget::A, 0b1100_1101);
         let cycles = sra(RegisterTarget::A)(&mut gameboy);
         assert_eq!(gameboy.cpu.registers.get_u8(RegisterTarget::A), 0b1110_0110);
-        assert_eq!(gameboy.cpu.registers.f.zero, false);
-        assert_eq!(gameboy.cpu.registers.f.subtract, false);
-        assert_eq!(gameboy.cpu.registers.f.half_carry, false);
-        assert_eq!(gameboy.cpu.registers.f.carry, true);
+        assert!(!gameboy.cpu.registers.f.zero);
+        assert!(!gameboy.cpu.registers.f.subtract);
+        assert!(!gameboy.cpu.registers.f.half_carry);
+        assert!(gameboy.cpu.registers.f.carry);
         assert_eq!(cycles, 8);
     }
 
@@ -144,10 +144,10 @@ mod tests {
         gameboy.bus.write_byte(0xC050, 0b1100_1101);
         let cycles = sra_mem_at_hl(&mut gameboy);
         assert_eq!(gameboy.bus.read_byte(0xC050), 0b1110_0110);
-        assert_eq!(gameboy.cpu.registers.f.zero, false);
-        assert_eq!(gameboy.cpu.registers.f.subtract, false);
-        assert_eq!(gameboy.cpu.registers.f.half_carry, false);
-        assert_eq!(gameboy.cpu.registers.f.carry, true);
+        assert!(!gameboy.cpu.registers.f.zero);
+        assert!(!gameboy.cpu.registers.f.subtract);
+        assert!(!gameboy.cpu.registers.f.half_carry);
+        assert!(gameboy.cpu.registers.f.carry);
         assert_eq!(cycles, 16);
     }
 
@@ -157,10 +157,10 @@ mod tests {
         gameboy.cpu.registers.set_u8(RegisterTarget::A, 0b1100_1101);
         let cycles = srl(RegisterTarget::A)(&mut gameboy);
         assert_eq!(gameboy.cpu.registers.get_u8(RegisterTarget::A), 0b0110_0110);
-        assert_eq!(gameboy.cpu.registers.f.zero, false);
-        assert_eq!(gameboy.cpu.registers.f.subtract, false);
-        assert_eq!(gameboy.cpu.registers.f.half_carry, false);
-        assert_eq!(gameboy.cpu.registers.f.carry, true);
+        assert!(!gameboy.cpu.registers.f.zero);
+        assert!(!gameboy.cpu.registers.f.subtract);
+        assert!(!gameboy.cpu.registers.f.half_carry);
+        assert!(gameboy.cpu.registers.f.carry);
         assert_eq!(cycles, 8);
     }
 
@@ -171,10 +171,10 @@ mod tests {
         gameboy.bus.write_byte(0xC050, 0b1100_1101);
         let cycles = srl_mem_at_hl(&mut gameboy);
         assert_eq!(gameboy.bus.read_byte(0xC050), 0b0110_0110);
-        assert_eq!(gameboy.cpu.registers.f.zero, false);
-        assert_eq!(gameboy.cpu.registers.f.subtract, false);
-        assert_eq!(gameboy.cpu.registers.f.half_carry, false);
-        assert_eq!(gameboy.cpu.registers.f.carry, true);
+        assert!(!gameboy.cpu.registers.f.zero);
+        assert!(!gameboy.cpu.registers.f.subtract);
+        assert!(!gameboy.cpu.registers.f.half_carry);
+        assert!(gameboy.cpu.registers.f.carry);
         assert_eq!(cycles, 16);
     }
 }

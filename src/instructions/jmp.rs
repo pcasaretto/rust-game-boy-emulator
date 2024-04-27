@@ -5,7 +5,7 @@ pub fn jmp_a16(gameboy: &mut Gameboy) -> u8 {
     let high = gameboy.read_next_byte();
     gameboy.cpu.registers.pc = u16::from_be_bytes([high, low]);
     const TICKS: u8 = 16;
-    return TICKS;
+    TICKS
 }
 
 pub fn jp_nz_a16(gameboy: &mut Gameboy) -> u8 {
@@ -18,7 +18,7 @@ pub fn jp_nz_a16(gameboy: &mut Gameboy) -> u8 {
     let high = gameboy.read_next_byte();
     gameboy.cpu.registers.pc = u16::from_be_bytes([high, low]);
     const TICKS: u8 = 16;
-    return TICKS;
+    TICKS
 }
 
 pub fn jp_z_a16(gameboy: &mut Gameboy) -> u8 {
@@ -31,7 +31,7 @@ pub fn jp_z_a16(gameboy: &mut Gameboy) -> u8 {
     let high = gameboy.read_next_byte();
     gameboy.cpu.registers.pc = u16::from_be_bytes([high, low]);
     const TICKS: u8 = 16;
-    return TICKS;
+    TICKS
 }
 
 pub fn jp_nc_a16(gameboy: &mut Gameboy) -> u8 {
@@ -44,7 +44,7 @@ pub fn jp_nc_a16(gameboy: &mut Gameboy) -> u8 {
     let high = gameboy.read_next_byte();
     gameboy.cpu.registers.pc = u16::from_be_bytes([high, low]);
     const TICKS: u8 = 16;
-    return TICKS;
+    TICKS
 }
 
 pub fn jp_c_a16(gameboy: &mut Gameboy) -> u8 {
@@ -57,7 +57,7 @@ pub fn jp_c_a16(gameboy: &mut Gameboy) -> u8 {
     let high = gameboy.read_next_byte();
     gameboy.cpu.registers.pc = u16::from_be_bytes([high, low]);
     const TICKS: u8 = 16;
-    return TICKS;
+    TICKS
 }
 
 pub fn jr_z(gameboy: &mut Gameboy) -> u8 {
@@ -73,7 +73,7 @@ pub fn jr_z(gameboy: &mut Gameboy) -> u8 {
         .pc
         .wrapping_add(offset as i8 as u16 + 1);
     const TICKS: u8 = 12;
-    return TICKS;
+    TICKS
 }
 
 pub fn jr_nz(gameboy: &mut Gameboy) -> u8 {
@@ -89,7 +89,7 @@ pub fn jr_nz(gameboy: &mut Gameboy) -> u8 {
         .pc
         .wrapping_add(offset as i8 as u16 + 1);
     const TICKS: u8 = 12;
-    return TICKS;
+    TICKS
 }
 
 pub fn jr_nc(gameboy: &mut Gameboy) -> u8 {
@@ -105,7 +105,7 @@ pub fn jr_nc(gameboy: &mut Gameboy) -> u8 {
         .pc
         .wrapping_add(offset as i8 as u16 + 1);
     const TICKS: u8 = 12;
-    return TICKS;
+    TICKS
 }
 
 pub fn jr_c(gameboy: &mut Gameboy) -> u8 {
@@ -121,7 +121,7 @@ pub fn jr_c(gameboy: &mut Gameboy) -> u8 {
         .pc
         .wrapping_add(offset as i8 as u16 + 1);
     const TICKS: u8 = 12;
-    return TICKS;
+    TICKS
 }
 
 pub fn jr(gameboy: &mut Gameboy) -> u8 {
@@ -307,7 +307,7 @@ mod tests {
         let mut gameboy = Gameboy::default();
         gameboy.cpu.registers.pc = 0xC050;
         gameboy.cpu.registers.f.zero = false;
-        gameboy.bus.memory[0xC051] = -5 as i8 as u8;
+        gameboy.bus.memory[0xC051] = -5_i8 as u8;
         jr_nz(&mut gameboy);
         assert_eq!(gameboy.cpu.registers.pc, 0xC04D);
     }

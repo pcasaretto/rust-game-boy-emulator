@@ -27,7 +27,7 @@ pub fn ld_r_r(src: RegisterTarget, dest: RegisterTarget) -> impl Fn(&mut Gameboy
         let value = gameboy.cpu.registers.get_u8(src);
         gameboy.cpu.registers.set_u8(dest, value);
         const TICKS: u8 = 4;
-        return TICKS;
+        TICKS
     }
 }
 
@@ -213,9 +213,9 @@ pub fn ld_hl_sp_n8(gameboy: &mut Gameboy) -> u8 {
     let sp = gameboy.cpu.registers.get_u16(Register16bTarget::SP);
 
     let (result, carry, half_carry) = if n < 0 {
-        let t = n.abs() as u16;
+        let t = n.unsigned_abs() as u16;
         let carry = sp & 0xFF < t;
-        let half_carry = sp & 0xF < t as u16 & 0xF;
+        let half_carry = sp & 0xF < t & 0xF;
         (sp.wrapping_sub(t), !carry, !half_carry)
     } else {
         let carry = sp as u8 > 0xFF - n as u8;
@@ -255,7 +255,7 @@ mod tests {
         let mut gameboy = Gameboy::default();
         gameboy.cpu.registers.pc = 0xC050;
         gameboy.cpu.registers.sp = 0xFFC0;
-        gameboy.bus.write_byte(0xC051, 0b1111_1101 as u8);
+        gameboy.bus.write_byte(0xC051, 0b1111_1101_u8);
 
         ld_hl_sp_n8(&mut gameboy);
 

@@ -113,12 +113,10 @@ impl PPU {
             } else {
                 0x9800
             }
+        } else if flag_set_at!(control, 6) {
+            0x9c00
         } else {
-            if flag_set_at!(control, 6) {
-                0x9c00
-            } else {
-                0x9800
-            }
+            0x9800
         };
 
         let y_pos = if using_window {
@@ -138,7 +136,7 @@ impl PPU {
             let tile_col = x_pos / 8;
             let tile_address = tilemap + tile_row + tile_col as u16;
 
-            let tile_num = gameboy.bus.read_byte(tile_address as u16);
+            let tile_num = gameboy.bus.read_byte(tile_address);
 
             let tile_location = tiledata
                 + (if unsigned {
@@ -164,7 +162,7 @@ impl PPU {
                 continue;
             }
 
-            self.frambuffer_alpha[(current_scanline as usize * 160 + (pixel as usize)) as usize] =
+            self.frambuffer_alpha[current_scanline as usize * 160 + (pixel as usize)] =
                 u32::from_be_bytes(color.rgba().into());
         }
     }
@@ -252,7 +250,7 @@ impl PPU {
                     }
 
                     self.frambuffer_alpha
-                        [(current_scanline as usize * 160 + (pixel as usize)) as usize] =
+                        [current_scanline as usize * 160 + (pixel as usize)] =
                         u32::from_be_bytes(color.rgba().into());
                 }
             }

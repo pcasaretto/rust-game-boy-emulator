@@ -22,7 +22,7 @@ mod tests {
 
         di(&mut gameboy);
 
-        assert_eq!(gameboy.interrupts_enabled, false);
+        assert!(!gameboy.interrupts_enabled);
     }
 
     #[test]
@@ -32,6 +32,6 @@ mod tests {
 
         ei(&mut gameboy);
 
-        assert_eq!(gameboy.interrupts_enabled, true);
+        assert!(gameboy.interrupts_enabled);
     }
 }
