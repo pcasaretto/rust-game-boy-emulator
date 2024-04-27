@@ -1,5 +1,5 @@
 use crate::cpu::RegisterTarget;
-use crate::gameboy::{self, Gameboy};
+use crate::gameboy::{Gameboy};
 use crate::instructions::Register16bTarget;
 
 pub fn dec_r(target: RegisterTarget) -> impl Fn(&mut Gameboy) -> u8 {

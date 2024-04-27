@@ -1,11 +1,10 @@
-use crate::cpu::{Register16bTarget, RegisterTarget, CPU};
+use crate::cpu::{Register16bTarget, CPU};
 use crate::memory::special_addresses::*;
 use crate::memory::{self, MemoryBus};
 use crate::opcode_info::{OpcodeInfo, OperandInformation};
 use crate::ppu::PPU;
-use crate::{instructions, ppu};
+use crate::{instructions};
 use std::fmt::Debug;
-use std::mem;
 use std::time::Instant;
 
 macro_rules! flag_set_at {
