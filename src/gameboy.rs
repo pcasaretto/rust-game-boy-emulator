@@ -161,7 +161,7 @@ impl<'a> Gameboy<'a> {
                 let ticks = self.run_next_instruction();
 
                 self.handle_interrupts();
-                // self.serial_comm();
+                self.serial_comm();
                 self.update_timers(ticks);
                 self.update_graphics(ticks, ppu);
                 frame_ticks += ticks as u64;
