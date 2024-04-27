@@ -1,5 +1,6 @@
-use crate::cpu::{RegisterTarget};
+use crate::cpu::RegisterTarget;
 use crate::gameboy::Gameboy;
+use crate::instructions::Register16bTarget;
 
 pub fn swap(target: RegisterTarget) -> impl Fn(&mut Gameboy) -> u8 {
     move |gameboy: &mut Gameboy| {
@@ -15,6 +16,21 @@ pub fn swap(target: RegisterTarget) -> impl Fn(&mut Gameboy) -> u8 {
         const CYCLES: u8 = 2;
         CYCLES
     }
+}
+
+pub fn swap_mem_at_hl(gameboy: &mut Gameboy) -> u8 {
+    let addr = gameboy.cpu.registers.get_u16(Register16bTarget::HL);
+    let value = gameboy.bus.read_byte(addr);
+    let result = (value << 4) | (value >> 4);
+
+    gameboy.bus.write_byte(addr, result);
+
+    gameboy.cpu.registers.f.zero = result == 0;
+    gameboy.cpu.registers.f.subtract = false;
+    gameboy.cpu.registers.f.half_carry = false;
+    gameboy.cpu.registers.f.carry = false;
+    const CYCLES: u8 = 4;
+    CYCLES
 }
 
 #[cfg(test)]

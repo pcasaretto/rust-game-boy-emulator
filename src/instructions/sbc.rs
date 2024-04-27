@@ -1,5 +1,6 @@
 use crate::cpu::RegisterTarget;
 use crate::gameboy::Gameboy;
+use crate::instructions::Register16bTarget;
 
 pub fn sbc_r_r_a(target: RegisterTarget) -> impl Fn(&mut Gameboy) -> u8 {
     move |gameboy: &mut Gameboy| {
@@ -36,6 +37,26 @@ pub fn sbc_n8(gameboy: &mut Gameboy) -> u8 {
     gameboy.cpu.registers.f.carry = first_overflow || second_overflow;
     gameboy.cpu.registers.f.zero = new_value == 0;
     gameboy.cpu.registers.f.subtract = true;
+    gameboy.cpu.registers.f.half_carry = half_borrow;
+    const TICKS: u8 = 8;
+    TICKS
+}
+
+pub fn sbc_mem_at_hl(gameboy: &mut Gameboy) -> u8 {
+    let addr = gameboy.cpu.registers.get_u16(Register16bTarget::HL);
+    let operand = gameboy.bus.read_byte(addr);
+    let current_value = gameboy.cpu.registers.get_u8(RegisterTarget::A);
+
+    let borrow_in = if gameboy.cpu.registers.f.carry { 1 } else { 0 };
+    let (new_value, first_overflow) = current_value.overflowing_sub(operand);
+    let (new_value, second_overflow) = new_value.overflowing_sub(borrow_in);
+    let half_borrow = (current_value & 0xF) < (operand & 0xF) + borrow_in;
+
+    gameboy.cpu.registers.set_u8(RegisterTarget::A, new_value);
+
+    gameboy.cpu.registers.f.carry = first_overflow || second_overflow;
+    gameboy.cpu.registers.f.subtract = true;
+    gameboy.cpu.registers.f.zero = new_value == 0;
     gameboy.cpu.registers.f.half_carry = half_borrow;
     const TICKS: u8 = 8;
     TICKS

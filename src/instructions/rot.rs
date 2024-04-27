@@ -168,7 +168,7 @@ pub fn rrc_mem_at_hl(gameboy: &mut Gameboy) -> u8 {
     let addr = gameboy.cpu.registers.get_u16(Register16bTarget::HL);
     let value = gameboy.bus.read_byte(addr);
     let new_carry = value & 0x01 != 0;
-    let new_value = (value >> 1) << 7;
+    let new_value = (value >> 1) | value << 7;
     gameboy.cpu.registers.f.carry = new_carry;
     gameboy.cpu.registers.f.zero = new_value == 0;
     gameboy.cpu.registers.f.subtract = false;

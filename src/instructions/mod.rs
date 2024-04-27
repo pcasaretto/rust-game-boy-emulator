@@ -106,10 +106,10 @@ pub fn from_byte(byte: u8) -> Box<Instruction> {
         0x1C => Box::new(pai(inc::inc_r(RegisterTarget::E))),
         0x2C => Box::new(pai(inc::inc_r(RegisterTarget::L))),
         0x3C => Box::new(pai(inc::inc_r(RegisterTarget::A))),
+        0x34 => Box::new(pai(inc::inc_mem_at_hl)),
 
         0x27 => Box::new(pai(misc::daa)),
 
-        0x35 => Box::new(pai(dec::dec_mem_at_hl)),
         0x05 => Box::new(pai(dec::dec_r(RegisterTarget::B))),
         0x15 => Box::new(pai(dec::dec_r(RegisterTarget::D))),
         0x25 => Box::new(pai(dec::dec_r(RegisterTarget::H))),
@@ -117,6 +117,7 @@ pub fn from_byte(byte: u8) -> Box<Instruction> {
         0x1D => Box::new(pai(dec::dec_r(RegisterTarget::E))),
         0x2D => Box::new(pai(dec::dec_r(RegisterTarget::L))),
         0x3D => Box::new(pai(dec::dec_r(RegisterTarget::A))),
+        0x35 => Box::new(pai(dec::dec_mem_at_hl)),
 
         0x18 => Box::new(jmp::jr),
         0x20 => Box::new(jmp::jr_nz),
@@ -223,7 +224,7 @@ pub fn from_byte(byte: u8) -> Box<Instruction> {
         0x93 => Box::new(pai(sub::sub_r_r_a(RegisterTarget::E))),
         0x94 => Box::new(pai(sub::sub_r_r_a(RegisterTarget::H))),
         0x95 => Box::new(pai(sub::sub_r_r_a(RegisterTarget::L))),
-        //0x96
+        0x96 => Box::new(pai(sub::sub_mem_at_hl)),
         0x97 => Box::new(pai(sub::sub_r_r_a(RegisterTarget::A))),
         0x98 => Box::new(pai(sbc::sbc_r_r_a(RegisterTarget::B))),
         0x99 => Box::new(pai(sbc::sbc_r_r_a(RegisterTarget::C))),
@@ -231,7 +232,7 @@ pub fn from_byte(byte: u8) -> Box<Instruction> {
         0x9B => Box::new(pai(sbc::sbc_r_r_a(RegisterTarget::E))),
         0x9C => Box::new(pai(sbc::sbc_r_r_a(RegisterTarget::H))),
         0x9D => Box::new(pai(sbc::sbc_r_r_a(RegisterTarget::L))),
-        // 0x9E => Box::new(sbc::sbc_r_r_a(RegisterTarget::A)),
+        0x9E => Box::new(pai(sbc::sbc_mem_at_hl)),
         0x9F => Box::new(pai(sbc::sbc_r_r_a(RegisterTarget::A))),
 
         0xA0 => Box::new(pai(and::and(RegisterTarget::B))),
@@ -342,15 +343,6 @@ pub fn from_byte(byte: u8) -> Box<Instruction> {
 
 pub fn from_prefixed_byte(byte: u8) -> Box<Instruction> {
     match byte {
-        0x30 => Box::new(dpai(swap::swap(RegisterTarget::B))),
-        0x31 => Box::new(dpai(swap::swap(RegisterTarget::C))),
-        0x32 => Box::new(dpai(swap::swap(RegisterTarget::D))),
-        0x33 => Box::new(dpai(swap::swap(RegisterTarget::E))),
-        0x34 => Box::new(dpai(swap::swap(RegisterTarget::H))),
-        0x35 => Box::new(dpai(swap::swap(RegisterTarget::L))),
-        // 0x36 => Box::new(swap::swap(RegisterTarget::C)),
-        0x37 => Box::new(dpai(swap::swap(RegisterTarget::A))),
-
         0x00 => Box::new(dpai(rot::rlc_r(RegisterTarget::B))),
         0x01 => Box::new(dpai(rot::rlc_r(RegisterTarget::C))),
         0x02 => Box::new(dpai(rot::rlc_r(RegisterTarget::D))),
@@ -402,6 +394,15 @@ pub fn from_prefixed_byte(byte: u8) -> Box<Instruction> {
         0x2d => Box::new(dpai(shift::sra(RegisterTarget::L))),
         0x2e => Box::new(dpai(shift::sra_mem_at_hl)),
         0x2f => Box::new(dpai(shift::sra(RegisterTarget::A))),
+
+        0x30 => Box::new(dpai(swap::swap(RegisterTarget::B))),
+        0x31 => Box::new(dpai(swap::swap(RegisterTarget::C))),
+        0x32 => Box::new(dpai(swap::swap(RegisterTarget::D))),
+        0x33 => Box::new(dpai(swap::swap(RegisterTarget::E))),
+        0x34 => Box::new(dpai(swap::swap(RegisterTarget::H))),
+        0x35 => Box::new(dpai(swap::swap(RegisterTarget::L))),
+        0x36 => Box::new(dpai(swap::swap_mem_at_hl)),
+        0x37 => Box::new(dpai(swap::swap(RegisterTarget::A))),
 
         0x38 => Box::new(dpai(shift::srl(RegisterTarget::B))),
         0x39 => Box::new(dpai(shift::srl(RegisterTarget::C))),

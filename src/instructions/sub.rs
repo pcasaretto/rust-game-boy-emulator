@@ -31,6 +31,21 @@ pub fn sub_d8(gameboy: &mut Gameboy) -> u8 {
     TICKS
 }
 
+pub fn sub_mem_at_hl(gameboy: &mut Gameboy) -> u8 {
+    let hl = gameboy.cpu.registers.get_u16(Register16bTarget::HL);
+    let target_value = gameboy.bus.read_byte(hl);
+    let current_value = gameboy.cpu.registers.a;
+    let (new_value, did_overflow) = current_value.overflowing_sub(target_value);
+    gameboy.cpu.registers.a = new_value;
+
+    gameboy.cpu.registers.f.carry = did_overflow;
+    gameboy.cpu.registers.f.zero = new_value == 0;
+    gameboy.cpu.registers.f.subtract = true;
+    gameboy.cpu.registers.f.half_carry = (current_value & 0xF) < (target_value & 0xF);
+    const TICKS: u8 = 8;
+    TICKS
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

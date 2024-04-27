@@ -25,6 +25,18 @@ pub fn inc_r16(target: Register16bTarget) -> impl Fn(&mut Gameboy) -> u8 {
     }
 }
 
+pub fn inc_mem_at_hl(gameboy: &mut Gameboy) -> u8 {
+    let addr = gameboy.cpu.registers.get_u16(Register16bTarget::HL);
+    let current_value = gameboy.bus.read_byte(addr);
+    let new_value = current_value.wrapping_add(1);
+    gameboy.bus.write_byte(addr, new_value);
+
+    gameboy.cpu.registers.f.zero = new_value == 0;
+    gameboy.cpu.registers.f.subtract = false;
+    gameboy.cpu.registers.f.half_carry = current_value & 0xF == 0xF;
+    const TICKS: u8 = 8;
+    TICKS
+}
 #[cfg(test)]
 mod tests {
     use super::*;
