@@ -70,12 +70,14 @@ pub fn add_sp_n8(gameboy: &mut Gameboy) -> u8 {
 
     let (result, carry, half_carry) = if n8 < 0 {
         let t = n8.abs() as u16;
-        let carry = false;
-        let half_carry = false;
-        (sp.wrapping_sub(t), carry, half_carry)
+        let carry = sp & 0xFF < t;
+        let half_carry = sp & 0xF < t as u16 & 0xF;
+        (sp.wrapping_sub(t), !carry, !half_carry)
     } else {
         let carry = sp as u8 > 0xFF - n8 as u8;
-        let half_carry = sp as u8 & 0xF + n8 as u8 & 0xF > 0xF;
+        let a = sp as u8 & 0xF;
+        let b = n8 as u8 & 0xF;
+        let half_carry = a + b > 0xF;
         (sp.wrapping_add(n8 as u16), carry, half_carry)
     };
 
@@ -468,5 +470,37 @@ mod tests {
         gameboy.bus.memory[0xC051] = 1;
         add_d8(&mut gameboy);
         assert!(gameboy.cpu.registers.f.half_carry);
+    }
+
+    #[test]
+    fn test_add_sp_n8_half_carry_flag() {
+        let mut gameboy = Gameboy::default();
+        gameboy.cpu.registers.sp = 0x0F;
+        gameboy.cpu.registers.pc = 0xC050;
+        gameboy.bus.memory[0xC051] = 0x01;
+        add_sp_n8(&mut gameboy);
+        assert!(gameboy.cpu.registers.f.half_carry);
+    }
+
+    #[test]
+    fn test_add_sp_n8_half_carry_flag_no_underflow() {
+        let mut gameboy = Gameboy::default();
+        gameboy.cpu.registers.sp = 0x01;
+        gameboy.cpu.registers.pc = 0xC050;
+        gameboy.bus.memory[0xC051] = 0xFF;
+        add_sp_n8(&mut gameboy);
+        assert!(gameboy.cpu.registers.f.half_carry);
+        assert!(gameboy.cpu.registers.f.carry);
+    }
+
+    #[test]
+    fn test_add_sp_n8_half_carry_flag_underflow() {
+        let mut gameboy = Gameboy::default();
+        gameboy.cpu.registers.sp = 0x00;
+        gameboy.cpu.registers.pc = 0xC050;
+        gameboy.bus.memory[0xC051] = 0xFF;
+        add_sp_n8(&mut gameboy);
+        assert!(!gameboy.cpu.registers.f.half_carry);
+        assert!(!gameboy.cpu.registers.f.carry);
     }
 }

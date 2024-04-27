@@ -1,20 +1,22 @@
 use crate::cpu::{Register16bTarget, RegisterTarget};
-use crate::gameboy::{self, Gameboy};
+use crate::gameboy::Gameboy;
 
 pub fn adc(target: RegisterTarget) -> impl Fn(&mut Gameboy) -> u8 {
     move |gameboy: &mut Gameboy| {
-        let mut addend = gameboy.cpu.registers.get_u8(target);
+        let addend = gameboy.cpu.registers.get_u8(target);
         let current_value = gameboy.cpu.registers.a;
-        if gameboy.cpu.registers.f.carry {
-            addend += 1;
-        }
-        let (new_value, did_overflow) = current_value.overflowing_add(addend);
+
+        let carry_in = if gameboy.cpu.registers.f.carry { 1 } else { 0 };
+        let new_value = current_value.wrapping_add(addend).wrapping_add(carry_in);
+        let carry = (current_value as u16 + addend as u16 + carry_in as u16) > 0xFF;
+        let half_carry = ((current_value & 0xF) + (addend & 0xF) + carry_in) > 0xF;
+
         gameboy.cpu.registers.a = new_value;
 
-        gameboy.cpu.registers.f.carry = did_overflow;
+        gameboy.cpu.registers.f.carry = carry;
         gameboy.cpu.registers.f.subtract = false;
         gameboy.cpu.registers.f.zero = new_value == 0;
-        gameboy.cpu.registers.f.half_carry = (current_value & 0xF) + (addend & 0xF) > 0xF;
+        gameboy.cpu.registers.f.half_carry = half_carry;
         const TICKS: u8 = 4;
         TICKS
     }
@@ -183,6 +185,24 @@ mod tests {
                     a: 0b00001111,
                     c: 0b00000001,
                     f: FlagsRegister::from(0),
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        adc(RegisterTarget::C)(&mut gameboy);
+        assert!(gameboy.cpu.registers.f.half_carry);
+    }
+
+    #[test]
+    fn test_adc_half_carry_flag_2() {
+        let mut gameboy = Gameboy {
+            cpu: CPU {
+                registers: Registers {
+                    a: 0x00,
+                    c: 0x0F,
+                    f: FlagsRegister::from(0xF0),
                     ..Default::default()
                 },
                 ..Default::default()

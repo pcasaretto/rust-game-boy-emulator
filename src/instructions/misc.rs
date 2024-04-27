@@ -32,6 +32,30 @@ pub fn daa(gameboy: &mut Gameboy) -> u8 {
     TICKS
 }
 
+pub fn cpl(gameboy: &mut Gameboy) -> u8 {
+    gameboy.cpu.registers.a = !gameboy.cpu.registers.a;
+    gameboy.cpu.registers.f.subtract = true;
+    gameboy.cpu.registers.f.half_carry = true;
+    const TICKS: u8 = 4;
+    TICKS
+}
+
+pub fn ccf(gameboy: &mut Gameboy) -> u8 {
+    gameboy.cpu.registers.f.subtract = false;
+    gameboy.cpu.registers.f.half_carry = false;
+    gameboy.cpu.registers.f.carry = !gameboy.cpu.registers.f.carry;
+    const TICKS: u8 = 4;
+    TICKS
+}
+
+pub fn scf(gameboy: &mut Gameboy) -> u8 {
+    gameboy.cpu.registers.f.subtract = false;
+    gameboy.cpu.registers.f.half_carry = false;
+    gameboy.cpu.registers.f.carry = true;
+    const TICKS: u8 = 4;
+    TICKS
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

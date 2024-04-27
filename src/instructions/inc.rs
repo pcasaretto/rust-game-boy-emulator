@@ -4,7 +4,7 @@ use crate::gameboy::Gameboy;
 pub fn inc_r(target: RegisterTarget) -> impl Fn(&mut Gameboy) -> u8 {
     move |gameboy: &mut Gameboy| {
         let current_value = gameboy.cpu.registers.get_u8(target);
-        let (new_value, did_overflow) = current_value.overflowing_add(1);
+        let new_value = current_value.wrapping_add(1);
         gameboy.cpu.registers.set_u8(target, new_value);
 
         gameboy.cpu.registers.f.zero = new_value == 0;

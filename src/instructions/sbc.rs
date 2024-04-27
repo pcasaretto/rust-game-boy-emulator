@@ -1,20 +1,22 @@
-use crate::cpu::{Register16bTarget, RegisterTarget};
+use crate::cpu::RegisterTarget;
 use crate::gameboy::Gameboy;
 
 pub fn sbc_r_r_a(target: RegisterTarget) -> impl Fn(&mut Gameboy) -> u8 {
     move |gameboy: &mut Gameboy| {
-        let mut target_value = gameboy.cpu.registers.get_u8(target);
-        if gameboy.cpu.registers.f.carry {
-            target_value += 1;
-        }
         let current_value = gameboy.cpu.registers.get_u8(RegisterTarget::A);
-        let (new_value, did_overflow) = current_value.overflowing_sub(target_value);
+        let operand = gameboy.cpu.registers.get_u8(target);
+
+        let borrow_in = if gameboy.cpu.registers.f.carry { 1 } else { 0 };
+        let (new_value, first_overflow) = current_value.overflowing_sub(operand);
+        let (new_value, second_overflow) = new_value.overflowing_sub(borrow_in);
+        let half_borrow = (current_value & 0xF) < (operand & 0xF) + borrow_in;
+
         gameboy.cpu.registers.a = new_value;
 
-        gameboy.cpu.registers.f.carry = did_overflow;
+        gameboy.cpu.registers.f.carry = first_overflow || second_overflow;
         gameboy.cpu.registers.f.zero = new_value == 0;
         gameboy.cpu.registers.f.subtract = true;
-        gameboy.cpu.registers.f.half_carry = (current_value & 0xF) < (target_value & 0xF);
+        gameboy.cpu.registers.f.half_carry = half_borrow;
         const TICKS: u8 = 4;
         TICKS
     }
@@ -163,6 +165,24 @@ mod tests {
                     a: 0b00010000,
                     c: 0b00000001,
                     f: FlagsRegister::from(0),
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        sbc_r_r_a(RegisterTarget::C)(&mut gameboy);
+        assert!(gameboy.cpu.registers.f.half_carry);
+    }
+
+    #[test]
+    fn test_sbc_half_carry_flag_2() {
+        let mut gameboy = Gameboy {
+            cpu: CPU {
+                registers: Registers {
+                    a: 0x00,
+                    c: 0x0F,
+                    f: FlagsRegister::from(0xF0),
                     ..Default::default()
                 },
                 ..Default::default()
