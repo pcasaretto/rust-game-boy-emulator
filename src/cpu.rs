@@ -177,4 +177,5 @@ impl std::convert::From<u8> for FlagsRegister {
 #[derive(Default)]
 pub struct CPU {
     pub registers: Registers,
+    pub halted: bool,
 }

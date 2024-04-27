@@ -235,6 +235,8 @@ pub fn from_byte(byte: u8) -> Box<Instruction> {
         0x9E => Box::new(pai(sbc::sbc_mem_at_hl)),
         0x9F => Box::new(pai(sbc::sbc_r_r_a(RegisterTarget::A))),
 
+        0x76 => Box::new(pai(misc::halt)),
+
         0xA0 => Box::new(pai(and::and(RegisterTarget::B))),
         0xA1 => Box::new(pai(and::and(RegisterTarget::C))),
         0xA2 => Box::new(pai(and::and(RegisterTarget::D))),

@@ -4,6 +4,7 @@ use crate::memory::{self, MemoryBus};
 use crate::opcode_info::{OpcodeInfo, OperandInformation};
 use crate::ppu::PPU;
 use crate::{instructions, ppu};
+use std::fmt::Debug;
 use std::mem;
 use std::time::Instant;
 
@@ -60,6 +61,19 @@ impl std::convert::From<Interrupt> for u8 {
             Interrupt::Serial => 1 << 3,
             Interrupt::Joypad => 1 << 4,
         }
+    }
+}
+
+impl Debug for Interrupt {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let interrupt = match self {
+            Interrupt::VBlank => "VBlank",
+            Interrupt::LCDStat => "LCDStat",
+            Interrupt::Timer => "Timer",
+            Interrupt::Serial => "Serial",
+            Interrupt::Joypad => "Joypad",
+        };
+        write!(f, "{}", interrupt)
     }
 }
 
@@ -160,14 +174,18 @@ impl<'a> Gameboy<'a> {
     }
 
     fn handle_interrupts(&mut self) {
-        // check if interrupts are enabled
-        if self.interrupts_enabled {
-            // check if any interrupts are enabled
-            let interrupt_enable = self.bus.memory[IE];
-            let interrupt_flags = self.bus.memory[IF];
-            let interrupt_value = interrupt_enable & interrupt_flags;
-            if interrupt_value != 0 {
-                log::debug!("Interrupt: 0x{:02X}", interrupt_value);
+        // TODO: add 20 clocks to the cycle if an interrupt is triggered
+        // 24 if HALTed
+        let interrupt_enable = self.bus.memory[IE];
+        let interrupt_flags = self.bus.memory[IF];
+        let interrupt_value = interrupt_enable & interrupt_flags;
+
+        if interrupt_value != 0 {
+            self.cpu.halted = false;
+
+            if self.interrupts_enabled {
+                // check if any interrupts are enabled
+                log::debug!("Interrupt: {:?}", Interrupt::from(interrupt_value));
                 // disable interrupts
                 self.interrupts_enabled = false;
                 let (interrupt, interrupt_handler) = Interrupt::interrupt_address(interrupt_value);

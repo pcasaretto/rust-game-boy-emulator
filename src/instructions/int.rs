@@ -7,6 +7,7 @@ pub fn di(gameboy: &mut Gameboy) -> u8 {
 }
 
 pub fn ei(gameboy: &mut Gameboy) -> u8 {
+    // TODO: delay enabling interrupts by one cycle
     gameboy.interrupts_enabled = true;
     const TICKS: u8 = 4;
     TICKS

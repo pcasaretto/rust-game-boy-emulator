@@ -6,6 +6,12 @@ pub fn stop(gameboy: &mut Gameboy) -> u8 {
     TICKS
 }
 
+pub fn halt(gameboy: &mut Gameboy) -> u8 {
+    gameboy.cpu.halted = true;
+    const TICKS: u8 = 4;
+    TICKS
+}
+
 pub fn daa(gameboy: &mut Gameboy) -> u8 {
     let mut value = gameboy.cpu.registers.a;
     let flags = gameboy.cpu.registers.f;
