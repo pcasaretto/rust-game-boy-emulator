@@ -94,17 +94,10 @@ mod tests {
 
     #[test]
     fn test_cp_d8_not_equal() {
-        let mut gameboy = Gameboy {
-            cpu: CPU {
-                registers: Registers {
-                    a: 13,
-                    ..Default::default()
-                },
-                ..Default::default()
-            },
-            ..Default::default()
-        };
-        gameboy.bus.write_byte(gameboy.cpu.registers.pc, 14);
+        let mut gameboy = Gameboy::default();
+        gameboy.cpu.registers.a = 13;
+        gameboy.cpu.registers.pc = 0xC050;
+        gameboy.bus.write_byte(0xC051, 14);
         cp_d8(&mut gameboy);
         assert!(!gameboy.cpu.registers.f.zero);
     }

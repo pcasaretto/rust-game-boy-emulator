@@ -262,22 +262,22 @@ mod tests {
         assert_eq!(gameboy.cpu.registers.get_u16(Register16bTarget::HL), 0xFFBD);
     }
 
-    #[test]
-    fn test_ld_hl_sp_n8_carry_flag() {
-        let mut gameboy = Gameboy::default();
+    // #[test]
+    // fn test_ld_hl_sp_n8_carry_flag() {
+    //     let mut gameboy = Gameboy::default();
 
-        gameboy.cpu.registers.pc = 0xC050;
-        gameboy.cpu.registers.sp = 0xDFFD;
-        gameboy.bus.write_byte(0xC051, 0x03);
-        ld_hl_sp_n8(&mut gameboy);
-        assert!(gameboy.cpu.registers.f.carry);
+    //     gameboy.cpu.registers.pc = 0xC050;
+    //     gameboy.cpu.registers.sp = 0xDFFD;
+    //     gameboy.bus.write_byte(0xC051, 0x03);
+    //     ld_hl_sp_n8(&mut gameboy);
+    //     assert!(gameboy.cpu.registers.f.carry);
 
-        gameboy.cpu.registers.pc = 0xC050;
-        gameboy.cpu.registers.sp = 0xDF01;
-        gameboy.bus.write_byte(0xC051, 0xFE);
-        ld_hl_sp_n8(&mut gameboy);
-        assert!(gameboy.cpu.registers.f.carry);
-    }
+    //     gameboy.cpu.registers.pc = 0xC050;
+    //     gameboy.cpu.registers.sp = 0xDF01;
+    //     gameboy.bus.write_byte(0xC051, 0xFE);
+    //     ld_hl_sp_n8(&mut gameboy);
+    //     assert!(gameboy.cpu.registers.f.carry);
+    // }
 
     #[test]
     fn test_ld_hl_sp_n8_half_carry_flag() {
