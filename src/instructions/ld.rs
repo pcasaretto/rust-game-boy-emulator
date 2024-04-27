@@ -200,6 +200,14 @@ pub fn ld_mem_at_c_a(gameboy: &mut Gameboy) -> u8 {
     TICKS
 }
 
+pub fn ld_a_mem_at_c(gameboy: &mut Gameboy) -> u8 {
+    let addr = LD_HIGH_OFFSET + gameboy.cpu.registers.get_u8(RegisterTarget::C) as u16;
+    let value = gameboy.bus.read_byte(addr);
+    gameboy.cpu.registers.set_u8(RegisterTarget::A, value);
+    const TICKS: u8 = 8;
+    TICKS
+}
+
 pub fn ld_hl_sp_n8(gameboy: &mut Gameboy) -> u8 {
     let n = gameboy.read_next_byte() as i8;
     let sp = gameboy.cpu.registers.get_u16(Register16bTarget::SP);
