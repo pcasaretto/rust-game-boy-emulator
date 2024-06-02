@@ -7,7 +7,7 @@ use sdl2::{
     Sdl,
 };
 
-use crate::gameboy;
+use crate::{gameboy, memory::special_addresses};
 
 pub struct PPU {
     canvas: sdl2::render::Canvas<sdl2::video::Window>,
@@ -68,7 +68,7 @@ impl PPU {
 
     pub fn update(&mut self, gameboy: &gameboy::Gameboy, current_scanline: u8) {
         // self.canvas.set_draw_color(Color::RGB(255, 0, 0));
-        let control = gameboy.bus.read_byte(0xff40);
+        let control = gameboy.read_byte(0xff40);
 
         if flag_set_at!(control, 0) {
             self.render_tiles(gameboy, current_scanline);
@@ -92,12 +92,12 @@ impl PPU {
     }
 
     fn render_tiles(&mut self, gameboy: &gameboy::Gameboy, current_scanline: u8) {
-        let scroll_y = gameboy.bus.read_byte(0xff42);
-        let scroll_x = gameboy.bus.read_byte(0xff43);
-        let window_y = gameboy.bus.read_byte(0xff4a);
-        let window_x = gameboy.bus.read_byte(0xff4b).wrapping_sub(7);
+        let scroll_y = gameboy.read_byte(0xff42);
+        let scroll_x = gameboy.read_byte(0xff43);
+        let window_y = gameboy.read_byte(0xff4a);
+        let window_x = gameboy.read_byte(0xff4b).wrapping_sub(7);
 
-        let control = gameboy.bus.read_byte(0xff40);
+        let control = gameboy.read_byte(special_addresses::LCDC as u16);
 
         let using_window = flag_set_at!(control, 5) && window_y <= current_scanline;
 
@@ -136,7 +136,7 @@ impl PPU {
             let tile_col = x_pos / 8;
             let tile_address = tilemap + tile_row + tile_col as u16;
 
-            let tile_num = gameboy.bus.read_byte(tile_address);
+            let tile_num = gameboy.read_byte(tile_address);
 
             let tile_location = tiledata
                 + (if unsigned {
@@ -146,8 +146,8 @@ impl PPU {
                 } * 16);
 
             let line = ((y_pos % 8) * 2) as u16;
-            let data1 = gameboy.bus.read_byte(tile_location + line);
-            let data2 = gameboy.bus.read_byte(tile_location + line + 1);
+            let data1 = gameboy.read_byte(tile_location + line);
+            let data2 = gameboy.read_byte(tile_location + line + 1);
 
             let color_bit = 7 - (x_pos % 8);
 
@@ -156,7 +156,7 @@ impl PPU {
             color_num = ((data2 >> color_bit) & 1) << 1;
             color_num |= (data1 >> color_bit) & 1;
 
-            let color = self.get_color(color_num, gameboy.bus.read_byte(0xFF47));
+            let color = self.get_color(color_num, gameboy.read_byte(0xFF47));
 
             if (current_scanline > 143) || (pixel > 159) {
                 continue;
@@ -197,15 +197,21 @@ impl PPU {
     }
 
     fn render_sprites(&mut self, gameboy: &gameboy::Gameboy, current_scanline: u8) {
-        let control = gameboy.bus.read_byte(0xff40);
+        let control = gameboy.read_byte(0xff40);
         let use8x16 = flag_set_at!(control, 2);
 
         for sprite in 0..40 {
             let index = sprite * 4;
-            let y_pos = gameboy.bus.read_byte(0xfe00 + index) - 16;
-            let x_pos = gameboy.bus.read_byte(0xfe00 + index + 1) - 8;
-            let tile_location = gameboy.bus.read_byte(0xfe00 + index + 2);
-            let attributes = gameboy.bus.read_byte(0xfe00 + index + 3);
+            let mut y_pos = gameboy.read_byte(0xfe00 + index);
+            if y_pos == 0 || y_pos >= 160 {
+                continue;
+            }
+            if y_pos >= 16 {
+                y_pos -= 16;
+            }
+            let x_pos = gameboy.read_byte(0xfe00 + index + 1) - 8;
+            let tile_location = gameboy.read_byte(0xfe00 + index + 2);
+            let attributes = gameboy.read_byte(0xfe00 + index + 3);
 
             let x_flip = flag_set_at!(attributes, 5);
             let y_flip = flag_set_at!(attributes, 6);
@@ -225,8 +231,8 @@ impl PPU {
 
                 let data_address = 0x8000 + (tile_location as u16 * 16) + (line as u16);
 
-                let data1 = gameboy.bus.read_byte(data_address);
-                let data2 = gameboy.bus.read_byte(data_address + 1);
+                let data1 = gameboy.read_byte(data_address);
+                let data2 = gameboy.read_byte(data_address + 1);
 
                 for tile_pixel in 7..=0 {
                     let mut color_bit = tile_pixel as i8;
@@ -238,7 +244,7 @@ impl PPU {
                     let mut color_num = ((data2 >> color_bit) & 1) << 1;
                     color_num |= (data1 >> color_bit) & 1;
 
-                    let color = self.get_color(color_num, gameboy.bus.read_byte(0xFF48));
+                    let color = self.get_color(color_num, gameboy.read_byte(0xFF48));
                     if color == WHITE {
                         continue;
                     }
@@ -249,8 +255,7 @@ impl PPU {
                         continue;
                     }
 
-                    self.frambuffer_alpha
-                        [current_scanline as usize * 160 + (pixel as usize)] =
+                    self.frambuffer_alpha[current_scanline as usize * 160 + (pixel as usize)] =
                         u32::from_be_bytes(color.rgba().into());
                 }
             }

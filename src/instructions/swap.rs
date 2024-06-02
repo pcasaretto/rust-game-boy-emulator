@@ -20,10 +20,10 @@ pub fn swap(target: RegisterTarget) -> impl Fn(&mut Gameboy) -> u8 {
 
 pub fn swap_mem_at_hl(gameboy: &mut Gameboy) -> u8 {
     let addr = gameboy.cpu.registers.get_u16(Register16bTarget::HL);
-    let value = gameboy.bus.read_byte(addr);
+    let value = gameboy.read_byte(addr);
     let result = (value << 4) | (value >> 4);
 
-    gameboy.bus.write_byte(addr, result);
+    gameboy.write_byte(addr, result);
 
     gameboy.cpu.registers.f.zero = result == 0;
     gameboy.cpu.registers.f.subtract = false;

@@ -42,7 +42,7 @@ pub fn adc_n8(gameboy: &mut Gameboy) -> u8 {
 
 pub fn adc_mem_at_hl(gameboy: &mut Gameboy) -> u8 {
     let addr = gameboy.cpu.registers.get_u16(Register16bTarget::HL);
-    let addend = gameboy.bus.read_byte(addr);
+    let addend = gameboy.read_byte(addr);
     let current_value = gameboy.cpu.registers.get_u8(RegisterTarget::A);
 
     let carry_in = if gameboy.cpu.registers.f.carry { 1 } else { 0 };
@@ -229,7 +229,7 @@ mod tests {
             },
             ..Default::default()
         };
-        gameboy.bus.write_byte(0xFFDA, 13);
+        gameboy.write_byte(0xFFDA, 13);
         adc_mem_at_hl(&mut gameboy);
         assert_eq!(gameboy.cpu.registers.a, 47);
     }
@@ -249,7 +249,7 @@ mod tests {
             ..Default::default()
         };
         gameboy.cpu.registers.f.carry = true;
-        gameboy.bus.write_byte(0xFFDA, 13);
+        gameboy.write_byte(0xFFDA, 13);
         adc_mem_at_hl(&mut gameboy);
         assert_eq!(gameboy.cpu.registers.a, 48);
     }
@@ -268,7 +268,7 @@ mod tests {
             },
             ..Default::default()
         };
-        gameboy.bus.write_byte(0xFFDA, 13);
+        gameboy.write_byte(0xFFDA, 13);
         adc_mem_at_hl(&mut gameboy);
         assert!(gameboy.cpu.registers.f.carry);
     }
@@ -287,7 +287,7 @@ mod tests {
             },
             ..Default::default()
         };
-        gameboy.bus.write_byte(0xFFDA, 0x10);
+        gameboy.write_byte(0xFFDA, 0x10);
         adc_mem_at_hl(&mut gameboy);
         assert!(gameboy.cpu.registers.f.zero);
     }
@@ -307,7 +307,7 @@ mod tests {
             ..Default::default()
         };
         gameboy.cpu.registers.f.subtract = true;
-        gameboy.bus.write_byte(0xFFDA, 0x10);
+        gameboy.write_byte(0xFFDA, 0x10);
         adc_mem_at_hl(&mut gameboy);
         assert!(!gameboy.cpu.registers.f.subtract);
     }
@@ -326,7 +326,7 @@ mod tests {
             },
             ..Default::default()
         };
-        gameboy.bus.write_byte(0xFFDA, 1);
+        gameboy.write_byte(0xFFDA, 1);
         adc_mem_at_hl(&mut gameboy);
         assert!(gameboy.cpu.registers.f.half_carry);
     }
@@ -336,7 +336,7 @@ mod tests {
         let mut gameboy = Gameboy::default();
         gameboy.cpu.registers.pc = 0xC050;
         gameboy.cpu.registers.a = 0x00;
-        gameboy.bus.write_byte(0xC051, 0x0F);
+        gameboy.write_byte(0xC051, 0x0F);
         gameboy.cpu.registers.f.carry = true;
         adc_n8(&mut gameboy);
         gameboy.cpu.registers.a = 0x10;
@@ -348,7 +348,7 @@ mod tests {
         let mut gameboy = Gameboy::default();
         gameboy.cpu.registers.pc = 0xC050;
         gameboy.cpu.registers.a = 0xFF;
-        gameboy.bus.write_byte(0xC051, 0x01);
+        gameboy.write_byte(0xC051, 0x01);
         adc_n8(&mut gameboy);
         gameboy.cpu.registers.a = 0x00;
         assert!(gameboy.cpu.registers.f.half_carry);

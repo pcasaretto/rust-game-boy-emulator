@@ -44,7 +44,7 @@ pub fn sbc_n8(gameboy: &mut Gameboy) -> u8 {
 
 pub fn sbc_mem_at_hl(gameboy: &mut Gameboy) -> u8 {
     let addr = gameboy.cpu.registers.get_u16(Register16bTarget::HL);
-    let operand = gameboy.bus.read_byte(addr);
+    let operand = gameboy.read_byte(addr);
     let current_value = gameboy.cpu.registers.get_u8(RegisterTarget::A);
 
     let borrow_in = if gameboy.cpu.registers.f.carry { 1 } else { 0 };

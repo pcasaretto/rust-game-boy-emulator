@@ -3,9 +3,9 @@ use crate::gameboy::Gameboy;
 pub fn call_a16(gameboy: &mut Gameboy) -> u8 {
     let [pc_high, pc_low] = gameboy.cpu.registers.pc.wrapping_add(3).to_be_bytes();
     gameboy.cpu.registers.sp = gameboy.cpu.registers.sp.wrapping_sub(1);
-    gameboy.bus.write_byte(gameboy.cpu.registers.sp, pc_high);
+    gameboy.write_byte(gameboy.cpu.registers.sp, pc_high);
     gameboy.cpu.registers.sp = gameboy.cpu.registers.sp.wrapping_sub(1);
-    gameboy.bus.write_byte(gameboy.cpu.registers.sp, pc_low);
+    gameboy.write_byte(gameboy.cpu.registers.sp, pc_low);
 
     let low = gameboy.read_next_byte();
     let high = gameboy.read_next_byte();
@@ -52,9 +52,9 @@ pub fn call_c_a16(gameboy: &mut Gameboy) -> u8 {
 }
 
 pub fn ret(gameboy: &mut Gameboy) -> u8 {
-    let low = gameboy.bus.read_byte(gameboy.cpu.registers.sp);
+    let low = gameboy.read_byte(gameboy.cpu.registers.sp);
     gameboy.cpu.registers.sp = gameboy.cpu.registers.sp.wrapping_add(1);
-    let high = gameboy.bus.read_byte(gameboy.cpu.registers.sp);
+    let high = gameboy.read_byte(gameboy.cpu.registers.sp);
     gameboy.cpu.registers.sp = gameboy.cpu.registers.sp.wrapping_add(1);
 
     gameboy.cpu.registers.pc = u16::from_le_bytes([low, high]);

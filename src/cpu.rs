@@ -115,14 +115,6 @@ impl Registers {
             }
         }
     }
-
-    pub fn stack_push(&mut self, pc: u16, bus: &mut crate::memory::MemoryBus) {
-        let [high, low] = pc.to_be_bytes();
-        self.sp = self.sp.wrapping_sub(1);
-        bus.write_byte(self.sp, high);
-        self.sp = self.sp.wrapping_sub(1);
-        bus.write_byte(self.sp, low);
-    }
 }
 
 #[derive(Default, Copy, Clone)]

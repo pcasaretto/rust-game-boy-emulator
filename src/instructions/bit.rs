@@ -5,10 +5,10 @@ use crate::gameboy::Gameboy;
 pub fn set_mem_at_hl(bit_position: u8) -> impl Fn(&mut Gameboy) -> u8 {
     move |gameboy: &mut Gameboy| {
         let hl = gameboy.cpu.registers.get_u16(Register16bTarget::HL);
-        let value = gameboy.bus.read_byte(hl);
+        let value = gameboy.read_byte(hl);
         let result = value | (1 << bit_position);
 
-        gameboy.bus.write_byte(hl, result);
+        gameboy.write_byte(hl, result);
         const CYCLES: u8 = 4;
         CYCLES
     }
@@ -28,10 +28,10 @@ pub fn set_r(target: RegisterTarget, bit_position: u8) -> impl Fn(&mut Gameboy) 
 pub fn res_mem_at_hl(bit_position: u8) -> impl Fn(&mut Gameboy) -> u8 {
     move |gameboy: &mut Gameboy| {
         let hl = gameboy.cpu.registers.get_u16(Register16bTarget::HL);
-        let value = gameboy.bus.read_byte(hl);
+        let value = gameboy.read_byte(hl);
         let result = value & !(1 << bit_position);
 
-        gameboy.bus.write_byte(hl, result);
+        gameboy.write_byte(hl, result);
         const CYCLES: u8 = 4;
         CYCLES
     }
@@ -65,7 +65,7 @@ pub fn bit_r(target: RegisterTarget, bit_position: u8) -> impl Fn(&mut Gameboy) 
 pub fn bit_mem_at_hl(bit_position: u8) -> impl Fn(&mut Gameboy) -> u8 {
     move |gameboy: &mut Gameboy| {
         let addr = gameboy.cpu.registers.get_u16(Register16bTarget::HL);
-        let value = gameboy.bus.read_byte(addr);
+        let value = gameboy.read_byte(addr);
         let result = value & (1 << bit_position);
 
         gameboy.cpu.registers.f.zero = result == 0;
@@ -85,11 +85,11 @@ mod tests {
         let mut gameboy = Gameboy::default();
         let addr = 0xC050;
         gameboy.cpu.registers.set_u16(Register16bTarget::HL, addr);
-        gameboy.bus.write_byte(addr, 0b00000000);
+        gameboy.write_byte(addr, 0b00000000);
 
         set_mem_at_hl(3)(&mut gameboy);
 
-        assert_eq!(gameboy.bus.read_byte(addr), 0b00001000);
+        assert_eq!(gameboy.read_byte(addr), 0b00001000);
     }
 
     #[test]
@@ -124,7 +124,7 @@ mod tests {
     fn test_bit_mem_at_hl() {
         let mut gameboy = Gameboy::default();
         gameboy.cpu.registers.set_u16(Register16bTarget::HL, 0xC050);
-        gameboy.bus.write_byte(0xC050, 0b00001000);
+        gameboy.write_byte(0xC050, 0b00001000);
         bit_mem_at_hl(3)(&mut gameboy);
         assert!(!gameboy.cpu.registers.f.zero);
         assert!(!gameboy.cpu.registers.f.subtract);
@@ -135,7 +135,7 @@ mod tests {
     fn test_bit_mem_at_hl_true() {
         let mut gameboy = Gameboy::default();
         gameboy.cpu.registers.set_u16(Register16bTarget::HL, 0xC050);
-        gameboy.bus.write_byte(0xC050, 0b00000000);
+        gameboy.write_byte(0xC050, 0b00000000);
         bit_mem_at_hl(3)(&mut gameboy);
         assert!(gameboy.cpu.registers.f.zero);
         assert!(!gameboy.cpu.registers.f.subtract);

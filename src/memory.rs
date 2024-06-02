@@ -38,61 +38,25 @@ pub mod special_addresses {
     pub const WY: usize = 0xFF4A;
     pub const WX: usize = 0xFF4B;
     pub const IE: usize = 0xFFFF;
-}
-
-impl<'a> MemoryBus<'a> {
-    pub fn read_byte(&self, address: u16) -> u8 {
-        if self.boot_rom_enabled && address < self.boot_rom.len() as u16 {
-            return self.boot_rom[address as usize];
-        }
-        
-        // log::debug!("Read from {:04X}: value {:02X}", address, value);
-        match address {
-            0x0000..=0x7FFF => self.cartridge_rom[address as usize],
-            other => self.memory[other as usize],
-        }
-    }
-
-    pub fn write_byte(&mut self, address: u16, value: u8) {
-        // log::info!("Writing {:02X} to {:04X}", value, address);
-        match address as usize {
-            special_addresses::DMA => {
-                // DMA transfer
-                let start_address = (value as u16) << 8;
-                for i in 0..0xA0 {
-                    let byte = self.memory[(start_address + i) as usize];
-                    self.memory[0xFE00 + i as usize] = byte;
-                }
-            }
-            special_addresses::DIV => {
-                // Reset the divider register
-                self.memory[special_addresses::DIV] = 0;
-            }
-            0xFF50 if self.boot_rom_enabled => {
-                log::info!("Disabling boot ROM");
-                self.boot_rom_enabled = false;
-            }
-            0x0000..=0x7FFF => {
-                log::warn!("Attempted to write to ROM at address {:04X}", address);
-                return;
-            }
-            0xA000..=0xBFFF => {
-                log::warn!(
-                    "Attempted to write to external RAM at address {:04X}",
-                    address
-                );
-            }
-            0xE000..=0xFDFF => {
-                log::warn!("Attempted to write to echo RAM at address {:04X}", address);
-            }
-            0xFEA0..=0xFEFF => {
-                log::warn!(
-                    "Attempted to write to unusable memory at address {:04X}",
-                    address
-                );
-            }
-            _ => {}
-        }
-        self.memory[address as usize] = value;
-    }
+    pub const NR10: usize = 0xFF10;
+    pub const NR11: usize = 0xFF11;
+    pub const NR12: usize = 0xFF12;
+    pub const NR13: usize = 0xFF13;
+    pub const NR14: usize = 0xFF14;
+    pub const NR21: usize = 0xFF16;
+    pub const NR22: usize = 0xFF17;
+    pub const NR23: usize = 0xFF18;
+    pub const NR24: usize = 0xFF19;
+    pub const NR30: usize = 0xFF1A;
+    pub const NR31: usize = 0xFF1B;
+    pub const NR32: usize = 0xFF1C;
+    pub const NR33: usize = 0xFF1D;
+    pub const NR34: usize = 0xFF1E;
+    pub const NR41: usize = 0xFF20;
+    pub const NR42: usize = 0xFF21;
+    pub const NR43: usize = 0xFF22;
+    pub const NR44: usize = 0xFF23;
+    pub const NR50: usize = 0xFF24;
+    pub const NR51: usize = 0xFF25;
+    pub const NR52: usize = 0xFF26;
 }

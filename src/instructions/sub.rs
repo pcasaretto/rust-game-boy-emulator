@@ -33,7 +33,7 @@ pub fn sub_d8(gameboy: &mut Gameboy) -> u8 {
 
 pub fn sub_mem_at_hl(gameboy: &mut Gameboy) -> u8 {
     let hl = gameboy.cpu.registers.get_u16(Register16bTarget::HL);
-    let target_value = gameboy.bus.read_byte(hl);
+    let target_value = gameboy.read_byte(hl);
     let current_value = gameboy.cpu.registers.a;
     let (new_value, did_overflow) = current_value.overflowing_sub(target_value);
     gameboy.cpu.registers.a = new_value;

@@ -39,7 +39,7 @@ pub fn xor_d8(gameboy: &mut Gameboy) -> u8 {
 pub fn xor_mem_at_r16(reg: Register16bTarget) -> impl Fn(&mut Gameboy) -> u8 {
     move |gameboy: &mut Gameboy| {
         let addr = gameboy.cpu.registers.get_u16(reg);
-        let value = gameboy.bus.read_byte(addr);
+        let value = gameboy.read_byte(addr);
         let a = gameboy.cpu.registers.get_u8(RegisterTarget::A);
 
         let result = a ^ value;

@@ -75,14 +75,14 @@ pub fn rlc_r(target: RegisterTarget) -> impl Fn(&mut Gameboy) -> u8 {
 
 pub fn rlc_mem_at_hl(gameboy: &mut Gameboy) -> u8 {
     let addr = gameboy.cpu.registers.get_u16(Register16bTarget::HL);
-    let value = gameboy.bus.read_byte(addr);
+    let value = gameboy.read_byte(addr);
     let new_carry = value & 0x80 != 0;
     let new_value = value << 1 | value >> 7;
     gameboy.cpu.registers.f.carry = new_carry;
     gameboy.cpu.registers.f.zero = new_value == 0;
     gameboy.cpu.registers.f.subtract = false;
     gameboy.cpu.registers.f.half_carry = false;
-    gameboy.bus.write_byte(addr, new_value);
+    gameboy.write_byte(addr, new_value);
     const TICKS: u8 = 16;
     TICKS
 }
@@ -105,7 +105,7 @@ pub fn rl_r(target: RegisterTarget) -> impl Fn(&mut Gameboy) -> u8 {
 
 pub fn rl_mem_at_hl(gameboy: &mut Gameboy) -> u8 {
     let addr = gameboy.cpu.registers.get_u16(Register16bTarget::HL);
-    let value = gameboy.bus.read_byte(addr);
+    let value = gameboy.read_byte(addr);
     let carry = gameboy.cpu.registers.f.carry;
     let new_carry = value & 0x80 != 0;
     let new_value = (value << 1) | (carry as u8);
@@ -113,7 +113,7 @@ pub fn rl_mem_at_hl(gameboy: &mut Gameboy) -> u8 {
     gameboy.cpu.registers.f.zero = new_value == 0;
     gameboy.cpu.registers.f.subtract = false;
     gameboy.cpu.registers.f.half_carry = false;
-    gameboy.bus.write_byte(addr, new_value);
+    gameboy.write_byte(addr, new_value);
     const TICKS: u8 = 16;
     TICKS
 }
@@ -136,7 +136,7 @@ pub fn rr_r(target: RegisterTarget) -> impl Fn(&mut Gameboy) -> u8 {
 
 pub fn rr_mem_at_hl(gameboy: &mut Gameboy) -> u8 {
     let addr = gameboy.cpu.registers.get_u16(Register16bTarget::HL);
-    let value = gameboy.bus.read_byte(addr);
+    let value = gameboy.read_byte(addr);
     let carry = gameboy.cpu.registers.f.carry;
     let new_carry = value & 0x01 != 0;
     let new_value = (value >> 1) | ((carry as u8) << 7);
@@ -144,7 +144,7 @@ pub fn rr_mem_at_hl(gameboy: &mut Gameboy) -> u8 {
     gameboy.cpu.registers.f.zero = new_value == 0;
     gameboy.cpu.registers.f.subtract = false;
     gameboy.cpu.registers.f.half_carry = false;
-    gameboy.bus.write_byte(addr, new_value);
+    gameboy.write_byte(addr, new_value);
     const TICKS: u8 = 16;
     TICKS
 }
@@ -166,14 +166,14 @@ pub fn rrc_r(target: RegisterTarget) -> impl Fn(&mut Gameboy) -> u8 {
 
 pub fn rrc_mem_at_hl(gameboy: &mut Gameboy) -> u8 {
     let addr = gameboy.cpu.registers.get_u16(Register16bTarget::HL);
-    let value = gameboy.bus.read_byte(addr);
+    let value = gameboy.read_byte(addr);
     let new_carry = value & 0x01 != 0;
     let new_value = (value >> 1) | value << 7;
     gameboy.cpu.registers.f.carry = new_carry;
     gameboy.cpu.registers.f.zero = new_value == 0;
     gameboy.cpu.registers.f.subtract = false;
     gameboy.cpu.registers.f.half_carry = false;
-    gameboy.bus.write_byte(addr, new_value);
+    gameboy.write_byte(addr, new_value);
     const TICKS: u8 = 16;
     TICKS
 }
@@ -243,9 +243,9 @@ mod tests {
                 let mut gameboy = Gameboy::default();
                 gameboy.cpu.registers.f.carry = carry_flag;
                 gameboy.cpu.registers.set_u16(Register16bTarget::HL, 0xC050);
-                gameboy.bus.write_byte(0xC050, memory_value);
+                gameboy.write_byte(0xC050, memory_value);
                 rr_mem_at_hl(&mut gameboy);
-                assert_eq!(gameboy.bus.read_byte(0xC050), expected_value);
+                assert_eq!(gameboy.read_byte(0xC050), expected_value);
                 assert_eq!(gameboy.cpu.registers.f.carry, expected_carry);
                 assert_eq!(gameboy.cpu.registers.f.zero, expected_value == 0);
                 assert!(!gameboy.cpu.registers.f.subtract);
@@ -270,9 +270,9 @@ mod tests {
                 let mut gameboy = Gameboy::default();
                 gameboy.cpu.registers.f.carry = carry_flag;
                 gameboy.cpu.registers.set_u16(Register16bTarget::HL, 0xC050);
-                gameboy.bus.write_byte(0xC050, memory_value);
+                gameboy.write_byte(0xC050, memory_value);
                 rl_mem_at_hl(&mut gameboy);
-                assert_eq!(gameboy.bus.read_byte(0xC050), expected_value);
+                assert_eq!(gameboy.read_byte(0xC050), expected_value);
                 assert_eq!(gameboy.cpu.registers.f.carry, expected_carry);
                 assert_eq!(gameboy.cpu.registers.f.zero, expected_value == 0);
                 assert!(!gameboy.cpu.registers.f.subtract);

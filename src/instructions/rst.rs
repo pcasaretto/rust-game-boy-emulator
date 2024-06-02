@@ -10,9 +10,9 @@ pub fn rst(offset: u8) -> impl Fn(&mut Gameboy) -> u8 {
             .wrapping_add(1);
         let [high, low] = pc.to_be_bytes();
         gameboy.cpu.registers.sp = gameboy.cpu.registers.sp.wrapping_sub(1);
-        gameboy.bus.write_byte(gameboy.cpu.registers.sp, high);
+        gameboy.write_byte(gameboy.cpu.registers.sp, high);
         gameboy.cpu.registers.sp = gameboy.cpu.registers.sp.wrapping_sub(1);
-        gameboy.bus.write_byte(gameboy.cpu.registers.sp, low);
+        gameboy.write_byte(gameboy.cpu.registers.sp, low);
         gameboy.cpu.registers.pc = u16::from(offset);
         const TICKS: u8 = 16;
         TICKS

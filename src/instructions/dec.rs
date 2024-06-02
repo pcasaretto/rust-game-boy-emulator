@@ -1,5 +1,5 @@
 use crate::cpu::RegisterTarget;
-use crate::gameboy::{Gameboy};
+use crate::gameboy::Gameboy;
 use crate::instructions::Register16bTarget;
 
 pub fn dec_r(target: RegisterTarget) -> impl Fn(&mut Gameboy) -> u8 {
@@ -18,9 +18,9 @@ pub fn dec_r(target: RegisterTarget) -> impl Fn(&mut Gameboy) -> u8 {
 
 pub fn dec_mem_at_hl(gameboy: &mut Gameboy) -> u8 {
     let address = gameboy.cpu.registers.get_u16(Register16bTarget::HL);
-    let current_value = gameboy.bus.read_byte(address);
+    let current_value = gameboy.read_byte(address);
     let new_value = current_value.wrapping_sub(1);
-    gameboy.bus.write_byte(address, new_value);
+    gameboy.write_byte(address, new_value);
 
     gameboy.cpu.registers.f.zero = new_value == 0;
     gameboy.cpu.registers.f.subtract = true;
@@ -50,9 +50,9 @@ mod tests {
         let mut gameboy = Gameboy::default();
         let addr: u16 = 0xC050;
         gameboy.cpu.registers.set_u16(Register16bTarget::HL, addr);
-        gameboy.bus.write_byte(addr, 0x12);
+        gameboy.write_byte(addr, 0x12);
         dec_mem_at_hl(&mut gameboy);
-        assert_eq!(gameboy.bus.read_byte(addr), 0x11);
+        assert_eq!(gameboy.read_byte(addr), 0x11);
     }
 
     #[test]
@@ -60,9 +60,9 @@ mod tests {
         let mut gameboy = Gameboy::default();
         let addr: u16 = 0xC050;
         gameboy.cpu.registers.set_u16(Register16bTarget::HL, addr);
-        gameboy.bus.write_byte(addr, 0x00);
+        gameboy.write_byte(addr, 0x00);
         dec_mem_at_hl(&mut gameboy);
-        assert_eq!(gameboy.bus.read_byte(addr), 0xFF);
+        assert_eq!(gameboy.read_byte(addr), 0xFF);
     }
 
     #[test]
@@ -70,7 +70,7 @@ mod tests {
         let mut gameboy = Gameboy::default();
         let addr: u16 = 0xC050;
         gameboy.cpu.registers.set_u16(Register16bTarget::HL, addr);
-        gameboy.bus.write_byte(addr, 0x01);
+        gameboy.write_byte(addr, 0x01);
         dec_mem_at_hl(&mut gameboy);
         assert!(gameboy.cpu.registers.f.zero);
     }
@@ -80,7 +80,7 @@ mod tests {
         let mut gameboy = Gameboy::default();
         let addr: u16 = 0xC050;
         gameboy.cpu.registers.set_u16(Register16bTarget::HL, addr);
-        gameboy.bus.write_byte(addr, 0x60);
+        gameboy.write_byte(addr, 0x60);
         // Set if no borrow from bit 4.
         dec_mem_at_hl(&mut gameboy);
         assert!(gameboy.cpu.registers.f.half_carry);
