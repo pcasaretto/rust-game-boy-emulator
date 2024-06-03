@@ -234,7 +234,7 @@ impl PPU {
                 let data1 = gameboy.read_byte(data_address);
                 let data2 = gameboy.read_byte(data_address + 1);
 
-                for tile_pixel in 7..=0 {
+                for tile_pixel in (0..=7).rev() {
                     let mut color_bit = tile_pixel as i8;
                     if x_flip {
                         color_bit -= 7;
