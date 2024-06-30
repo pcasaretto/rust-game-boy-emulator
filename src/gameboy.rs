@@ -295,7 +295,7 @@ impl<'a> Gameboy<'a> {
         }
     }
 
-    fn get_next_instruction(&mut self) -> Box<instructions::Instruction> {
+    fn get_next_instruction(&mut self) -> &'static instructions::Instruction {
         let address = self.cpu.registers.get_u16(Register16bTarget::PC);
 
         let mut instruction_byte = self.read_byte(address);

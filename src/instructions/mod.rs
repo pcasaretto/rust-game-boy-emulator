@@ -21,13 +21,15 @@ mod sub;
 mod swap;
 mod xor;
 
+use std::sync::OnceLock;
+
 use super::cpu::*;
 use super::gameboy;
 
 /// Represents an instruction that can be executed by the Gameboy.
 /// The instruction is a function that takes a mutable reference to a Gameboy and returns
 /// the number of t-states (system clock ticks) that the instruction took to execute.
-pub type Instruction = dyn Fn(&mut gameboy::Gameboy) -> u8;
+pub type Instruction = dyn Send + Sync + Fn(&mut gameboy::Gameboy) -> u8;
 
 /// pai means post advance instruction
 fn pai(instruction: impl Fn(&mut gameboy::Gameboy) -> u8) -> impl Fn(&mut gameboy::Gameboy) -> u8 {
@@ -46,7 +48,14 @@ fn dpai(instruction: impl Fn(&mut gameboy::Gameboy) -> u8) -> impl Fn(&mut gameb
     }
 }
 
-pub fn from_byte(byte: u8) -> Box<Instruction> {
+pub fn from_byte(byte: u8) -> &'static Instruction {
+    const EMPTY: OnceLock<Box<Instruction>> = OnceLock::new();
+    static CACHE: [OnceLock<Box<Instruction>>; 256] = [EMPTY; 256];
+
+    CACHE[byte as usize].get_or_init(|| _from_byte(byte))
+}
+
+pub fn _from_byte(byte: u8) -> Box<Instruction> {
     match byte {
         0x00 => Box::new(pai(nop::nop)),
         0x10 => Box::new(pai(misc::stop)),
@@ -343,7 +352,14 @@ pub fn from_byte(byte: u8) -> Box<Instruction> {
     }
 }
 
-pub fn from_prefixed_byte(byte: u8) -> Box<Instruction> {
+pub fn from_prefixed_byte(byte: u8) -> &'static Instruction {
+    const EMPTY: OnceLock<Box<Instruction>> = OnceLock::new();
+    static CACHE: [OnceLock<Box<Instruction>>; 256] = [EMPTY; 256];
+
+    CACHE[byte as usize].get_or_init(|| _from_prefixed_byte(byte))
+}
+
+pub fn _from_prefixed_byte(byte: u8) -> Box<Instruction> {
     match byte {
         0x00 => Box::new(dpai(rot::rlc_r(RegisterTarget::B))),
         0x01 => Box::new(dpai(rot::rlc_r(RegisterTarget::C))),
